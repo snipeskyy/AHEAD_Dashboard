@@ -1,5 +1,6 @@
 import { Radio } from "lucide-react";
 import { z } from "zod";
+import { SIGNAL_ADAPTERS } from "@/lib/adapters";
 import type { AccModule } from "../types";
 
 const signals: AccModule = {
@@ -19,6 +20,7 @@ const signals: AccModule = {
       load: () => import("./pages/signals-page"),
     },
   ],
+  dataAdapters: SIGNAL_ADAPTERS,
   widgets: [
     {
       id: "signals.signal-feed",

@@ -10,7 +10,9 @@ import type { WidgetProps, WidgetSize } from "@/modules/types";
 import { cn } from "@/lib/utils";
 
 /** Lazy widget components, created once at module load from the registry (never during render). */
-const LAZY_WIDGETS = new Map<string, LazyExoticComponent<ComponentType<WidgetProps>>>(registry.widgets().map((w) => [w.id, lazy(w.load)]));
+const LAZY_WIDGETS = new Map<string, LazyExoticComponent<ComponentType<WidgetProps>>>(
+  registry.widgets().map((w) => [w.id, lazy(w.load)]),
+);
 
 export function sizeFromWidth(w: number): WidgetSize {
   return w >= 10 ? "xl" : w >= 6 ? "lg" : w >= 4 ? "md" : "sm";

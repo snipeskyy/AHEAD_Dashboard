@@ -169,7 +169,7 @@ export function ForecastChart({
         return {
           ...baseOption(t),
           grid: { left: 8, right: 16, top: 36, bottom: 8, containLabel: true },
-          legend: { ...baseOption(t).legend, top: 0, left: 0 },
+          legend: { ...baseOption(t).legend, show: true, top: 0, left: 0 },
           tooltip: {
             ...baseOption(t).tooltip,
             trigger: "axis",
@@ -332,7 +332,7 @@ export function AgingChart({
         return {
           ...baseOption(t),
           grid: { left: 8, right: 16, top: 36, bottom: 8, containLabel: true },
-          legend: { ...baseOption(t).legend, top: 0, left: 0 },
+          legend: { ...baseOption(t).legend, show: true, top: 0, left: 0 },
           tooltip: {
             ...baseOption(t).tooltip,
             trigger: "axis",

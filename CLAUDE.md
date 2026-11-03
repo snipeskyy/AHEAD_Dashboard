@@ -134,6 +134,51 @@ migrations, because Prisma would otherwise report drift.
   mobile.
 - **Verification builds.** Run `NEXT_DIST_DIR=.next-build npm run build` so a build can run while `next dev` is up.
 
+## Phase 3 conventions (signals & demand gen)
+
+- **Every signal enters through `ingestSignals()`** (`src/lib/ingest/ingest.ts`). The pipeline is:
+  1. Zod validation
+  2. dedupe hash (account + normalized URL + title, or the adapter's `dedupeKey`)
+  3. tagging and relevance scoring
+  4. insert, including `tagIndex`
+  5. derived evidence, gated by `intelPolicyViolation`
+  6. a notification when relevance ≥ the alert threshold
+
+  Never write `Signal` rows directly.
+
+- **Adapters** live in `src/lib/adapters/sources/*`, are listed in `SIGNAL_ADAPTERS`, and are contributed to the
+  registry by the Signals module (`dataAdapters`).
+  - Each adapter has `eligible()`, `fetch()` and a pure `normalize()`. Fixtures for `normalize()` are in
+    `src/lib/adapters/__fixtures__`, anonymized with fictional names.
+  - Outbound HTTP must go through `fetchText`/`fetchJson` in `src/lib/adapters/http.ts`. That gives a per-host
+    rate limit, an `HttpCache` TTL with ETag, 429/5xx backoff, and timeouts.
+  - Adapters run only in the worker, never in Next route handlers.
+- **Per-source rules.**
+  - SEC EDGAR needs `SEC_USER_AGENT` and throws `AdapterNotConfiguredError` without it.
+  - Google News and GDELT only run for real (non-demo) accounts.
+  - Job boards roll up into one hiring signal per practice per ISO week, plus job-post evidence.
+  - `crm-placeholder` must keep throwing until the company approves an integration.
+- **Worker scheduler** (`src/worker/scheduler.ts`):
+  - It runs on the `scheduler.intervalMinutes` interval.
+  - Failing adapters back off exponentially, up to 6 hours.
+  - "Fetch now" is a `JobRequest` of kind `fetch-now`, created via `/api/sources/fetch` or `/api/jobs`.
+  - The demo simulator (adapter id `seed`) adds synthetic signals for demo accounts every 3 minutes.
+  - Other jobs: `rescore-signals` (hourly) and `retag-signals` (after rule or relevance edits).
+- **SSE.** `/api/stream/signals` tails `Signal.createdAt` and `Notification.createdAt` by cursor, ignoring
+  future-dated rows. The client side is `LiveSignalsProvider` in the app shell; subscribe with `useLiveSignals()`.
+  New rows queue behind a "N new signals" banner instead of reflowing the feed.
+- **Practice filtering** uses `Signal.tagIndex` (",a,b,") with `contains`, because JSON-array filters aren't
+  portable. Keep it in sync with `toTagIndex()`.
+- **Demand gen.**
+  - The recommender is pure and explainable: every point comes from a `Reason` (`src/lib/demand-gen/recommender.ts`).
+  - Keyword matches are whole-word.
+  - `launchPlay()` creates a Campaign plus one planned Touch per sequence step.
+  - The message builder is template-only (`src/lib/demand-gen/messages.ts`). Missing variables render as
+    `[brackets]` and are listed.
+  - `AiProvider` (`src/lib/ai/provider.ts`) is `nullAiProvider`, which is disabled. Nothing is ever sent.
+- **Account pickers inside dialogs** must use `AccountPicker`. It renders in a portal so results are never clipped.
+- **E2E tests** reseed the demo data in `e2e/global-setup.ts`, so tests may create data freely.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -151,5 +196,5 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 0: plan
 - [x] Phase 1: foundation (shell, registry, schema, seed, settings skeleton, search, worker skeleton)
 - [x] Phase 2: Command Home grid + saved layouts, Account 360 (all tabs), Opportunities (Kanban, table, forecast, analytics), CSV import
-- [ ] Phase 3: adapters, scheduler, SSE, tagging/scoring UI, demand gen
+- [x] Phase 3: public adapters, worker scheduler, SSE live feed, tagging/relevance editors, Live Signals, Demand Gen
 - [ ] Phase 4: exports, sandbox stub, Presentation Mode polish, performance and a11y pass, docs

@@ -56,6 +56,24 @@ Browser ──TanStack Query──▶ Next.js route handlers (/api/*, Zod-valida
 - **Theming.** Design tokens live in `src/app/globals.css`, with light and dark modes plus 5 accent presets. All
   branding is in `src/config/theme.ts`. Chart series colors are a fixed, colorblind-validated palette.
 
+## Live data (public sources only)
+
+| Source             | Applies to                         | Notes                                                                                                    |
+| ------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Google News RSS    | Real accounts (toggle per account) | Unofficial endpoint; for personal research use. Rate-limited to 1 request / 2 s and cached for 30 min.   |
+| Custom RSS         | Accounts with feeds you add        | For company newsrooms and trade press.                                                                   |
+| SEC EDGAR          | Accounts with a ticker             | Requires `SEC_USER_AGENT` in `.env.local`. Resolves ticker → CIK, then reads 8-K, 10-K and 10-Q filings. |
+| Greenhouse / Lever | Accounts with a board slug         | Hiring roll-ups, plus initiative and tech-stack evidence that links to the job post.                     |
+| GDELT              | Real accounts (off by default)     | Strict limit of 1 request / 5 s.                                                                         |
+| Manual             | Any account                        | Paste a URL and add notes.                                                                               |
+| Demo simulator     | Fictional demo accounts            | Makes the live feed work offline.                                                                        |
+
+How sources run:
+
+- The worker fetches on a schedule (every 30 minutes by default) and backs off when a source keeps failing.
+- Use **Fetch now** in Live Signals or Settings → Data sources to run immediately.
+- Set `PUBLIC_FETCH_ENABLED=false` to stop all outbound requests.
+
 ## Keyboard
 
 - `⌘K` / `Ctrl+K`: command palette (jump to an account, search, create, run actions)
@@ -64,11 +82,11 @@ Browser ──TanStack Query──▶ Next.js route handlers (/api/*, Zod-valida
 
 ## Status
 
-| Phase                                                           | Status  |
-| --------------------------------------------------------------- | ------- |
-| 1. Foundation (shell, registry, schema, seed, settings, search) | ✅      |
-| 2. Command Home grid, Account 360, Opportunities                | ✅      |
-| 3. Public adapters, SSE live feed, demand gen                   | Next    |
-| 4. Exports, sandbox stub, presentation and performance polish   | Planned |
+| Phase                                                           | Status |
+| --------------------------------------------------------------- | ------ |
+| 1. Foundation (shell, registry, schema, seed, settings, search) | ✅     |
+| 2. Command Home grid, Account 360, Opportunities                | ✅     |
+| 3. Public adapters, SSE live feed, demand gen                   | ✅     |
+| 4. Exports, sandbox stub, presentation and performance polish   | Next   |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

@@ -76,7 +76,13 @@ export function PlanTab({ d }: { d: Account360 }) {
               key={o.id}
               item={o}
               depth={0}
-              h={{ update: update.mutate, create: create.mutate, remove: remove.mutate, children, now }}
+              h={{
+                update: update.mutate,
+                create: create.mutate,
+                remove: remove.mutate,
+                children,
+                now,
+              }}
             />
           ))}
         </ul>

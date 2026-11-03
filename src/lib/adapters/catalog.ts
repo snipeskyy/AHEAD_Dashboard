@@ -63,9 +63,10 @@ export const SOURCE_CATALOG: SourceCatalogEntry[] = [
   },
   {
     id: "seed",
-    label: "Demo seed",
+    label: "Demo live simulator",
     kind: "seed",
-    description: "Deterministic fictional demo data.",
+    description:
+      "Emits occasional synthetic signals for fictional demo accounts so the live feed works offline.",
     defaultEnabled: true,
   },
   {

@@ -10,7 +10,7 @@ import { DEFAULT_PRACTICE_AREAS } from "../../src/config/practice-areas";
 import { computeScoresForAccounts } from "../../src/lib/scoring/account-scores";
 import { computeRelevance } from "../../src/lib/scoring/relevance";
 import { createSqliteSearchProvider } from "../../src/lib/search/sqlite-provider";
-import { tagText } from "../../src/lib/tagging/rules";
+import { tagText, toTagIndex } from "../../src/lib/tagging/rules";
 import {
   generateAccounts,
   generateContacts,
@@ -123,11 +123,12 @@ export async function runSeed(prisma: PrismaClient): Promise<string> {
       publishedAt,
       dedupeHash: createHash("sha1").update(`seed:${i}:${content.title}`).digest("hex"),
       practiceTags: tags.tags,
+      tagIndex: toTagIndex(tags.tags),
       relevance: rel.value,
       relevanceParts: { ...rel.parts },
       read: ageDays > 3 ? rng.bool(0.85) : rng.bool(0.2),
       starred: rng.bool(0.02),
-      createdAt: new Date(publishedAt.getTime() + rng.int(5, 90) * 60_000),
+      createdAt: new Date(Math.min(now.getTime(), publishedAt.getTime() + rng.int(5, 90) * 60_000)),
       isDemo: true,
     });
   }

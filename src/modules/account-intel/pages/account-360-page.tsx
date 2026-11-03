@@ -21,6 +21,7 @@ import { ApiError } from "@/lib/api-client";
 import { CreateOppDialog } from "@/modules/opportunities/components/create-opp-dialog";
 import { useUiStore } from "@/stores/ui-store";
 import { TierBadge } from "../components/account-columns";
+import { AccountSources } from "../components/account-sources";
 import { ActivityTab } from "../components/tabs/activity-tab";
 import { CommitteeTab } from "../components/tabs/committee-tab";
 import { IntelligenceTab } from "../components/tabs/intelligence-tab";
@@ -167,7 +168,12 @@ export default function Account360Page({ params }: { params: Record<string, stri
         {tab === "intelligence" && <IntelligenceTab d={d} />}
         {tab === "committee" && <CommitteeTab d={d} />}
         {tab === "whitespace" && <WhitespaceTab d={d} />}
-        {tab === "signals" && <SignalsTab accountId={a.id} />}
+        {tab === "signals" && (
+          <div className="grid gap-4">
+            <AccountSources d={d} />
+            <SignalsTab accountId={a.id} />
+          </div>
+        )}
         {tab === "opportunities" && <OppsTab accountId={a.id} accountName={a.name} />}
         {tab === "activity" && <ActivityTab accountId={a.id} />}
         {tab === "notes" && (

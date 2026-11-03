@@ -1,9 +1,12 @@
 "use client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNowStrict } from "date-fns";
+import { RefreshCw } from "lucide-react";
 import { CircleAlert, CircleCheck, CircleDashed, CircleMinus, CircleX } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { SchedulerInterval } from "./scheduler-interval";
 import { Switch } from "@/components/ui/switch";
 import { ErrorState, CardSkeleton } from "@/components/states";
 import { useSaveSetting, useSetting } from "@/hooks/use-setting";
@@ -35,9 +38,21 @@ export function SourceSettings() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["sources"],
     queryFn: () =>
-      api<{ intervalMinutes: number; publicFetchEnabled: boolean; sources: SourceStatus[] }>(
-        "/api/sources",
-      ),
+      api<{
+        fetching: boolean;
+        intervalMinutes: number;
+        publicFetchEnabled: boolean;
+        sources: SourceStatus[];
+      }>("/api/sources"),
+    refetchInterval: (q) => (q.state.data?.fetching ? 3000 : 30_000),
+  });
+  const fetchNow = useMutation({
+    mutationFn: (adapterId?: string) =>
+      api("/api/sources/fetch", { method: "POST", json: adapterId ? { adapterId } : {} }),
+    onSuccess: () => {
+      toast.success("Fetch queued — the worker will pick it up in a moment");
+      qc.invalidateQueries({ queryKey: ["sources"] });
+    },
   });
   const { data: enabled = {} } = useSetting("sources.enabled");
   const save = useSaveSetting("sources.enabled");
@@ -47,6 +62,7 @@ export function SourceSettings() {
 
   return (
     <div className="grid gap-6">
+      <SchedulerInterval fetching={data.fetching} onFetchAll={() => fetchNow.mutate(undefined)} />
       <SettingsSection
         title="Data sources"
         description={
@@ -93,9 +109,20 @@ export function SourceSettings() {
                     </p>
                   )}
                 </div>
+                {s.kind !== "private-future" && s.kind !== "manual" && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    disabled={!s.enabled || data.fetching || fetchNow.isPending}
+                    onClick={() => fetchNow.mutate(s.id)}
+                    aria-label={`Fetch ${s.label} now`}
+                  >
+                    <RefreshCw className={data.fetching ? "animate-spin" : ""} /> Fetch
+                  </Button>
+                )}
                 <Switch
                   checked={s.enabled}
-                  disabled={s.kind === "private-future" || s.kind === "seed"}
+                  disabled={s.kind === "private-future"}
                   aria-label={`Enable ${s.label}`}
                   onCheckedChange={(v) =>
                     save.mutate(

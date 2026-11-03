@@ -116,6 +116,7 @@ model Signal {
   publishedAt    DateTime
   dedupeHash     String   @unique
   practiceTags   Json // string[]
+  tagIndex       String   @default("") // ",ai-infra,cloud," — portable LIKE filter (Json array filters aren't portable)
   relevance      Float
   relevanceParts Json // { recency, sourceWeight, practiceMatch, tierFactor }
   read           Boolean  @default(false)
@@ -130,6 +131,8 @@ model Signal {
   @@index([publishedAt])
   @@index([relevance])
   @@index([createdAt])
+  @@index([source])
+  @@index([type])
 }
 
 model Opportunity {

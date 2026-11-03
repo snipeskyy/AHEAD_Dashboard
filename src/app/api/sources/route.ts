@@ -18,7 +18,11 @@ export const GET = handler(async () => {
     SEC_USER_AGENT: Boolean(process.env.SEC_USER_AGENT?.trim()),
     PUBLIC_FETCH_ENABLED: process.env.PUBLIC_FETCH_ENABLED !== "false",
   };
+  const pending = await db.jobRequest.count({
+    where: { kind: "fetch-now", status: { in: ["pending", "running"] } },
+  });
   return json({
+    fetching: pending > 0,
     intervalMinutes: interval,
     publicFetchEnabled: env.PUBLIC_FETCH_ENABLED,
     sources: SOURCE_CATALOG.map((s, i) => {
@@ -31,7 +35,7 @@ export const GET = handler(async () => {
         status:
           s.kind === "private-future"
             ? "not-configured"
-            : s.kind !== "public"
+            : s.kind === "manual"
               ? "available"
               : missing
                 ? "needs-config"

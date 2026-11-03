@@ -169,3 +169,6 @@ export function tagText(text: string, rules: TaggingRule[] = DEFAULT_TAGGING_RUL
   const tags = [...new Set(hits.map((h) => h.practiceArea))];
   return { tags, hits };
 }
+
+/** Denormalized ",tag1,tag2," string for portable LIKE filtering (see Signal.tagIndex). */
+export const toTagIndex = (tags: string[]) => (tags.length ? `,${tags.join(",")},` : "");

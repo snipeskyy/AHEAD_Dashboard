@@ -1,0 +1,74 @@
+[
+  {
+    "text": "Customer Success Manager",
+    "hostedUrl": "https://jobs.lever.co/example/0",
+    "createdAt": 1788199939703,
+    "categories": {
+      "team": "Customer Success Team",
+      "location": "Atlanta, Georgia"
+    }
+  },
+  {
+    "text": "Dentist",
+    "hostedUrl": "https://jobs.lever.co/example/1",
+    "createdAt": 1787600587936,
+    "categories": {
+      "team": "People",
+      "location": "Houston, TX"
+    }
+  },
+  {
+    "text": "Director of Diversity, Equity, and Inclusion",
+    "hostedUrl": "https://jobs.lever.co/example/2",
+    "createdAt": 1718633877107,
+    "categories": {
+      "team": "Executive",
+      "location": "London, UK"
+    }
+  },
+  {
+    "text": "Sales Engineer",
+    "hostedUrl": "https://jobs.lever.co/example/3",
+    "createdAt": 1764105683926,
+    "categories": {
+      "team": "Sales Engineering",
+      "location": "New York, New York"
+    }
+  },
+  {
+    "text": "Sales Engineer AH",
+    "hostedUrl": "https://jobs.lever.co/example/4",
+    "createdAt": 1788288308535,
+    "categories": {
+      "team": "Special Sales Development",
+      "location": "Atlanta, Georgia"
+    }
+  },
+  {
+    "text": "SOC Analyst II",
+    "hostedUrl": "https://jobs.lever.co/example/90",
+    "createdAt": 1793000000000,
+    "categories": {
+      "team": "Security",
+      "location": "Remote"
+    }
+  },
+  {
+    "text": "Zero Trust Security Engineer",
+    "hostedUrl": "https://jobs.lever.co/example/91",
+    "createdAt": 1793000000000,
+    "categories": {
+      "team": "Security",
+      "location": "Remote"
+    }
+  },
+  {
+    "text": "Incident Response Lead",
+    "hostedUrl": "https://jobs.lever.co/example/92",
+    "createdAt": 1793000000000,
+    "categories": {
+      "team": "Security",
+      "location": "Remote"
+    }
+  }
+]

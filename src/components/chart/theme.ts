@@ -39,7 +39,11 @@ export function readChartTheme(themeHint?: string): ChartTheme {
   const cs = getComputedStyle(document.documentElement);
   const v = (name: string, fb: string) => cs.getPropertyValue(name).trim() || fb;
   return {
-    mode: (themeHint ?? (document.documentElement.classList.contains("dark") ? "dark" : "light")) === "dark" ? "dark" : "light",
+    mode:
+      (themeHint ?? (document.documentElement.classList.contains("dark") ? "dark" : "light")) ===
+      "dark"
+        ? "dark"
+        : "light",
     surface: v("--chart-surface", FALLBACK.surface),
     ink: v("--chart-ink", FALLBACK.ink),
     ink2: v("--chart-ink-2", FALLBACK.ink2),
@@ -79,7 +83,9 @@ export function baseOption(t: ChartTheme) {
       textStyle: { color: t.ink, fontSize: 12, fontFamily: t.font },
       extraCssText: "box-shadow: 0 4px 16px rgba(0,0,0,0.12); border-radius: 6px;",
     },
+    // Hidden by default: a single series needs no legend box. Multi-series charts opt in with show: true.
     legend: {
+      show: false,
       textStyle: { color: t.ink2, fontSize: 11 },
       icon: "roundRect",
       itemWidth: 10,

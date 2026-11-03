@@ -1,0 +1,50 @@
+{
+  "cik": "0000000042",
+  "name": "HALVORSEN MUTUAL",
+  "filings": {
+    "recent": {
+      "accessionNumber": [
+        "0001104659-26-121809",
+        "0000018230-26-000052",
+        "0001104659-26-119134",
+        "0001104659-26-119132",
+        "0001104659-26-119131",
+        "0001104659-26-116198",
+        "0001104659-26-112893",
+        "0001104659-26-112891"
+      ],
+      "filingDate": [
+        "2026-11-03",
+        "2026-10-29",
+        "2026-10-27",
+        "2026-10-27",
+        "2026-10-27",
+        "2026-10-15",
+        "2026-10-01",
+        "2026-10-01"
+      ],
+      "form": ["4", "8-K", "4", "4", "4", "8-K", "4", "4"],
+      "primaryDocument": [
+        "xslF345X06/tm2628874-1_4seq1.xml",
+        "hlvm-20261029.htm",
+        "xslF345X06/tm2628200-2_4seq1.xml",
+        "xslF345X06/tm2628200-4_4seq1.xml",
+        "xslF345X06/tm2628200-3_4seq1.xml",
+        "tm2627668d1_8k.htm",
+        "xslF345X06/tm2626848-2_4seq1.xml",
+        "xslF345X06/tm2626848-1_4seq1.xml"
+      ],
+      "primaryDocDescription": [
+        "OWNERSHIP DOCUMENT",
+        "8-K",
+        "OWNERSHIP DOCUMENT",
+        "OWNERSHIP DOCUMENT",
+        "OWNERSHIP DOCUMENT",
+        "FORM 8-K",
+        "OWNERSHIP DOCUMENT",
+        "OWNERSHIP DOCUMENT"
+      ],
+      "items": ["", "2.02,7.01,9.01", "", "", "", "5.02,8.01,9.01", "", ""]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "articles": [
+    {
+      "url": "https://news.example.com/halvorsen-ai",
+      "url_mobile": "",
+      "title": "Halvorsen Mutual expands GPU cluster for AI underwriting",
+      "seendate": "20261102T121500Z",
+      "socialimage": "",
+      "domain": "news.example.com",
+      "language": "English",
+      "sourcecountry": "United States"
+    },
+    {
+      "url": "https://trade.example.org/halvorsen-outage",
+      "url_mobile": "",
+      "title": "Halvorsen Mutual reports network outage",
+      "seendate": "20261101T080000Z",
+      "socialimage": "",
+      "domain": "trade.example.org",
+      "language": "English",
+      "sourcecountry": "United States"
+    }
+  ]
+}

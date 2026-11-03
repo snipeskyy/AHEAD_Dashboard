@@ -72,7 +72,10 @@ export function Chart({
   const mounted = useMounted();
   const [view, setView] = useState<"chart" | "table">("chart");
   // Re-read CSS tokens whenever the theme or accent changes.
-  const opt = useMemo(() => (mounted ? option(readChartTheme(resolvedTheme)) : null), [mounted, option, resolvedTheme]);
+  const opt = useMemo(
+    () => (mounted ? option(readChartTheme(resolvedTheme)) : null),
+    [mounted, option, resolvedTheme],
+  );
 
   return (
     <div className={cn("relative", className)}>

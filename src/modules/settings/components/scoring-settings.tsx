@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { useSaveSetting, useSetting } from "@/hooks/use-setting";
 import { api } from "@/lib/api-client";
 import { DEFAULT_HEALTH_WEIGHTS, type HealthWeights } from "@/lib/scoring/health";
+import { RelevanceSettings } from "./relevance-settings";
 import { SettingsSection } from "./section";
 
 const LABELS: Record<keyof HealthWeights, string> = {
@@ -22,7 +23,12 @@ const LABELS: Record<keyof HealthWeights, string> = {
 export function ScoringSettings() {
   const { data } = useSetting("scoring.health");
   // Keyed on the saved value so the editor re-initializes after saves / external changes.
-  return data ? <HealthWeightsEditor key={JSON.stringify(data)} saved={data} /> : null;
+  return (
+    <div className="grid gap-6">
+      {data && <HealthWeightsEditor key={JSON.stringify(data)} saved={data} />}
+      <RelevanceSettings />
+    </div>
+  );
 }
 
 function HealthWeightsEditor({ saved }: { saved: HealthWeights }) {
@@ -96,7 +102,7 @@ function HealthWeightsEditor({ saved }: { saved: HealthWeights }) {
       </SettingsSection>
       <SettingsSection
         title="Other scores"
-        description="Whitespace, relevance, and MEDDPICC formulas are shown alongside each score. Their editors arrive with their modules."
+        description="Whitespace and MEDDPICC formulas are shown alongside each score."
       >
         <ul className="text-muted-foreground grid gap-2 text-[13px]">
           <li>

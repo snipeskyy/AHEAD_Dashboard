@@ -1,0 +1,124 @@
+{
+  "jobs": [
+    {
+      "title": "Engineering Manager, Guest & Host",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/0",
+      "updated_at": "2026-09-29T20:00:54-04:00",
+      "location": {
+        "name": "London, United Kingdom"
+      }
+    },
+    {
+      "title": "Engineering Manager, Guest & Host (Host Listings & Quality)",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/1",
+      "updated_at": "2026-09-29T20:00:54-04:00",
+      "location": {
+        "name": "United States"
+      }
+    },
+    {
+      "title": "Lead Platform Manager, Tech Foundations",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/2",
+      "updated_at": "2026-09-29T20:00:54-04:00",
+      "location": {
+        "name": "United States"
+      }
+    },
+    {
+      "title": "Machine Learning Engineer, Assistance Engineering",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/3",
+      "updated_at": "2026-09-29T20:00:54-04:00",
+      "location": {
+        "name": "China"
+      }
+    },
+    {
+      "title": "Machine Learning Engineer, Assistance Engineering",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/4",
+      "updated_at": "2026-10-26T18:52:31-04:00",
+      "location": {
+        "name": "Remote-USA"
+      }
+    },
+    {
+      "title": "Manager, Engineering, Dev AI",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/5",
+      "updated_at": "2026-10-22T19:06:18-04:00",
+      "location": {
+        "name": "United States"
+      }
+    },
+    {
+      "title": "Operations Engineer, BizTech",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/6",
+      "updated_at": "2026-10-12T16:43:20-04:00",
+      "location": {
+        "name": "Remote- USA"
+      }
+    },
+    {
+      "title": "Operations Engineer, Tech Foundations",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/7",
+      "updated_at": "2026-10-30T07:27:44-04:00",
+      "location": {
+        "name": "Remote - India"
+      }
+    },
+    {
+      "title": "AirCover Specialist, Claims Experience",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/8",
+      "updated_at": "2026-11-02T22:52:56-05:00",
+      "location": {
+        "name": "Japan"
+      }
+    },
+    {
+      "title": "AirCover Specialist, Claims Experience",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/9",
+      "updated_at": "2026-10-28T10:52:05-04:00",
+      "location": {
+        "name": "Canada"
+      }
+    },
+    {
+      "title": "Senior GPU Infrastructure Engineer",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/90",
+      "updated_at": "2026-11-01T10:00:00-05:00",
+      "location": {
+        "name": "Remote"
+      }
+    },
+    {
+      "title": "HPC Cluster Engineer (GPU)",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/91",
+      "updated_at": "2026-11-01T10:00:00-05:00",
+      "location": {
+        "name": "Remote"
+      }
+    },
+    {
+      "title": "Machine Learning Infrastructure Engineer",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/92",
+      "updated_at": "2026-11-01T10:00:00-05:00",
+      "location": {
+        "name": "Remote"
+      }
+    },
+    {
+      "title": "ServiceNow Developer",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/93",
+      "updated_at": "2026-11-01T10:00:00-05:00",
+      "location": {
+        "name": "Remote"
+      }
+    },
+    {
+      "title": "Platform Engineer, Kubernetes",
+      "absolute_url": "https://boards.greenhouse.io/example/jobs/94",
+      "updated_at": "2026-11-01T10:00:00-05:00",
+      "location": {
+        "name": "Remote"
+      }
+    }
+  ]
+}
