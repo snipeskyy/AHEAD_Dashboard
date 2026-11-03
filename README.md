@@ -67,8 +67,8 @@ Browser ──TanStack Query──▶ Next.js route handlers (/api/*, Zod-valida
 | Phase                                                           | Status  |
 | --------------------------------------------------------------- | ------- |
 | 1. Foundation (shell, registry, schema, seed, settings, search) | ✅      |
-| 2. Command Home grid, Account 360, Opportunities                | Next    |
-| 3. Public adapters, SSE live feed, demand gen                   | Planned |
+| 2. Command Home grid, Account 360, Opportunities                | ✅      |
+| 3. Public adapters, SSE live feed, demand gen                   | Next    |
 | 4. Exports, sandbox stub, presentation and performance polish   | Planned |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

@@ -58,6 +58,34 @@ export const SETTINGS = {
     schema: z.record(z.string(), z.record(z.string(), z.unknown())),
     defaults: {} as Record<string, Record<string, unknown>>,
   },
+  "pipeline.lists": {
+    schema: z.object({
+      partners: z.array(z.string().min(1)).max(100),
+      competitors: z.array(z.string().min(1)).max(100),
+    }),
+    defaults: {
+      partners: [
+        "Compute OEM A",
+        "Compute OEM B",
+        "Storage OEM",
+        "Networking OEM",
+        "Hyperscaler A",
+        "Hyperscaler B",
+        "Security ISV",
+        "ITSM Platform",
+        "GPU Vendor",
+        "Cooling Vendor",
+      ],
+      competitors: [
+        "National VAR",
+        "Global SI",
+        "Regional MSP",
+        "OEM Direct",
+        "Boutique Consultancy",
+        "Cloud Native Partner",
+      ],
+    },
+  },
   "ui.lastSeenAt": { schema: z.string().datetime().nullable(), defaults: null as string | null },
 } as const;
 

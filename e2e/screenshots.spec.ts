@@ -4,9 +4,18 @@ import { test, expect, type Page } from "@playwright/test";
 const PAGES = [
   { name: "home", path: "/" },
   { name: "accounts", path: "/accounts" },
-  { name: "account-360", path: "/accounts/demo-acc-001" },
+  { name: "account-360", path: "/accounts/demo-acc-008" },
+  { name: "account-360-intelligence", path: "/accounts/demo-acc-008?tab=intelligence" },
+  { name: "account-360-committee", path: "/accounts/demo-acc-008?tab=committee" },
+  { name: "account-360-whitespace", path: "/accounts/demo-acc-008?tab=whitespace" },
+  { name: "account-360-plan", path: "/accounts/demo-acc-021?tab=plan" },
+  { name: "accounts-import", path: "/accounts/import" },
   { name: "signals", path: "/signals" },
   { name: "opportunities", path: "/opportunities" },
+  { name: "opportunities-table", path: "/opportunities?view=table" },
+  { name: "opportunities-forecast", path: "/opportunities?view=forecast" },
+  { name: "opportunities-analytics", path: "/opportunities?view=analytics" },
+  { name: "opportunity-detail", path: "/opportunities?focus=demo-opp-0005" },
   { name: "demand-gen", path: "/demand-gen" },
   { name: "exports", path: "/exports" },
   { name: "sandbox", path: "/sandbox" },
@@ -28,6 +37,7 @@ for (const theme of ["light", "dark"] as const) {
         await page.goto(p.path);
         await expect(page.locator("main h1").first()).toBeVisible();
         await page.waitForLoadState("networkidle");
+        await page.waitForTimeout(400); // let charts finish their entry animation
         await page.screenshot({ path: `screenshots/${theme}/${p.name}.png`, fullPage: true });
       });
     }

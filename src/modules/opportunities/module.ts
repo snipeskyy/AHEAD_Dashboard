@@ -18,7 +18,48 @@ const opportunities: AccModule = {
       load: () => import("./pages/opportunities-page"),
     },
   ],
-  widgets: [],
+  widgets: [
+    {
+      id: "opportunities.pipeline-by-stage",
+      title: "Pipeline by stage",
+      description: "Open amount per stage (funnel)",
+      defaultSize: "md",
+      sizes: ["sm", "md", "lg"],
+      load: () => import("./widgets/pipeline-by-stage"),
+    },
+    {
+      id: "opportunities.pipeline-by-practice",
+      title: "Pipeline by practice area",
+      description: "Open amount per practice area",
+      defaultSize: "md",
+      sizes: ["md", "lg"],
+      load: () => import("./widgets/pipeline-by-practice"),
+    },
+    {
+      id: "opportunities.forecast-vs-target",
+      title: "Forecast vs target",
+      description: "Closed won, commit, best case and pipeline by quarter",
+      defaultSize: "lg",
+      sizes: ["md", "lg", "xl"],
+      load: () => import("./widgets/forecast"),
+    },
+    {
+      id: "opportunities.upcoming-closes",
+      title: "Upcoming close dates",
+      description: "Open deals closing in the next 45 days",
+      defaultSize: "md",
+      sizes: ["sm", "md", "lg"],
+      load: () => import("./widgets/upcoming-closes"),
+    },
+    {
+      id: "opportunities.stalled-deals",
+      title: "Stalled deals",
+      description: "No stage change beyond the stalled threshold",
+      defaultSize: "md",
+      sizes: ["sm", "md", "lg"],
+      load: () => import("./widgets/stalled-deals"),
+    },
+  ],
   settingsSchema: z.object({
     stalledDays: z
       .number()
@@ -30,7 +71,7 @@ const opportunities: AccModule = {
     quarterlyTarget: z
       .number()
       .min(0)
-      .default(6_000_000)
+      .default(30_000_000)
       .describe("Quarterly bookings target (USD)"),
     coverageTarget: z.number().min(1).max(6).default(3).describe("Pipeline coverage ratio target"),
   }),

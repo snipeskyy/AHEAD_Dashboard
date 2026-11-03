@@ -105,6 +105,35 @@ migrations, because Prisma would otherwise report drift.
 - The seed drops the index before bulk inserts and rebuilds it afterward.
 - If you add a searchable entity, extend `SOURCES` in `src/lib/search/sqlite-fts.sql.ts`.
 
+## Phase 2 conventions
+
+- **Widgets.** A widget component receives `{ size, height }`, where `height` is the body height in px. Charts and
+  lists must fit that height and scroll internally.
+  - Widgets are declared in the owning module's `widgets` array and lazy-loaded by `WidgetFrame`.
+  - Layouts are stored as `{ i, widgetId, x, y, w, h }[]` on a 12-column grid with 56px rows (`src/lib/dashboard/layouts.ts`).
+  - The three default layouts are created on first `GET /api/layouts`.
+- **One filter row.** On Opportunities, the filter bar drives every view. KPIs, forecast and analytics are computed
+  client-side from the filtered rows with the pure functions in `src/lib/pipeline/analytics.ts`.
+- **Opportunity writes go through `updateOpportunity()`** (`src/lib/server/opportunities.ts`). It enforces:
+  - stage history rows
+  - default probability and forecast category
+  - close-date push counting
+  - practice-status sync (open ⇒ ActiveOpp, won ⇒ Delivered)
+  - activity log entries
+  - account rescoring
+- **Real-account intel policy.** `intelPolicyViolation()` in `src/lib/intel/policy.ts` guards every initiative and
+  tech-stack write. User-entered items are always stored as `source = "user-hypothesis"`.
+  - Opening angles and pain points are derived only from evidence (initiatives and signals), and each one links to
+    its evidence (`src/lib/intel/angles.ts`).
+- **Account import.** Accounts are imported through `createRealAccounts()`, which takes public identifiers only. It
+  normalizes domains and tickers, dedupes by name or domain, sets `isDemo = false`, and generates no intelligence.
+  An example file is at `examples/target-accounts.csv`.
+- **Lists.** Large lists use the virtualized `DataTable`. Signals are cursor-paginated server-side
+  (`querySignals`). Opportunities (600) and accounts (150) load once and are filtered client-side.
+- **Layout safety.** A base CSS rule gives implicit grids a `minmax(0, 1fr)` column so content can't overflow on
+  mobile.
+- **Verification builds.** Run `NEXT_DIST_DIR=.next-build npm run build` so a build can run while `next dev` is up.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -121,6 +150,6 @@ migrations, because Prisma would otherwise report drift.
 
 - [x] Phase 0: plan
 - [x] Phase 1: foundation (shell, registry, schema, seed, settings skeleton, search, worker skeleton)
-- [ ] Phase 2: Command Home grid, Account 360, Opportunities
+- [x] Phase 2: Command Home grid + saved layouts, Account 360 (all tabs), Opportunities (Kanban, table, forecast, analytics), CSV import
 - [ ] Phase 3: adapters, scheduler, SSE, tagging/scoring UI, demand gen
 - [ ] Phase 4: exports, sandbox stub, Presentation Mode polish, performance and a11y pass, docs

@@ -239,6 +239,11 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+  /* Implicit single-column grids never grow past their container (prevents mobile overflow);
+     explicit grid-cols-* utilities still override this zero-specificity rule. */
+  :where(.grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .tabular {
     font-variant-numeric: tabular-nums;
   }
@@ -256,4 +261,14 @@
   [data-print-hide="true"] {
     display: none !important;
   }
+}
+
+/* react-grid-layout: themed placeholder + resize handle */
+.react-grid-item.react-grid-placeholder {
+  background: var(--primary) !important;
+  opacity: 0.12 !important;
+  border-radius: var(--radius);
+}
+.react-grid-item > .react-resizable-handle::after {
+  border-color: var(--muted-foreground) !important;
 }

@@ -51,11 +51,15 @@ test.describe("app shell", () => {
   });
 
   test("feature flag hides a module from nav and routing", async ({ page, request }) => {
-    await request.put("/api/settings/featureFlags", { data: { value: { "module.sandbox": false } } });
+    await request.put("/api/settings/featureFlags", {
+      data: { value: { "module.sandbox": false } },
+    });
     try {
       await page.goto("/");
       await expect(page.getByRole("link", { name: "Opportunities" }).first()).toBeVisible();
-      await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /DC Sandbox/ })).toHaveCount(0);
+      await expect(
+        page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /DC Sandbox/ }),
+      ).toHaveCount(0);
       const res = await page.goto("/sandbox");
       expect(res?.status()).toBe(404);
     } finally {

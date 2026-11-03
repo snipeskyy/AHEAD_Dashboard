@@ -19,7 +19,24 @@ const accountIntel: AccModule = {
     },
     { path: "accounts/[id]", title: "Account 360", load: () => import("./pages/account-360-page") },
   ],
-  widgets: [],
+  widgets: [
+    {
+      id: "account-intel.health-heatmap",
+      title: "Account health heatmap",
+      description: "Accounts × health dimensions",
+      defaultSize: "lg",
+      sizes: ["md", "lg", "xl"],
+      load: () => import("./widgets/health-heatmap"),
+    },
+    {
+      id: "account-intel.top-movers",
+      title: "Top movers this week",
+      description: "Biggest changes in pipeline and signals",
+      defaultSize: "md",
+      sizes: ["sm", "md", "lg"],
+      load: () => import("./widgets/top-movers"),
+    },
+  ],
   settingsSchema: z.object({
     staleTouchDays: z
       .number()

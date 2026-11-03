@@ -19,7 +19,16 @@ const signals: AccModule = {
       load: () => import("./pages/signals-page"),
     },
   ],
-  widgets: [],
+  widgets: [
+    {
+      id: "signals.signal-feed",
+      title: "Signal feed",
+      description: "Highest-relevance signals this week",
+      defaultSize: "md",
+      sizes: ["sm", "md", "lg"],
+      load: () => import("./widgets/signal-feed"),
+    },
+  ],
   settingsSchema: z.object({
     alertThreshold: z
       .number()

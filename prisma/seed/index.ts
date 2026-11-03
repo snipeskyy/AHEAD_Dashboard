@@ -102,7 +102,7 @@ export async function runSeed(prisma: PrismaClient): Promise<string> {
     const a = rng.weighted(accountWeights);
     const content = generateSignalContent(rng, a.name, a.industry);
     // Skew toward recent: ~3% in the last 24h, long tail to 180 days.
-    const ageDays = rng.bool(0.03) ? rng.float(0, 1) : Math.pow(rng.next(), 1.7) * 180;
+    const ageDays = rng.bool(0.01) ? rng.float(0, 1) : Math.pow(rng.next(), 1.25) * 180;
     const publishedAt = new Date(now.getTime() - ageDays * DAY);
     const tags = tagText(`${content.title} ${content.summary}`);
     const rel = computeRelevance({
@@ -236,20 +236,18 @@ export async function runSeed(prisma: PrismaClient): Promise<string> {
         text: rng.pick(PLAN_TEMPLATES.strategies),
         sortOrder: 0,
       });
-      rng
-        .sample(PLAN_TEMPLATES.actions, 2)
-        .forEach((act, ai) =>
-          planRows.push({
-            accountId: a.id,
-            kind: "action",
-            parentId: stratId,
-            text: act,
-            owner: rng.pick(["Me", "SE", "Partner", "Practice lead"]),
-            dueDate: daysFrom(anchor, rng.int(-10, 60)),
-            status: rng.pick(["open", "open", "done"]),
-            sortOrder: ai,
-          }),
-        );
+      rng.sample(PLAN_TEMPLATES.actions, 2).forEach((act, ai) =>
+        planRows.push({
+          accountId: a.id,
+          kind: "action",
+          parentId: stratId,
+          text: act,
+          owner: rng.pick(["Me", "SE", "Partner", "Practice lead"]),
+          dueDate: daysFrom(anchor, rng.int(-10, 60)),
+          status: rng.pick(["open", "open", "done"]),
+          sortOrder: ai,
+        }),
+      );
     });
   }
   await prisma.accountPlanItem.createMany({ data: planRows });

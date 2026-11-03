@@ -6,6 +6,8 @@ interface UiState {
   sidebarCollapsed: boolean;
   presentationMode: boolean;
   commandOpen: boolean;
+  activeLayoutId: string | null;
+  setActiveLayoutId: (id: string | null) => void;
   noteDialog: { open: boolean; entityType?: string; entityId?: string };
   toggleSidebar: () => void;
   setPresentationMode: (v: boolean) => void;
@@ -20,6 +22,8 @@ export const useUiStore = create<UiState>()(
       sidebarCollapsed: false,
       presentationMode: false,
       commandOpen: false,
+      activeLayoutId: null,
+      setActiveLayoutId: (id) => set({ activeLayoutId: id }),
       noteDialog: { open: false },
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setPresentationMode: (v) => set({ presentationMode: v }),
@@ -35,6 +39,7 @@ export const useUiStore = create<UiState>()(
       partialize: (s) => ({
         sidebarCollapsed: s.sidebarCollapsed,
         presentationMode: s.presentationMode,
+        activeLayoutId: s.activeLayoutId,
       }),
     },
   ),

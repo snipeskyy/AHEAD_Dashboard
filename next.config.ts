@@ -4,6 +4,8 @@ import type { NextConfig } from "next";
 // app; data flows through route handlers + TanStack Query. See CLAUDE.md.
 const nextConfig: NextConfig = {
   devIndicators: false,
+  // Lets CI/verification builds run alongside `next dev` (e.g. NEXT_DIST_DIR=.next-build).
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   turbopack: {
     rules: {
       "*.css": {

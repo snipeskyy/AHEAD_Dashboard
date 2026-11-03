@@ -17,13 +17,19 @@ export interface ModuleRoute {
   load: () => Promise<{ default: ComponentType<{ params: Record<string, string> }> }>;
 }
 
+export interface WidgetProps {
+  size: WidgetSize;
+  height: number;
+}
+
 export interface WidgetDefinition {
   id: string; // globally unique: "<module-id>.<widget>"
   title: string;
   description: string;
   defaultSize: WidgetSize;
   sizes: WidgetSize[];
-  load: () => Promise<{ default: ComponentType<{ size: WidgetSize }> }>;
+  /** Widget body receives its grid size and available body height in px. */
+  load: () => Promise<{ default: ComponentType<WidgetProps> }>;
 }
 
 /** Visibility drives redaction: customer-facing exports strip "internal" fields. */

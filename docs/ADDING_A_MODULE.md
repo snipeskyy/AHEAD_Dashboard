@@ -63,7 +63,7 @@ const competitiveWatch: AccModule = {
       description: "Mentions in the last 30 days",
       defaultSize: "md",
       sizes: ["sm", "md", "lg"],
-      load: () => import("./widgets/mentions-widget"),
+      load: () => import("./widgets/mentions-widget"), // default export: (props: WidgetProps) => JSX
     },
   ],
   settingsSchema: z.object({
@@ -113,6 +113,39 @@ export default function CompetitivePage() {
   );
 }
 ```
+
+### 2b. Add the widget
+
+`src/modules/competitive-watch/widgets/mentions-widget.tsx`. A widget receives `{ size, height }`, where `height` is
+the usable body height in pixels. Size your chart or list to it.
+
+```tsx
+"use client";
+import { Chart, baseOption, categoryAxis, valueAxis } from "@/components/chart";
+import type { WidgetProps } from "@/modules/types";
+
+export default function MentionsWidget({ height }: WidgetProps) {
+  const data = [{ name: "Global SI", n: 4 }]; // fetch with TanStack Query in real code
+  return (
+    <Chart
+      label="Competitor mentions, last 30 days"
+      height={height}
+      table={{ columns: ["Competitor", "Mentions"], rows: data.map((d) => [d.name, d.n]) }}
+      option={(t) => ({
+        ...baseOption(t),
+        xAxis: categoryAxis(
+          t,
+          data.map((d) => d.name),
+        ),
+        yAxis: valueAxis(t),
+        series: [{ type: "bar", data: data.map((d) => d.n), itemStyle: { color: t.series[0] } }],
+      })}
+    />
+  );
+}
+```
+
+The widget now appears in **Command Home → Customize → Add widget**.
 
 ### 3. Add data access (optional)
 

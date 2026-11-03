@@ -23,7 +23,7 @@ export function generateTouch(
   campaignId: string | null,
 ) {
   const future = rng.bool(0.18);
-  const scheduledAt = daysFrom(anchor, future ? rng.int(0, 45) : -rng.int(0, 150));
+  const scheduledAt = daysFrom(anchor, future ? rng.int(1, 45) : -rng.int(1, 150));
   scheduledAt.setUTCHours(rng.int(13, 22), rng.pick([0, 15, 30, 45]), 0, 0);
   const completed = !future;
   return {

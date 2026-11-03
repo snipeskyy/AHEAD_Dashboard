@@ -8,6 +8,13 @@ export const STATUS_GAP: Record<PracticeStatus, number> = {
   Delivered: 0,
 };
 
+const STATUS_TEXT: Record<PracticeStatus, string> = {
+  NotEngaged: "Not engaged",
+  Exploring: "Exploring",
+  ActiveOpp: "Active opp",
+  Delivered: "Delivered",
+};
+
 export interface WhitespaceInput {
   practiceArea: string;
   label: string;
@@ -33,7 +40,7 @@ export function computeWhitespace(
     return {
       id: i.practiceArea,
       label: i.label,
-      input: `${i.status}, demand ${Math.round(demand * 100)}%`,
+      input: `${STATUS_TEXT[i.status]} · demand ${Math.round(demand * 100)}%`,
       score: clamp01((gap * (1 + 0.5 * demand)) / 1.5),
       weight: w(i.practiceArea),
       contribution: round1((raw / denom) * 100),

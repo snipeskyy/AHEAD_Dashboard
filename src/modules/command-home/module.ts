@@ -10,7 +10,24 @@ const commandHome: AccModule = {
   order: 0,
   status: "stable",
   routes: [{ path: "", title: "Command Home", nav: true, load: () => import("./pages/home-page") }],
-  widgets: [],
+  widgets: [
+    {
+      id: "command-home.next-best-actions",
+      title: "Next best actions",
+      description: "Prioritized actions with reasons",
+      defaultSize: "md",
+      sizes: ["sm", "md", "lg"],
+      load: () => import("./widgets/next-best-actions"),
+    },
+    {
+      id: "command-home.whats-changed",
+      title: "What changed since you last looked",
+      description: "Activity and new high-relevance signals",
+      defaultSize: "md",
+      sizes: ["sm", "md", "lg"],
+      load: () => import("./widgets/whats-changed"),
+    },
+  ],
   exportSections: [
     {
       id: "command-home.kpis",

@@ -29,6 +29,8 @@
     "start:web": "dotenv -e .env.local -- next start"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
     "@prisma/client": "6.19.3",
     "@tanstack/react-query": "^5.105.3",
     "@tanstack/react-table": "^8.21.3",
@@ -76,7 +78,6 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^5.1.0"
   }
 }
