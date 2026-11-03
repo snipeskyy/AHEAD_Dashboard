@@ -1,0 +1,370 @@
+// Account Command Center — Prisma schema.
+// Conventions (see CLAUDE.md):
+//  * Enum-like columns are String, validated by Zod enums in src/lib/domain/enums.ts
+//    (SQLite has no native enums; this stays Postgres-compatible).
+//  * List / structured columns use Json (supported on SQLite and Postgres).
+//  * isDemo marks synthetic seed rows so the UI can show the DEMO DATA badge.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id              String    @id @default(cuid())
+  name            String
+  domain          String?
+  ticker          String?
+  cik             String?
+  industry        String
+  subIndustry     String?
+  hq              String?
+  employeeBand    String?
+  revenueBand     String?
+  tier            String // Strategic | Growth | Maintain
+  ownerNotes      String?
+  healthScore     Float     @default(0)
+  whitespaceScore Float     @default(0)
+  isDemo          Boolean   @default(false)
+  sourceConfig    Json? // { googleNews, greenhouseSlug, leverSlug, rssFeeds[] }
+  lastTouchAt     DateTime?
+  nextTouchAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  contacts       Contact[]
+  initiatives    Initiative[]
+  techStack      TechStackHypothesis[]
+  signals        Signal[]
+  opportunities  Opportunity[]
+  touches        Touch[]
+  practiceStatus AccountPracticeStatus[]
+  planItems      AccountPlanItem[]
+  eventInvites   EventInvite[]
+  campaigns      Campaign[]
+
+  @@index([tier])
+  @@index([name])
+}
+
+model AccountPracticeStatus {
+  id           String  @id @default(cuid())
+  accountId    String
+  practiceArea String
+  status       String // NotEngaged | Exploring | ActiveOpp | Delivered
+  account      Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, practiceArea])
+}
+
+model Contact {
+  id          String  @id @default(cuid())
+  accountId   String
+  title       String
+  function    String
+  seniority   String // C-Level | VP | Director | Manager | IC
+  buyingRole  String // EconomicBuyer | Champion | Technical | Influencer | Blocker
+  displayName String? // user-entered only; never scraped or generated
+  reportsToId String?
+  engagement  String  @default("None") // None | Light | Engaged | Strong
+  account     Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+model Initiative {
+  id            String  @id @default(cuid())
+  accountId     String
+  title         String
+  description   String?
+  practiceAreas Json // string[]
+  source        String // seed | signal | filing | job-post | user-hypothesis
+  sourceUrl     String?
+  signalId      String?
+  confidence    Float
+  account       Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+model TechStackHypothesis {
+  id         String  @id @default(cuid())
+  accountId  String
+  category   String
+  technology String
+  evidence   String
+  sourceUrl  String?
+  source     String // seed | job-post | filing | news | user-hypothesis
+  confidence Float
+  account    Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+model Signal {
+  id             String   @id @default(cuid())
+  accountId      String
+  type           String
+  title          String
+  summary        String?
+  url            String?
+  source         String // adapter id
+  publishedAt    DateTime
+  dedupeHash     String   @unique
+  practiceTags   Json // string[]
+  relevance      Float
+  relevanceParts Json // { recency, sourceWeight, practiceMatch, tierFactor }
+  read           Boolean  @default(false)
+  starred        Boolean  @default(false)
+  dismissed      Boolean  @default(false)
+  inNextSummary  Boolean  @default(false)
+  isDemo         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, publishedAt])
+  @@index([publishedAt])
+  @@index([relevance])
+  @@index([createdAt])
+}
+
+model Opportunity {
+  id               String        @id @default(cuid())
+  accountId        String
+  name             String
+  practiceArea     String
+  stage            String
+  amount           Float
+  closeDate        DateTime
+  probability      Int
+  forecastCategory String // Pipeline | BestCase | Commit | Closed | Omitted
+  nextStep         String?
+  meddpicc         Json
+  partners         Json // string[]
+  competitors      Json // string[]
+  closeDatePushes  Int           @default(0)
+  stageChangedAt   DateTime
+  closedAt         DateTime?
+  sourceSignalId   String?
+  isDemo           Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  account          Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  stageHistory     StageChange[]
+
+  @@index([stage])
+  @@index([closeDate])
+  @@index([accountId])
+}
+
+model StageChange {
+  id            String      @id @default(cuid())
+  opportunityId String
+  fromStage     String?
+  toStage       String
+  changedAt     DateTime    @default(now())
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@index([opportunityId])
+}
+
+model Play {
+  id                 String     @id @default(cuid())
+  slug               String     @unique
+  name               String
+  practiceArea       String
+  targetPersonas     Json
+  triggerKeywords    Json
+  triggerSignalTypes Json
+  valueHypothesis    String
+  talkTrack          Json
+  sequence           Json // [{ day, channel, description }]
+  assetsNeeded       Json
+  successMetrics     Json
+  isDemo             Boolean    @default(false)
+  campaigns          Campaign[]
+}
+
+model Campaign {
+  id        String   @id @default(cuid())
+  name      String
+  accountId String?
+  playId    String?
+  status    String // planned | active | complete | paused
+  startDate DateTime
+  isDemo    Boolean  @default(false)
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  play      Play?    @relation(fields: [playId], references: [id])
+  touches   Touch[]
+}
+
+model Touch {
+  id             String    @id @default(cuid())
+  accountId      String
+  campaignId     String?
+  channel        String // email | linkedin | call | meeting | event | briefing
+  persona        String
+  angle          String?
+  scheduledAt    DateTime
+  completedAt    DateTime?
+  outcome        String? // replied | meeting | opp-created | no-response
+  sourceSignalId String?
+  isDemo         Boolean   @default(false)
+  account        Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  campaign       Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@index([accountId, scheduledAt])
+  @@index([scheduledAt])
+}
+
+model Event {
+  id       String        @id @default(cuid())
+  name     String
+  kind     String // conference | webinar | partner | briefing | roundtable
+  startsAt DateTime
+  location String?
+  isDemo   Boolean       @default(false)
+  invites  EventInvite[]
+}
+
+model EventInvite {
+  id        String  @id @default(cuid())
+  eventId   String
+  accountId String
+  persona   String?
+  status    String // planned | invited | registered | attended | followed-up
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model AccountPlanItem {
+  id        String    @id @default(cuid())
+  accountId String
+  kind      String // objective | strategy | action
+  parentId  String?
+  text      String
+  owner     String?
+  dueDate   DateTime?
+  status    String    @default("open")
+  sortOrder Int       @default(0)
+  account   Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+model Note {
+  id           String   @id @default(cuid())
+  entityType   String // account | opportunity | signal | play | event
+  entityId     String
+  body         String
+  internalOnly Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([entityType, entityId])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  summary    String
+  diff       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model SavedView {
+  id     String @id @default(cuid())
+  scope  String
+  name   String
+  config Json
+
+  @@unique([scope, name])
+}
+
+model DashboardLayout {
+  id        String  @id @default(cuid())
+  name      String  @unique
+  widgets   Json
+  isDefault Boolean @default(false)
+  sortOrder Int     @default(0)
+}
+
+model Setting {
+  key   String @id
+  value Json
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  kind      String
+  title     String
+  body      String?
+  href      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model SourceRun {
+  id         String    @id @default(cuid())
+  adapterId  String
+  startedAt  DateTime
+  finishedAt DateTime?
+  ok         Boolean
+  itemsNew   Int       @default(0)
+  error      String?
+
+  @@index([adapterId, startedAt])
+}
+
+model JobRequest {
+  id        String   @id @default(cuid())
+  kind      String
+  payload   Json?
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+model HttpCache {
+  key       String   @id
+  body      String
+  etag      String?
+  fetchedAt DateTime
+}
+
+model ExportTemplate {
+  id     String @id @default(cuid())
+  name   String @unique
+  config Json
+}
+
+model ExportJob {
+  id         String   @id @default(cuid())
+  templateId String?
+  title      String
+  config     Json
+  format     String
+  status     String
+  outputPath String?
+  version    Int      @default(1)
+  createdAt  DateTime @default(now())
+}
+
+model SandboxScenario {
+  id        String   @id @default(cuid())
+  name      String
+  accountId String?
+  spec      Json
+  createdAt DateTime @default(now())
+}

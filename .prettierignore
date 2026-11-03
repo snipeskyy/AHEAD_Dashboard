@@ -1,0 +1,8 @@
+.next
+node_modules
+prisma/migrations
+src/modules/_generated.ts
+src/components/ui
+test-results
+playwright-report
+screenshots

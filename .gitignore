@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ACC
+prisma/*.db
+prisma/*.db-journal
+/test-results
+/playwright-report
+/screenshots
+/exports
+!.env.example
