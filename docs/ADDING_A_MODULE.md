@@ -147,6 +147,29 @@ export default function MentionsWidget({ height }: WidgetProps) {
 
 The widget now appears in **Command Home → Customize → Add widget**.
 
+### 2c. Add export builders (optional)
+
+Each export section declared in `exportSections` needs a builder that turns live data into document blocks. Put
+them in `src/modules/<id>/export.server.ts` (server-only; discovered into `src/modules/_generated.server.ts`):
+
+```ts
+import "server-only";
+import type { SectionBuilders } from "@/lib/export/builder-types";
+import { perAccount } from "@/lib/export/build-helpers";
+
+export const builders: SectionBuilders = {
+  "competitive-watch.mentions": (ctx) =>
+    perAccount(ctx, async (a) => [
+      { kind: "paragraph", text: `Mentions for ${a.name}` },
+      // Tag every block, list item or table column with `field` so redaction can remove it:
+      { kind: "table", field: "mentions", columns: [{ key: "title", label: "Mention" }], rows: [] },
+    ]),
+};
+```
+
+A section marked `status: "stub"` is listed in the builder but cannot be enabled. Fields with
+`visibility: "internal"` and `internalOnly` sections are removed from customer-facing exports automatically.
+
 ### 3. Add data access (optional)
 
 Add `src/app/api/competitive/route.ts`. Validate input with Zod and wrap it with `handler()` from
@@ -165,6 +188,7 @@ Put tests next to the module, e.g. `src/modules/competitive-watch/__tests__/*.te
 ## Rules of thumb
 
 - Every module declares `exportSections`. Use `[]` if it truly contributes nothing.
+- Widgets that show only internal data set `internalOnly: true`; they are masked in Presentation Mode.
 - Mark fields `visibility: "internal"` when they must never reach a customer: amounts, probabilities, risk flags,
   competitors, internal notes. The redaction engine and Presentation Mode rely on this.
 - Never fetch from non-public sources. New external sources are `DataAdapter`s (`src/lib/adapters/types.ts`) run by

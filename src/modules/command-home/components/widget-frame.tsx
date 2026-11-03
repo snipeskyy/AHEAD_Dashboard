@@ -1,5 +1,6 @@
 "use client";
-import { GripVertical, X } from "lucide-react";
+import { EyeOff, GripVertical, X } from "lucide-react";
+import { ChartFixedHeightContext } from "@/components/chart";
 import { createElement, lazy, Suspense, type ComponentType, type LazyExoticComponent } from "react";
 import { ErrorBoundary } from "@/components/states/error-boundary";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { bodyHeight } from "@/lib/dashboard/layouts";
 import { registry } from "@/modules/registry";
 import type { WidgetProps, WidgetSize } from "@/modules/types";
 import { cn } from "@/lib/utils";
+import { useUiStore } from "@/stores/ui-store";
 
 /** Lazy widget components, created once at module load from the registry (never during render). */
 const LAZY_WIDGETS = new Map<string, LazyExoticComponent<ComponentType<WidgetProps>>>(
@@ -37,6 +39,7 @@ export function WidgetFrame({
   const def = registry.widget(widgetId);
   const Body = LAZY_WIDGETS.get(widgetId) ?? null;
   const height = fixedHeight ?? bodyHeight(h);
+  const masked = useUiStore((st) => st.presentationMode) && !!def?.internalOnly;
   return (
     <section
       aria-label={def?.title ?? widgetId}
@@ -68,7 +71,11 @@ export function WidgetFrame({
         )}
       </header>
       <div className={cn("min-h-0 flex-1 px-4 pt-2", editing && "pointer-events-none select-none")}>
-        {!Body ? (
+        {masked ? (
+          <p className="text-muted-foreground flex h-full items-center justify-center gap-1.5 pb-2 text-xs">
+            <EyeOff className="size-3.5" aria-hidden /> Internal-only — hidden while presenting
+          </p>
+        ) : !Body ? (
           <p className="text-muted-foreground py-6 text-center text-xs">
             This widget&apos;s module is unavailable or disabled.
           </p>
@@ -76,7 +83,9 @@ export function WidgetFrame({
           <ErrorBoundary>
             <Suspense fallback={<Skeleton style={{ height }} />}>
               {/* Body is a stable module-level lazy component looked up by id. */}
-              {createElement(Body, { size: sizeFromWidth(w), height })}
+              <ChartFixedHeightContext value={true}>
+                {createElement(Body, { size: sizeFromWidth(w), height })}
+              </ChartFixedHeightContext>
             </Suspense>
           </ErrorBoundary>
         )}

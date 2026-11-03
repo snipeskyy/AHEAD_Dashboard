@@ -74,6 +74,34 @@ How sources run:
 - Use **Fetch now** in Live Signals or Settings → Data sources to run immediately.
 - Set `PUBLIC_FETCH_ENABLED=false` to stop all outbound requests.
 
+## Exports
+
+**Exports** (sidebar → Deliver, or **Export** on any Account 360) assembles a summary from every module's
+`exportSections`:
+
+1. Choose a scope: one account, a set of accounts, or the full portfolio.
+2. Pick a template or enable, reorder and fine-tune sections. Each section's fields can be toggled individually.
+3. Choose an audience. **Customer-facing** removes every field marked internal (probability, competitors, risk,
+   scores, notes) and every internal-only section. The live preview highlights exactly what will be removed.
+4. Generate **PDF**, **Markdown** or **PowerPoint**. Every export carries a version number, an optional watermark and
+   a date stamp, and it lands in **History**, where you can download it again or re-run it with fresh data (the
+   version is bumped).
+
+Files are written to `exports/` (git-ignored). PDFs are printed by the pre-installed Playwright Chromium; if you run
+ACC elsewhere, install a browser once with `npx playwright install chromium`.
+
+## Presentation Mode
+
+**Present** in the top bar (or ⌘K → "Toggle Presentation Mode") hides everything marked internal-only, including
+amounts, probabilities, relevance scores, internal widgets and the forecast. It also enlarges charts and type for
+screen-sharing. A banner stays visible with a one-click **Exit**.
+
+## DC Sandbox (add-on, coming next)
+
+`/sandbox` previews the data center scenario sandbox: the data model (`SandboxScenario`), a generic
+`ComponentLibrary` ("illustrative, not vendor-certified"), and a pluggable `SimulationEngine` interface in
+`src/modules/sandbox/lib/types.ts`. It also shows a static rack elevation.
+
 ## Keyboard
 
 - `⌘K` / `Ctrl+K`: command palette (jump to an account, search, create, run actions)
@@ -87,6 +115,6 @@ How sources run:
 | 1. Foundation (shell, registry, schema, seed, settings, search) | ✅     |
 | 2. Command Home grid, Account 360, Opportunities                | ✅     |
 | 3. Public adapters, SSE live feed, demand gen                   | ✅     |
-| 4. Exports, sandbox stub, presentation and performance polish   | Next   |
+| 4. Exports, sandbox stub, presentation and performance polish   | ✅     |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

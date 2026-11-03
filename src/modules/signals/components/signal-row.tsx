@@ -59,6 +59,7 @@ export const SignalRowView = memo(function SignalRowView({
           {!s.read && (
             <span
               className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full"
+              role="img"
               aria-label="Unread"
             />
           )}

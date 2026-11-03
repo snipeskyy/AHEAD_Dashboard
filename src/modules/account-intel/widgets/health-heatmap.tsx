@@ -89,7 +89,7 @@ export default function HealthHeatmapWidget({ height }: WidgetProps) {
             position: "top",
             axisLine: { show: false },
             axisTick: { show: false },
-            axisLabel: { color: t.muted, fontSize: 11, interval: 0 },
+            axisLabel: { color: t.muted, fontSize: t.fs, interval: 0 },
             splitArea: { show: false },
           },
           yAxis: {
@@ -98,7 +98,7 @@ export default function HealthHeatmapWidget({ height }: WidgetProps) {
             inverse: true,
             axisLine: { show: false },
             axisTick: { show: false },
-            axisLabel: { color: t.ink2, fontSize: 11 },
+            axisLabel: { color: t.ink2, fontSize: t.fs },
           },
           visualMap: {
             min: 0,

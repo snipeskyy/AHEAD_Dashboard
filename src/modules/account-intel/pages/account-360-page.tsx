@@ -1,5 +1,6 @@
 "use client";
 import {
+  FileOutput,
   ArrowLeft,
   ExternalLink,
   FlaskConical,
@@ -135,6 +136,11 @@ export default function Account360Page({ params }: { params: Record<string, stri
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/exports?account=${a.id}`}>
+                <FileOutput /> Export
+              </Link>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => openNote("account", a.id)}>
               <NotebookPen /> Note
             </Button>
@@ -151,6 +157,9 @@ export default function Account360Page({ params }: { params: Record<string, stri
             <TabsList>
               {TABS.map((t) => (
                 <TabsTrigger
+                  aria-controls={
+                    undefined /* URL-driven tabs: the panel is rendered outside <Tabs> */
+                  }
                   key={t.id}
                   value={t.id}
                   data-internal-only={"internal" in t && t.internal ? "true" : undefined}

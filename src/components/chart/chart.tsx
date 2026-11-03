@@ -14,10 +14,11 @@ import { SVGRenderer } from "echarts/renderers";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import { Table2, ChartColumn } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useMounted } from "@/hooks/use-mounted";
 import { cn } from "@/lib/utils";
+import { useUiStore } from "@/stores/ui-store";
 import { readChartTheme, type ChartTheme } from "./theme";
 
 echarts.use([
@@ -37,6 +38,9 @@ export interface ChartTableData {
   columns: string[];
   rows: Array<Array<string | number>>;
 }
+
+/** Set by WidgetFrame: charts inside widgets must keep the grid-provided height. */
+export const ChartFixedHeightContext = createContext(false);
 
 export interface ChartProps {
   /** Accessible name — describes what the chart shows. */
@@ -70,11 +74,15 @@ export function Chart({
 }: ChartProps) {
   const { resolvedTheme } = useTheme();
   const mounted = useMounted();
+  const presenting = useUiStore((st) => st.presentationMode);
+  // Inside a dashboard widget the height is fixed by the grid; elsewhere, Presentation Mode enlarges charts.
+  const fixed = useContext(ChartFixedHeightContext);
+  if (presenting && !fixed) height = Math.round(height * 1.3);
   const [view, setView] = useState<"chart" | "table">("chart");
   // Re-read CSS tokens whenever the theme or accent changes.
   const opt = useMemo(
-    () => (mounted ? option(readChartTheme(resolvedTheme)) : null),
-    [mounted, option, resolvedTheme],
+    () => (mounted ? option(readChartTheme(resolvedTheme, presenting)) : null),
+    [mounted, option, resolvedTheme, presenting],
   );
 
   return (

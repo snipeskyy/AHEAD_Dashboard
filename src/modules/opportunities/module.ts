@@ -41,6 +41,7 @@ const opportunities: AccModule = {
       description: "Closed won, commit, best case and pipeline by quarter",
       defaultSize: "lg",
       sizes: ["md", "lg", "xl"],
+      internalOnly: true,
       load: () => import("./widgets/forecast"),
     },
     {

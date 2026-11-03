@@ -20,6 +20,7 @@ const sandbox: AccModule = {
       title: "Sandbox views",
       description: "Rack elevation and floor views from a saved scenario.",
       scopes: ["account"],
+      status: "stub",
       fields: [{ id: "screenshots", label: "Scenario views", visibility: "customer-safe" }],
     },
     {
@@ -27,6 +28,7 @@ const sandbox: AccModule = {
       title: "Capacity tables",
       description: "Power, heat, and cooling capacity (illustrative).",
       scopes: ["account"],
+      status: "stub",
       fields: [{ id: "capacity", label: "Capacity table", visibility: "customer-safe" }],
     },
   ],

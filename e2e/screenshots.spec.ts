@@ -25,6 +25,7 @@ const PAGES = [
   { name: "demand-gen-events", path: "/demand-gen?tab=events" },
   { name: "demand-gen-metrics", path: "/demand-gen?tab=metrics" },
   { name: "exports", path: "/exports" },
+  { name: "exports-account", path: "/exports?account=demo-acc-008" },
   { name: "sandbox", path: "/sandbox" },
   { name: "settings", path: "/settings" },
   { name: "settings-modules", path: "/settings?tab=modules" },

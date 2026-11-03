@@ -108,7 +108,7 @@ export function DigestView({ onAction }: { onAction: (a: SignalAction, s: Signal
                       ...barStyle(true),
                       itemStyle: { color: t.series[0], borderRadius: [0, 4, 4, 0] },
                       data: d.byPractice.map((p) => p.count),
-                      label: { show: true, position: "right", color: t.ink2, fontSize: 11 },
+                      label: { show: true, position: "right", color: t.ink2, fontSize: t.fs },
                     },
                   ],
                 })}
@@ -138,7 +138,11 @@ export function DigestView({ onAction }: { onAction: (a: SignalAction, s: Signal
                         {s.title}
                       </button>
                       <div className="text-muted-foreground text-[11px]">
-                        {s.accountName} · relevance {Math.round(s.relevance)}
+                        {s.accountName}
+                        <span data-internal-only="true">
+                          {" "}
+                          · relevance {Math.round(s.relevance)}
+                        </span>
                       </div>
                     </div>
                   </li>

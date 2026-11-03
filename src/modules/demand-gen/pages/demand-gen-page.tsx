@@ -53,7 +53,14 @@ export default function DemandGenPage() {
         <div className="-mx-1 overflow-x-auto px-1 pb-1">
           <TabsList>
             {TABS.map((t) => (
-              <TabsTrigger key={t.id} value={t.id} className="gap-1.5">
+              <TabsTrigger
+                aria-controls={
+                  undefined /* URL-driven tabs: the panel is rendered outside <Tabs> */
+                }
+                key={t.id}
+                value={t.id}
+                className="gap-1.5"
+              >
                 <t.icon className="size-3.5" /> {t.label}
               </TabsTrigger>
             ))}

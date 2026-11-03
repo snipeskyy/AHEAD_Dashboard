@@ -220,8 +220,18 @@ export default function SignalsPage() {
       />
       <Tabs value={tab} onValueChange={(v) => setParam("tab", v === "feed" ? null : v)}>
         <TabsList>
-          <TabsTrigger value="feed">Feed</TabsTrigger>
-          <TabsTrigger value="digest">Digest</TabsTrigger>
+          <TabsTrigger
+            aria-controls={undefined /* URL-driven tabs: the panel is rendered outside <Tabs> */}
+            value="feed"
+          >
+            Feed
+          </TabsTrigger>
+          <TabsTrigger
+            aria-controls={undefined /* URL-driven tabs: the panel is rendered outside <Tabs> */}
+            value="digest"
+          >
+            Digest
+          </TabsTrigger>
         </TabsList>
       </Tabs>
       {tab === "feed" ? (

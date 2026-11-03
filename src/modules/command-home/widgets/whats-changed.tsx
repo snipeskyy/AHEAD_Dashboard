@@ -1,4 +1,5 @@
 "use client";
+import type React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNowStrict } from "date-fns";
 import { CheckCheck } from "lucide-react";
@@ -31,13 +32,18 @@ export default function WhatsChangedWidget({ height }: WidgetProps) {
     ...data.signals.map((s) => ({
       id: `s-${s.id}`,
       text: s.title,
-      sub: `${s.accountName} · relevance ${Math.round(s.relevance)}`,
+      sub: (
+        <>
+          {s.accountName}
+          <span data-internal-only="true"> · relevance {Math.round(s.relevance)}</span>
+        </>
+      ) as React.ReactNode,
       href: `/signals?focus=${s.id}`,
     })),
     ...data.activity.map((a) => ({
       id: `a-${a.id}`,
       text: a.summary,
-      sub: formatDistanceToNowStrict(new Date(a.at), { addSuffix: true }),
+      sub: formatDistanceToNowStrict(new Date(a.at), { addSuffix: true }) as React.ReactNode,
       href: a.href,
     })),
   ];

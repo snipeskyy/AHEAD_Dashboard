@@ -121,7 +121,7 @@ export function MetricsView() {
               xAxis: categoryAxis(
                 th,
                 m.personaCoverage.map((p) => BUYING_ROLE_LABELS[p.role as BuyingRole] ?? p.role),
-                { axisLabel: { color: th.muted, fontSize: 11, interval: 0 } },
+                { axisLabel: { color: th.muted, fontSize: th.fs, interval: 0 } },
               ),
               yAxis: { ...valueAxis(th, (v: number) => formatPercent(v)), max: 1 },
               series: [

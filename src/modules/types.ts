@@ -28,6 +28,8 @@ export interface WidgetDefinition {
   description: string;
   defaultSize: WidgetSize;
   sizes: WidgetSize[];
+  /** Hidden (masked) in Presentation Mode. */
+  internalOnly?: boolean;
   /** Widget body receives its grid size and available body height in px. */
   load: () => Promise<{ default: ComponentType<WidgetProps> }>;
 }
@@ -51,6 +53,8 @@ export interface ExportSectionDefinition {
   fields: ExportFieldDefinition[];
   /** Whole section is internal-only (hidden entirely in customer-facing mode). */
   internalOnly?: boolean;
+  /** "stub" = declared by an add-on that isn't installed yet; shown disabled in the builder. */
+  status?: "available" | "stub";
 }
 
 export interface CommandDefinition {

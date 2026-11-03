@@ -1,4 +1,4 @@
-export { Chart, type ChartProps, type ChartTableData } from "./chart";
+export { Chart, ChartFixedHeightContext, type ChartProps, type ChartTableData } from "./chart";
 export {
   barStyle,
   baseOption,

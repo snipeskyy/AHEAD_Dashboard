@@ -177,7 +177,14 @@ export default function OpportunitiesPage() {
             <Tabs value={view} onValueChange={(v) => setParam({ view: v })}>
               <TabsList>
                 {VIEWS.map((v) => (
-                  <TabsTrigger key={v.id} value={v.id} className="gap-1.5">
+                  <TabsTrigger
+                    aria-controls={
+                      undefined /* URL-driven tabs: the panel is rendered outside <Tabs> */
+                    }
+                    key={v.id}
+                    value={v.id}
+                    className="gap-1.5"
+                  >
                     <v.icon className="size-3.5" /> {v.label}
                   </TabsTrigger>
                 ))}

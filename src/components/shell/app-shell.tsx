@@ -4,6 +4,7 @@ import { CommandPalette } from "./command-palette";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { NoteDialog } from "./note-dialog";
 import { Sidebar } from "./sidebar";
+import { PresentationBanner } from "./presentation-toggle";
 import { TopBar } from "./top-bar";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -19,6 +20,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
+          <PresentationBanner />
           <main id="main" tabIndex={-1} className="flex-1 outline-none">
             {children}
           </main>

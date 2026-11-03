@@ -179,6 +179,33 @@ migrations, because Prisma would otherwise report drift.
 - **Account pickers inside dialogs** must use `AccountPicker`. It renders in a portal so results are never clipped.
 - **E2E tests** reseed the demo data in `e2e/global-setup.ts`, so tests may create data freely.
 
+## Phase 4 conventions (exports, sandbox, presentation)
+
+- **Export pipeline.** `buildDocument(config)` (`src/lib/export/build.ts`) runs each enabled section's builder,
+  then `applyRedaction()`, then renders chart SVGs server-side.
+  - Builders live in `src/modules/<id>/export.server.ts` (`builders: SectionBuilders`). They are discovered into
+    `src/modules/_generated.server.ts`, which is server-only.
+  - Blocks (`src/lib/export/types.ts`) carry a `field` id. Redaction removes blocks, kv/list items and table columns
+    whose field is hidden.
+  - Customer audience hides every `visibility: "internal"` field and drops `internalOnly` sections. The user can't
+    re-enable them (locked).
+  - `mode: "preview"` marks content instead of removing it; the builder UI highlights it.
+- **Formats.**
+  - PDF: Playwright prints `/print/export/<id>`, which renders the saved snapshot `exports/<id>.json`.
+  - Markdown: `documentToMarkdown`.
+  - PPTX: `documentToPptx` (pptxgenjs, title slide plus paginated sections).
+  - Everything is written to `exports/` (git-ignored). Re-run bumps the version.
+- **Stub sections** (`status: "stub"`) show in the builder but can't be enabled or built.
+- **Presentation Mode.**
+  - Widgets with `internalOnly: true` are masked in the grid.
+  - `Chart` enlarges fonts (`ChartTheme.fs`) everywhere. Outside widgets it also enlarges height; widgets keep their
+    grid height via `ChartFixedHeightContext`.
+  - Build chart options with `t.fs`, never a literal font size.
+- **DC Sandbox** is an add-on stub. Types are in `src/modules/sandbox/lib/types.ts`. The generic library
+  (`library.ts`) must stay vendor-neutral and labeled "Illustrative, not vendor-certified".
+- **Accessibility.** `e2e/phase4.spec.ts` runs axe (WCAG 2.1 AA) on the main pages and fails on serious or critical
+  violations.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -197,4 +224,4 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 1: foundation (shell, registry, schema, seed, settings skeleton, search, worker skeleton)
 - [x] Phase 2: Command Home grid + saved layouts, Account 360 (all tabs), Opportunities (Kanban, table, forecast, analytics), CSV import
 - [x] Phase 3: public adapters, worker scheduler, SSE live feed, tagging/relevance editors, Live Signals, Demand Gen
-- [ ] Phase 4: exports, sandbox stub, Presentation Mode polish, performance and a11y pass, docs
+- [x] Phase 4: exports, sandbox stub, Presentation Mode polish, performance and a11y pass, docs
