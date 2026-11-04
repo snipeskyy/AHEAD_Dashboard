@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { autoMapHeaders, normalizeDomain, normalizeImportRow, normalizeTicker } from "../normalize";
+import { normalizeDomain, normalizeImportRow, normalizeTicker } from "../normalize";
 import { toCsv } from "@/lib/csv";
 
 describe("import normalization", () => {
@@ -37,14 +37,6 @@ describe("import normalization", () => {
     expect(normalizeImportRow({ name: "Acme", tier: "whatever" })).toMatchObject({
       ok: true,
       value: { tier: "Growth" },
-    });
-  });
-  it("auto-maps common header names", () => {
-    expect(autoMapHeaders(["Company", "Website", "Symbol", "Sector", "Notes"])).toEqual({
-      name: "Company",
-      domain: "Website",
-      ticker: "Symbol",
-      industry: "Sector",
     });
   });
 });

@@ -7,10 +7,12 @@ import { formatCurrencyCompact } from "@/lib/format";
 import type { WidgetProps } from "@/modules/types";
 import { MeddpiccMeter } from "../components/badges";
 import { useOpportunities } from "../hooks/use-opportunities";
+import { NoOppsEmpty } from "./no-opps";
 
 export default function UpcomingClosesWidget({ height }: WidgetProps) {
   const { data, isLoading } = useOpportunities();
   if (isLoading) return <Skeleton style={{ height }} />;
+  if (!data?.length) return <NoOppsEmpty height={height} />;
   const now = new Date();
   const rows = (data ?? [])
     .filter((o) => !o.stage.startsWith("Closed"))

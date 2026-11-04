@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useUiStore } from "@/stores/ui-store";
-import { DemoBadge } from "./demo-badge";
+import { TestDbChip } from "./data-guard";
 import { NotificationCenter } from "./notification-center";
 import { PresentationToggle } from "./presentation-toggle";
 import { SidebarNav, Wordmark } from "./sidebar";
@@ -50,7 +50,7 @@ export function TopBar() {
       </button>
 
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
-        <DemoBadge />
+        <TestDbChip />
         <PresentationToggle />
         <ThemeToggle />
         <NotificationCenter />

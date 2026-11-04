@@ -49,3 +49,6 @@ prisma/*.db-journal
 /exports
 !.env.example
 /.next-build
+/backups
+/.next-e2e
+/.next-*

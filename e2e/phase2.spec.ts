@@ -151,31 +151,32 @@ test.describe("Phase 2: Opportunities", () => {
   });
 });
 
-test.describe("Phase 2: CSV import of real public accounts", () => {
-  test("imports examples/target-accounts.csv with no generated intelligence", async ({
+test.describe("Phase 2/5: CSV import of real public accounts", () => {
+  test("imports examples/target-accounts.csv with no generated intelligence, then undoes it", async ({
     page,
-    request,
   }) => {
-    await page.goto("/accounts/import");
+    await page.goto("/import?kind=accounts");
     await page
-      .getByTestId("csv-input")
+      .getByLabel("Choose a CSV or Excel file")
       .setInputFiles(path.join(process.cwd(), "examples", "target-accounts.csv"));
-    await expect(page.getByLabel(/Company name/)).toHaveValue("Company");
-    await expect(page.getByText("2 of 2 rows ready")).toBeVisible();
-    await page.getByRole("button", { name: "Import 2 accounts" }).click();
+    await expect(page.getByLabel("Column for Company name")).toHaveValue("Company");
+    await expect(page.getByText("All rows valid")).toBeVisible();
+    await page.getByRole("button", { name: "Check for duplicates" }).click();
+    await page.getByRole("button", { name: "Import: create 2" }).click();
     await expect(page.getByText("Import complete")).toBeVisible();
-    await page.getByRole("link", { name: "Caterpillar Inc." }).click();
+    await page.goto("/accounts");
+    await page.getByPlaceholder("Filter accounts…").fill("Caterpillar"); // table is virtualized
+    await page.getByRole("row", { name: /Caterpillar Inc\./ }).click();
     await expect(page.getByText("Real account · public sources only")).toBeVisible();
     await page.getByRole("tab", { name: "Intelligence" }).click();
     await expect(page.getByText(/This is a real account/).first()).toBeVisible();
-    // cleanup
-    const { items } = await json<{ items: Array<{ id: string; name: string; isDemo: boolean }> }>(
-      request,
-      "/api/accounts",
-    );
-    for (const a of items.filter(
-      (x) => !x.isDemo && ["Caterpillar Inc.", "Humana Inc."].includes(x.name),
-    ))
-      await request.delete(`/api/accounts/${a.id}`);
+    // Undo removes both accounts again (and doubles as cleanup).
+    await page.goto("/import?tab=history");
+    await page
+      .getByRole("button", { name: /^Undo import from/ })
+      .first()
+      .click();
+    await page.getByRole("button", { name: "Undo import" }).click();
+    await expect(page.getByText("Undone").first()).toBeVisible();
   });
 });

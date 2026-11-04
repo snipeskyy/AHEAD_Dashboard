@@ -2,6 +2,7 @@ import "server-only";
 import type { Play } from "@prisma/client";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { ensureStarterPlays } from "@/lib/demand-gen/install-starter-plays";
 import { recommendPlays, type PlayLite } from "@/lib/demand-gen/recommender";
 import { HttpError } from "./http";
 
@@ -60,6 +61,7 @@ export const toPlayLite = (p: PlayDTO): PlayLite => ({
 });
 
 export async function listPlays() {
+  await ensureStarterPlays(db); // first run: install the generic Starter Plays (unless cleared)
   return (await db.play.findMany({ orderBy: { name: "asc" } })).map(toPlayDTO);
 }
 

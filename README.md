@@ -9,15 +9,26 @@ A local-first sales intelligence dashboard for managing a portfolio of enterpris
 - **produce executive-ready summaries** (exports with audience-aware redaction)
 
 > **Privacy model.** Everything runs on `localhost` against a local SQLite database, with no telemetry. The only
-> outbound calls are the public data sources you enable (news RSS, SEC EDGAR, public job boards, GDELT). Demo data is
-> entirely fictional and flagged with a **DEMO DATA** badge.
+> outbound calls are the public data sources you enable (news RSS, SEC EDGAR, public job boards, GDELT). The app ships
+> with no demo data: you import the accounts you cover, and test fixtures live in a separate test database.
 
 ## Quick start
 
 ```bash
 npm install          # also creates .env.local from .env.example and generates the Prisma client
-npm run setup        # applies migrations and seeds deterministic demo data (150 accounts, 600 opps, 15k signals, 2k touches)
+npm run setup        # applies database migrations (no demo data)
 npm run dev          # http://localhost:3000 (web) + background worker
+```
+
+On first run Command Home shows a short onboarding: **Import accounts → Resolve identities → Enrich → Review**. Use
+**Import** (sidebar, or ⌘K → "Import") to bring in accounts from CSV, Excel or a pasted list.
+
+**Upgrading an existing install that has demo data:**
+
+```bash
+git pull && npm install
+npm run db:deploy      # apply the Phase 5 migration
+npm run db:purge-demo  # writes backups/pre-purge-<time>.json, shows counts, asks to confirm
 ```
 
 Optional: set `SEC_USER_AGENT` in `.env.local`, e.g. `"Account Command Center (personal research) you@example.com"`,
@@ -25,16 +36,19 @@ to enable SEC EDGAR filings. SEC requires a descriptive User-Agent that includes
 
 ## Scripts
 
-| Script                           | What it does                                                               |
-| -------------------------------- | -------------------------------------------------------------------------- |
-| `npm run dev`                    | Next.js dev server + worker (`dev:web` for the web app only)               |
-| `npm run build` / `npm start`    | Production build / serve (web + worker)                                    |
-| `npm run seed`                   | Regenerate fictional demo data (deterministic; your own accounts are kept) |
-| `npm run db:migrate -- --name x` | Create and apply a schema migration (handles the search index)             |
-| `npm run check`                  | Typecheck + lint + unit tests                                              |
-| `npm test`                       | Vitest unit tests                                                          |
-| `npm run e2e`                    | Playwright end-to-end tests                                                |
-| `npm run screenshots`            | Light/dark screenshots of every main page into `screenshots/`              |
+| Script                           | What it does                                                          |
+| -------------------------------- | --------------------------------------------------------------------- |
+| `npm run dev`                    | Next.js dev server + worker (`dev:web` for the web app only)          |
+| `npm run build` / `npm start`    | Production build / serve (web + worker)                               |
+| `npm run db:backup`              | Write a full JSON backup to `backups/`                                |
+| `npm run db:reset`               | Delete everything (typed confirmation, backup first)                  |
+| `npm run db:purge-demo`          | One-time removal of old demo data (backup first; real data kept)      |
+| `npm run test:db:seed`           | Wipe and reseed the separate test database with fictional fixtures    |
+| `npm run db:migrate -- --name x` | Create and apply a schema migration (handles the search index)        |
+| `npm run check`                  | Typecheck + lint + unit tests                                         |
+| `npm test`                       | Vitest unit tests                                                     |
+| `npm run e2e`                    | Playwright end-to-end tests (own server on :3100, test database only) |
+| `npm run screenshots`            | Light/dark screenshots of every main page into `screenshots/`         |
 
 ## Architecture
 
@@ -60,19 +74,35 @@ Browser ──TanStack Query──▶ Next.js route handlers (/api/*, Zod-valida
 
 | Source             | Applies to                         | Notes                                                                                                    |
 | ------------------ | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Google News RSS    | Real accounts (toggle per account) | Unofficial endpoint; for personal research use. Rate-limited to 1 request / 2 s and cached for 30 min.   |
+| Google News RSS    | Real accounts (opt-in per account) | Unofficial endpoint, so off by default. Rate-limited to 1 request / 2 s and cached for 30 min.           |
 | Custom RSS         | Accounts with feeds you add        | For company newsrooms and trade press.                                                                   |
 | SEC EDGAR          | Accounts with a ticker             | Requires `SEC_USER_AGENT` in `.env.local`. Resolves ticker → CIK, then reads 8-K, 10-K and 10-Q filings. |
 | Greenhouse / Lever | Accounts with a board slug         | Hiring roll-ups, plus initiative and tech-stack evidence that links to the job post.                     |
 | GDELT              | Real accounts (off by default)     | Strict limit of 1 request / 5 s.                                                                         |
 | Manual             | Any account                        | Paste a URL and add notes.                                                                               |
-| Demo simulator     | Fictional demo accounts            | Makes the live feed work offline.                                                                        |
 
 How sources run:
 
 - The worker fetches on a schedule (every 30 minutes by default) and backs off when a source keeps failing.
 - Use **Fetch now** in Live Signals or Settings → Data sources to run immediately.
 - Set `PUBLIC_FETCH_ENABLED=false` to stop all outbound requests.
+
+## Import
+
+**Import** (`/import`) handles five kinds of data: accounts, contacts, opportunities, notes and partner reps.
+
+1. Pick the type and download a CSV or Excel template if you want one.
+2. Upload a `.csv` / `.xlsx` file (parsed on this machine, up to 5,000 rows) or paste rows. For accounts you can paste
+   one company per line, optionally followed by a domain.
+3. Map columns. Common headers match automatically; save a mapping to reuse it. The first 20 rows preview with
+   row-level errors.
+4. Review duplicates. Accounts match on domain first, then on the normalized legal name; contacts, opportunities and
+   notes match within their account. Choose **merge**, **skip** or **create** per row. Merging never erases a value
+   with a blank cell.
+5. Import. Every import is logged under **History** and can be undone in one click.
+
+Contacts, opportunities and notes must name an account that already exists. Real accounts get no generated
+intelligence; it comes only from public sources or your own entries.
 
 ## Exports
 
@@ -116,5 +146,7 @@ screen-sharing. A banner stays visible with a one-click **Exit**.
 | 2. Command Home grid, Account 360, Opportunities                | ✅     |
 | 3. Public adapters, SSE live feed, demand gen                   | ✅     |
 | 4. Exports, sandbox stub, presentation and performance polish   | ✅     |
+| 5. Clean slate, onboarding, import wizard with dedupe + undo    | ✅     |
+| 6. Identity resolution and public-data enrichment               | next   |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

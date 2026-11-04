@@ -1,12 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("app shell", () => {
-  test("loads Command Home with the demo badge and no console errors", async ({ page }) => {
+  test("loads Command Home with the test-DB chip and no console errors", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Portfolio overview" })).toBeVisible();
-    await expect(page.getByRole("status").filter({ hasText: "Demo" })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Connected to the test database" }),
+    ).toBeVisible();
     await page.waitForLoadState("networkidle");
     expect(errors).toEqual([]);
   });

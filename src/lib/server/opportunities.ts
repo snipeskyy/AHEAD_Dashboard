@@ -193,7 +193,12 @@ export interface OppCreate {
   sourceSignalId?: string | null;
 }
 
-export async function createOpportunity(input: OppCreate) {
+/** `quiet` (bulk import): skip the per-row activity entry and rescoring; the caller does both once. */
+export async function createOpportunity(
+  input: OppCreate & { probability?: number | null },
+  opts: { quiet?: boolean } = {},
+) {
+  const { probability, ...rest } = input;
   const now = new Date();
   const account = await db.account.findUnique({
     where: { id: input.accountId },
@@ -217,8 +222,8 @@ export async function createOpportunity(input: OppCreate) {
   const o = await db.$transaction(async (tx) => {
     const created = await tx.opportunity.create({
       data: {
-        ...input,
-        probability: STAGE_DEFAULT_PROBABILITY[input.stage],
+        ...rest,
+        probability: probability ?? STAGE_DEFAULT_PROBABILITY[input.stage],
         forecastCategory: defaultForecast(input.stage),
         meddpicc: empty,
         partners: [],
@@ -233,6 +238,7 @@ export async function createOpportunity(input: OppCreate) {
     await syncPracticeStatus(tx, input.accountId, input.practiceArea, input.stage);
     return created;
   });
+  if (opts.quiet) return toOppRow(o, now, 30);
   await logActivity({
     entityType: "opportunity",
     entityId: o.id,

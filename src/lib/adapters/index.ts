@@ -1,5 +1,4 @@
 import { crmPlaceholderAdapter } from "./sources/crm-placeholder";
-import { demoSimulatorAdapter } from "./sources/demo-simulator";
 import { gdeltAdapter } from "./sources/gdelt";
 import { googleNewsAdapter } from "./sources/google-news";
 import { greenhouseAdapter } from "./sources/greenhouse";
@@ -17,6 +16,5 @@ export const SIGNAL_ADAPTERS: DataAdapter<NormalizedSignal, any>[] = [
   greenhouseAdapter,
   leverAdapter,
   gdeltAdapter,
-  demoSimulatorAdapter,
   crmPlaceholderAdapter,
 ];

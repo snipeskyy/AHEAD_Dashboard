@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  serverExternalPackages: ["@prisma/client", "playwright", "pptxgenjs"],
+  serverExternalPackages: ["@prisma/client", "playwright", "pptxgenjs", "exceljs"],
 };
 
 export default nextConfig;

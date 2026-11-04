@@ -1,9 +1,9 @@
 "use client";
-import { Copy, Pencil, Play as PlayIcon, Plus, Search, Trash2 } from "lucide-react";
+import { BookOpen, Copy, Pencil, Play as PlayIcon, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FilterChip } from "@/components/data-table";
-import { CardSkeleton } from "@/components/states";
+import { CardSkeleton, EmptyState } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,6 +98,21 @@ export function PlayLibrary() {
             <CardSkeleton key={i} />
           ))}
         </div>
+      ) : plays.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title={q || practice.length ? "No plays match these filters" : "No plays yet"}
+          description={
+            q || practice.length
+              ? "Clear the search or practice filter to see every play."
+              : "Create your first play, or restore the Starter Plays in Settings → Data."
+          }
+          action={
+            <Button size="sm" onClick={() => setEdit({ open: true, play: null })}>
+              <Plus /> New play
+            </Button>
+          }
+        />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {plays.map((p) => (
@@ -111,9 +126,16 @@ export function PlayLibrary() {
                   >
                     {p.name}
                   </button>
-                  <Badge variant="secondary" className="shrink-0 font-normal">
-                    {practiceLabel(p.practiceArea, true)}
-                  </Badge>
+                  <div className="flex shrink-0 gap-1">
+                    {p.origin === "starter" && (
+                      <Badge variant="outline" className="text-muted-foreground font-normal">
+                        Starter
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="font-normal">
+                      {practiceLabel(p.practiceArea, true)}
+                    </Badge>
+                  </div>
                 </div>
                 <p className="text-muted-foreground mt-1 line-clamp-3 text-xs">
                   {p.valueHypothesis}

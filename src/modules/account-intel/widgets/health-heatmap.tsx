@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Chart, baseOption } from "@/components/chart";
+import { Grid3x3 } from "lucide-react";
+import { WidgetEmpty } from "@/components/states";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TIERS } from "@/lib/domain/enums";
 import { api } from "@/lib/api-client";
@@ -50,6 +52,20 @@ export default function HealthHeatmapWidget({ height }: WidgetProps) {
   );
   if (isLoading || !data) return <Skeleton style={{ height }} />;
   const rows = data.rows;
+  if (!rows.length)
+    return (
+      <div style={{ height }} className="flex flex-col">
+        <div className="flex justify-end">{toolbar}</div>
+        <WidgetEmpty
+          height={height - 28}
+          icon={Grid3x3}
+          title={`No ${tier} accounts`}
+          description="Pick another tier, or set account tiers on the Accounts page."
+          href="/accounts"
+          cta="Open accounts"
+        />
+      </div>
+    );
   const dims = data.dimensions.map((d) => SHORT[d.id] ?? d.label);
   const rowH = 22;
   const chartH = Math.max(height - 8, rows.length * rowH + 48);

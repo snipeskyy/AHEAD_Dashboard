@@ -62,14 +62,6 @@ export const SOURCE_CATALOG: SourceCatalogEntry[] = [
     defaultEnabled: true,
   },
   {
-    id: "seed",
-    label: "Demo live simulator",
-    kind: "seed",
-    description:
-      "Emits occasional synthetic signals for fictional demo accounts so the live feed works offline.",
-    defaultEnabled: true,
-  },
-  {
     id: "crm-placeholder",
     label: "CRM / marketing automation",
     kind: "private-future",

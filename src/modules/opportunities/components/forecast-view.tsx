@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { StatTile } from "@/components/kpi/stat-tile";
+import { SetTargetLink } from "@/components/kpi/target-hint";
+import { coverageTone } from "@/lib/pipeline/analytics";
 import { formatCurrency, formatCurrencyCompact } from "@/lib/format";
 import type { usePipelineAnalytics } from "../hooks/use-pipeline-data";
 import { ForecastChart } from "./pipeline-charts";
@@ -18,13 +20,17 @@ export function ForecastView({ a }: { a: Analytics }) {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <StatTile
           label="Quarterly target"
-          value={formatCurrencyCompact(k.quarterlyTarget)}
-          sub="Settings → Opportunities"
+          value={k.targetSet ? formatCurrencyCompact(k.quarterlyTarget) : "Not set"}
+          sub={k.targetSet ? "Settings → Modules → Opportunities" : <SetTargetLink />}
         />
         <StatTile
           label="Closed won this quarter"
           value={formatCurrencyCompact(k.wonThisQuarter)}
-          sub={`${Math.round((k.wonThisQuarter / (k.quarterlyTarget || 1)) * 100)}% of target`}
+          sub={
+            k.targetSet
+              ? `${Math.round((k.wonThisQuarter / k.quarterlyTarget) * 100)}% of target`
+              : undefined
+          }
         />
         <StatTile
           label="Pipeline closing this quarter"
@@ -32,15 +38,23 @@ export function ForecastView({ a }: { a: Analytics }) {
         />
         <StatTile
           label="Coverage"
-          value={k.coverageRatio === null ? "Target met" : `${k.coverageRatio.toFixed(1)}×`}
-          sub={`Target ${k.coverageTarget.toFixed(1)}×`}
-          tone={
-            k.coverageRatio === null || k.coverageRatio >= k.coverageTarget
-              ? "good"
-              : k.coverageRatio >= k.coverageTarget * 0.75
-                ? "warning"
-                : "critical"
+          value={
+            !k.targetSet
+              ? "Not set"
+              : k.coverageRatio === null
+                ? "Target met"
+                : `${k.coverageRatio.toFixed(1)}×`
           }
+          sub={
+            !k.targetSet ? (
+              <SetTargetLink />
+            ) : k.coverageTarget > 0 ? (
+              `Target ${k.coverageTarget.toFixed(1)}×`
+            ) : (
+              "No coverage target set"
+            )
+          }
+          tone={coverageTone(k)}
         />
         <StatTile
           label="Weighted pipeline"

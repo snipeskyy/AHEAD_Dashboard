@@ -11,7 +11,6 @@ import { GreenhouseSchema, greenhouseAdapter } from "../sources/greenhouse";
 import { LeverSchema, leverAdapter } from "../sources/lever";
 import { crmPlaceholderAdapter } from "../sources/crm-placeholder";
 import { filingUrl, secEdgarAdapter, SubmissionsSchema } from "../sources/sec-edgar";
-import { simulate } from "../sources/demo-simulator";
 import { AdapterNotConfiguredError, type AdapterAccount } from "../types";
 
 const fx = (f: string) => readFileSync(path.join(__dirname, "..", "__fixtures__", f), "utf8");
@@ -245,20 +244,10 @@ describe("http client", () => {
   });
 });
 
-describe("placeholder & simulator", () => {
+describe("private placeholder", () => {
   it("private-future adapter throws a clear not-configured error", async () => {
     await expect(crmPlaceholderAdapter.fetch({} as never)).rejects.toThrow(
       /requires company approval/,
     );
-  });
-  it("simulator only emits for the given (demo) accounts, deterministically per seed", () => {
-    const accts = [{ id: "d1", name: "Halvorsen Mutual", tier: "Strategic" }];
-    const a = simulate(accts, now, "s");
-    expect(a.length).toBeGreaterThan(0);
-    expect(a.every((s) => s.accountId === "d1" && s.source === "seed" && s.url === null)).toBe(
-      true,
-    );
-    expect(simulate(accts, now, "s")).toEqual(a);
-    expect(simulate([], now)).toEqual([]);
   });
 });

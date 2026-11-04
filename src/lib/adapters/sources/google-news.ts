@@ -21,7 +21,7 @@ export const googleNewsAdapter: DataAdapter<NormalizedSignal, FeedItem[]> = {
   description:
     "News search per account name (unofficial RSS endpoint; rate-limited, cached 30 min).",
   schedule: "every scheduler tick",
-  eligible: (a) => !a.isDemo && a.sourceConfig.googleNews !== false,
+  eligible: (a) => !a.isDemo && a.sourceConfig.googleNews === true, // opt-in per account (unofficial feed)
   async fetch(ctx) {
     const out: NormalizedSignal[] = [];
     for (const account of ctx.accounts.filter(this.eligible!)) {

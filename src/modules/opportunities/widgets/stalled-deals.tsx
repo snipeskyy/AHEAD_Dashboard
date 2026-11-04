@@ -5,10 +5,12 @@ import { WidgetList, WidgetRow } from "@/components/widget/widget-list";
 import { formatCurrencyCompact } from "@/lib/format";
 import type { WidgetProps } from "@/modules/types";
 import { useOpportunities } from "../hooks/use-opportunities";
+import { NoOppsEmpty } from "./no-opps";
 
 export default function StalledDealsWidget({ height }: WidgetProps) {
   const { data, isLoading } = useOpportunities();
   if (isLoading) return <Skeleton style={{ height }} />;
+  if (!data?.length) return <NoOppsEmpty height={height} />;
   const rows = (data ?? [])
     .filter((o) => o.riskFlags.includes("stalled"))
     .sort((a, b) => b.amount - a.amount);

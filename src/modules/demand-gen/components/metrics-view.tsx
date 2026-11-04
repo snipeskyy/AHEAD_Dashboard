@@ -1,10 +1,12 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
+import { BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { Chart, barStyle, baseOption, categoryAxis, valueAxis } from "@/components/chart";
 import { StatTile } from "@/components/kpi/stat-tile";
-import { CardSkeleton } from "@/components/states";
+import { Button } from "@/components/ui/button";
+import { CardSkeleton, EmptyState } from "@/components/states";
 import { BUYING_ROLE_LABELS, type BuyingRole } from "@/lib/domain/enums";
 import { api } from "@/lib/api-client";
 import { formatPercent } from "@/lib/format";
@@ -42,6 +44,19 @@ export function MetricsView() {
   });
   if (isLoading || !m) return <CardSkeleton lines={10} />;
   const t = m.totals;
+  if (!m.weekly.some((w) => w.touches > 0) && !t.completed90 && !m.plays.some((p) => p.touches))
+    return (
+      <EmptyState
+        icon={BarChart3}
+        title="No outreach logged yet"
+        description="Metrics appear once you launch a play or log a touch (email, call, meeting, event)."
+        action={
+          <Button size="sm" asChild>
+            <Link href="/demand-gen?tab=recommender">Find a play to launch</Link>
+          </Button>
+        }
+      />
+    );
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

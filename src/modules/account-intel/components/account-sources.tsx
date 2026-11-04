@@ -42,7 +42,6 @@ export function AccountSources({ d }: { d: Account360 }) {
     return (
       <p className="text-muted-foreground flex items-center gap-2 rounded-lg border border-dashed px-4 py-3 text-xs">
         <PlugZap className="size-3.5" /> Fictional demo account — no external sources are queried.
-        The offline simulator adds synthetic signals.
       </p>
     );
   return (
@@ -67,11 +66,12 @@ export function AccountSources({ d }: { d: Account360 }) {
         <div className="flex items-center gap-2">
           <Switch
             id="src-gn"
-            checked={cfg.googleNews !== false}
+            checked={cfg.googleNews === true}
             onCheckedChange={(v) => save.mutate({ googleNews: v })}
           />
           <Label htmlFor="src-gn" className="font-normal">
             Google News search
+            <span className="text-muted-foreground text-xs">(opt-in · unofficial feed)</span>
           </Label>
         </div>
         <form

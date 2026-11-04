@@ -3,7 +3,6 @@ import type { DataAdapter, NormalizedSignal } from "../lib/adapters/types";
 import { readSetting } from "../lib/settings/store";
 import { isAdapterEnabled, runAdapter, type RunOutcome } from "./run-adapter";
 
-const SIMULATOR_INTERVAL_MS = 3 * 60_000;
 const MAX_BACKOFF_MS = 6 * 3600_000;
 
 /**
@@ -20,7 +19,7 @@ export function createScheduler(
 
   async function due(adapter: DataAdapter<NormalizedSignal, unknown>, now: number) {
     const minutes = await readSetting(db, "scheduler.intervalMinutes");
-    const base = adapter.kind === "seed" ? SIMULATOR_INTERVAL_MS : minutes * 60_000;
+    const base = minutes * 60_000;
     const f = failures.get(adapter.id) ?? 0;
     const wait = f ? Math.min(MAX_BACKOFF_MS, base * 2 ** f) : base;
     return now - (lastRun.get(adapter.id) ?? 0) >= wait;
@@ -55,7 +54,6 @@ export function createScheduler(
       const outs: RunOutcome[] = [];
       for (const a of adapters) {
         if (opts.adapterId && a.id !== opts.adapterId) continue;
-        if (!opts.adapterId && a.kind === "seed") continue;
         if (!(await isAdapterEnabled(db, a))) continue;
         outs.push(await runOne(a, opts.accountId));
       }

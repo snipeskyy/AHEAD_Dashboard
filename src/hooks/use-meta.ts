@@ -4,7 +4,15 @@ import { api } from "@/lib/api-client";
 
 export interface Meta {
   demo: boolean;
-  counts: { demoAccounts: number; realAccounts: number; opportunities: number; signals: number };
+  testDb: boolean;
+  counts: {
+    demoAccounts: number;
+    realAccounts: number;
+    opportunities: number;
+    signals: number;
+  };
+  /** True until the user has at least one account (drives the first-run onboarding). */
+  empty: boolean;
   unreadNotifications: number;
 }
 

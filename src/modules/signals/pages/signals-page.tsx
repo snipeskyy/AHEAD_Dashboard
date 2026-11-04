@@ -1,14 +1,17 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCheck, Plus, RefreshCw } from "lucide-react";
+import { CheckCheck, Plus, Radio, RefreshCw } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { SavedViews } from "@/components/data-table";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { useLiveSignals } from "@/components/providers/live-signals";
+import { EmptyState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMeta } from "@/hooks/use-meta";
 import { api } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import {
@@ -53,6 +56,7 @@ export default function SignalsPage() {
   const pathname = usePathname();
   const qc = useQueryClient();
   const live = useLiveSignals();
+  const { data: meta } = useMeta();
   const tab = params.get("tab") === "digest" ? "digest" : "feed";
   const focus = params.get("focus");
   const setParam = useCallback(
@@ -234,7 +238,18 @@ export default function SignalsPage() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      {tab === "feed" ? (
+      {meta?.empty ? (
+        <EmptyState
+          icon={Radio}
+          title="No signals yet"
+          description="Signals arrive from public sources (news, SEC filings, job boards) for the accounts you import. You can also add one by hand."
+          action={
+            <Button size="sm" asChild>
+              <Link href="/import?kind=accounts">Import accounts</Link>
+            </Button>
+          }
+        />
+      ) : tab === "feed" ? (
         <>
           <SignalFilterBar value={filters} onChange={setFilters} />
           <SignalFeed

@@ -40,11 +40,6 @@ export const accountColumns: Col[] = [
       <div className="max-w-80 min-w-0">
         <div className="flex items-center gap-1.5 truncate font-medium">
           {r.name}
-          {!r.isDemo && (
-            <Badge variant="outline" className="h-4 px-1 text-[10px]">
-              Real
-            </Badge>
-          )}
           {r.isDemo && (
             <FlaskConical
               className="text-muted-foreground size-3 shrink-0"

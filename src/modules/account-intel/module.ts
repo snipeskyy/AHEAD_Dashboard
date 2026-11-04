@@ -15,7 +15,7 @@ const accountIntel: AccModule = {
     {
       path: "accounts/import",
       title: "Import accounts",
-      load: () => import("./pages/import-page"),
+      load: () => import("./pages/import-redirect"),
     },
     { path: "accounts/[id]", title: "Account 360", load: () => import("./pages/account-360-page") },
   ],
@@ -110,10 +110,10 @@ const accountIntel: AccModule = {
     },
     {
       id: "create.import",
-      label: "Import target accounts (CSV)",
+      label: "Import accounts (CSV, Excel or paste)",
       group: "Create",
-      href: "/accounts/import",
-      keywords: ["csv", "upload"],
+      href: "/import?kind=accounts",
+      keywords: ["csv", "upload", "xlsx", "excel", "paste"],
     },
     {
       id: "create.note",

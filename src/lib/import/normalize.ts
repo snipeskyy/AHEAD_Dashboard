@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { TIERS, type Tier } from "@/lib/domain/enums";
 
 export interface ImportRowInput {
@@ -72,61 +71,3 @@ export function normalizeImportRow(
     },
   };
 }
-
-/** Header auto-mapping for the import UI. */
-export const IMPORT_FIELDS = [
-  {
-    id: "name",
-    label: "Company name",
-    required: true,
-    aliases: ["name", "company", "company name", "account", "account name", "organization"],
-  },
-  {
-    id: "domain",
-    label: "Domain / website",
-    required: false,
-    aliases: ["domain", "website", "url", "web", "site"],
-  },
-  {
-    id: "ticker",
-    label: "Ticker",
-    required: false,
-    aliases: ["ticker", "symbol", "stock", "ticker symbol"],
-  },
-  {
-    id: "industry",
-    label: "Industry",
-    required: false,
-    aliases: ["industry", "sector", "vertical"],
-  },
-  { id: "tier", label: "Tier", required: false, aliases: ["tier", "segment", "priority"] },
-  {
-    id: "greenhouseSlug",
-    label: "Greenhouse board slug",
-    required: false,
-    aliases: ["greenhouse", "greenhouse slug", "greenhouseslug"],
-  },
-  {
-    id: "leverSlug",
-    label: "Lever board slug",
-    required: false,
-    aliases: ["lever", "lever slug", "leverslug"],
-  },
-] as const;
-
-export type ImportFieldId = (typeof IMPORT_FIELDS)[number]["id"];
-
-export function autoMapHeaders(headers: string[]): Partial<Record<ImportFieldId, string>> {
-  const out: Partial<Record<ImportFieldId, string>> = {};
-  for (const f of IMPORT_FIELDS) {
-    const h = headers.find((x) =>
-      (f.aliases as readonly string[]).includes(x.trim().toLowerCase()),
-    );
-    if (h) out[f.id] = h;
-  }
-  return out;
-}
-
-export const ImportRequestSchema = z.object({
-  rows: z.array(z.record(z.string(), z.unknown())).min(1).max(2000),
-});

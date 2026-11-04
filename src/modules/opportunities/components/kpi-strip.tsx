@@ -1,7 +1,8 @@
 "use client";
 import { StatTile } from "@/components/kpi/stat-tile";
 import { formatCurrencyCompact, formatPercent } from "@/lib/format";
-import type { Kpis } from "@/lib/pipeline/analytics";
+import { SetTargetLink } from "@/components/kpi/target-hint";
+import { coverageTone, type Kpis } from "@/lib/pipeline/analytics";
 
 export function PipelineKpiStrip({ k, extra }: { k: Kpis; extra?: React.ReactNode }) {
   const cov = k.coverageRatio;
@@ -32,15 +33,15 @@ export function PipelineKpiStrip({ k, extra }: { k: Kpis; extra?: React.ReactNod
       />
       <StatTile
         label="Coverage (this quarter)"
-        value={cov === null ? "Target met" : `${cov.toFixed(1)}×`}
-        sub={`target ${k.coverageTarget.toFixed(1)}× · ${formatCurrencyCompact(Math.max(0, k.quarterlyTarget - k.wonThisQuarter))} to go`}
-        tone={
-          cov === null || cov >= k.coverageTarget
-            ? "good"
-            : cov >= k.coverageTarget * 0.75
-              ? "warning"
-              : "critical"
+        value={!k.targetSet ? "Not set" : cov === null ? "Target met" : `${cov.toFixed(1)}×`}
+        sub={
+          !k.targetSet ? (
+            <SetTargetLink />
+          ) : (
+            `${k.coverageTarget > 0 ? `target ${k.coverageTarget.toFixed(1)}× · ` : ""}${formatCurrencyCompact(Math.max(0, k.quarterlyTarget - k.wonThisQuarter))} to go`
+          )
         }
+        tone={coverageTone(k)}
         internal
       />
       {extra}

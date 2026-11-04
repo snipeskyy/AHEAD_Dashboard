@@ -1,11 +1,12 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { Newspaper } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Chart, barStyle, baseOption, categoryAxis, valueAxis } from "@/components/chart";
 import { StatTile } from "@/components/kpi/stat-tile";
-import { CardSkeleton } from "@/components/states";
+import { CardSkeleton, EmptyState } from "@/components/states";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { practiceLabel } from "@/config/practice-areas";
 import { SIGNAL_TYPE_LABELS, type SignalType } from "@/lib/domain/enums";
@@ -59,6 +60,12 @@ export function DigestView({ onAction }: { onAction: (a: SignalAction, s: Signal
       </div>
       {isLoading || !d ? (
         <CardSkeleton lines={8} />
+      ) : d.total === 0 ? (
+        <EmptyState
+          icon={Newspaper}
+          title={period === "day" ? "No signals in the last 24 hours" : "No signals this week"}
+          description="Public sources run on a schedule; use Fetch now to check immediately."
+        />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

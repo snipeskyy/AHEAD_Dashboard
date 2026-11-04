@@ -101,7 +101,7 @@ export const builders: SectionBuilders = {
           ],
           valueFormat: "currency",
           reference:
-            ctx.scope === "portfolio"
+            ctx.scope === "portfolio" && quarterlyTarget > 0
               ? { label: `Target ${money(quarterlyTarget)}`, value: quarterlyTarget }
               : undefined,
         },

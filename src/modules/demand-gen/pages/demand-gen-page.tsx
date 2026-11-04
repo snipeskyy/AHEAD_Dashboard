@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, CalendarRange, Lightbulb, PenLine, Presentation, Sparkles } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { NeedsAccounts } from "@/components/states/needs-data";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api-client";
@@ -69,23 +70,31 @@ export default function DemandGenPage() {
       </Tabs>
       {tab === "plays" && <PlayLibrary />}
       {tab === "recommender" && !waitingForAccount && (
-        <RecommenderView
-          key={accountId ?? "none"}
-          initialAccount={initialAccount}
-          highlightPractice={params.get("practice")}
-        />
+        <NeedsAccounts what="Play recommendations">
+          <RecommenderView
+            key={accountId ?? "none"}
+            initialAccount={initialAccount}
+            highlightPractice={params.get("practice")}
+          />
+        </NeedsAccounts>
       )}
       {tab === "campaigns" && <CampaignPlanner />}
       {tab === "messages" && !waitingForAccount && (
-        <MessageBuilder
-          key={accountId ?? "none"}
-          initialAccount={initialAccount}
-          initialPersona={params.get("persona")}
-          initialChannel={(params.get("channel") as MessageChannel) ?? null}
-        />
+        <NeedsAccounts what="Message drafts">
+          <MessageBuilder
+            key={accountId ?? "none"}
+            initialAccount={initialAccount}
+            initialPersona={params.get("persona")}
+            initialChannel={(params.get("channel") as MessageChannel) ?? null}
+          />
+        </NeedsAccounts>
       )}
       {tab === "events" && <EventsView />}
-      {tab === "metrics" && <MetricsView />}
+      {tab === "metrics" && (
+        <NeedsAccounts what="Outreach metrics">
+          <MetricsView />
+        </NeedsAccounts>
+      )}
     </PageContainer>
   );
 }

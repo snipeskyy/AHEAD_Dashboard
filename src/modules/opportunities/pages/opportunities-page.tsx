@@ -1,5 +1,15 @@
 "use client";
-import { BarChart3, Download, KanbanSquare, LineChart, Plus, Table2 } from "lucide-react";
+import {
+  BarChart3,
+  Briefcase,
+  Download,
+  KanbanSquare,
+  LineChart,
+  Plus,
+  Table2,
+  Upload,
+} from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -10,7 +20,7 @@ import {
   type TableState,
 } from "@/components/data-table";
 import { PageContainer, PageHeader } from "@/components/page-header";
-import { CardSkeleton, ErrorState } from "@/components/states";
+import { CardSkeleton, EmptyState, ErrorState } from "@/components/states";
 import { StatTile } from "@/components/kpi/stat-tile";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -169,6 +179,24 @@ export default function OpportunitiesPage() {
         </div>
       ) : error ? (
         <ErrorState error={error} onRetry={() => refetch()} />
+      ) : !data?.length ? (
+        <EmptyState
+          icon={Briefcase}
+          title="No opportunities yet"
+          description="Add one here or from an account, or import them from CSV or Excel. Forecast and analytics appear once you have deals."
+          action={
+            <div className="flex gap-2">
+              <Button size="sm" asChild>
+                <Link href="/import?kind=opportunities">
+                  <Upload /> Import opportunities
+                </Link>
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setParam({ create: "1" })}>
+                <Plus /> New opportunity
+              </Button>
+            </div>
+          }
+        />
       ) : (
         <>
           <PipelineKpiStrip k={analytics.kpis} />

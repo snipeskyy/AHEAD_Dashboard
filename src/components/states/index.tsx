@@ -1,4 +1,5 @@
 import { AlertTriangle, Inbox, type LucideIcon } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,45 @@ export function EmptyState({
         )}
       </div>
       {action}
+    </div>
+  );
+}
+
+/**
+ * Compact empty state sized to a widget body (`height` px). Always says why it's empty and what
+ * to do next; never render a zero-data chart instead.
+ */
+export function WidgetEmpty({
+  height,
+  icon: Icon = Inbox,
+  title,
+  description,
+  href,
+  cta,
+}: {
+  height: number;
+  icon?: LucideIcon;
+  title: string;
+  description?: ReactNode;
+  href?: string;
+  cta?: string;
+}) {
+  return (
+    <div
+      style={{ height }}
+      className="flex flex-col items-center justify-center gap-2 overflow-hidden px-4 text-center"
+    >
+      <Icon className="text-muted-foreground size-5" aria-hidden />
+      <div className="text-[13px] font-medium">{title}</div>
+      {description && <p className="text-muted-foreground max-w-xs text-xs">{description}</p>}
+      {href && cta && (
+        <Link
+          href={href}
+          className="text-primary text-xs font-medium underline-offset-2 hover:underline"
+        >
+          {cta}
+        </Link>
+      )}
     </div>
   );
 }

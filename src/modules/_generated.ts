@@ -4,9 +4,10 @@ import m_account_intel from "./account-intel/module";
 import m_command_home from "./command-home/module";
 import m_demand_gen from "./demand-gen/module";
 import m_exports from "./exports/module";
+import m_imports from "./imports/module";
 import m_opportunities from "./opportunities/module";
 import m_sandbox from "./sandbox/module";
 import m_settings from "./settings/module";
 import m_signals from "./signals/module";
 
-export const discoveredModules: AccModule[] = [m_account_intel, m_command_home, m_demand_gen, m_exports, m_opportunities, m_sandbox, m_settings, m_signals];
+export const discoveredModules: AccModule[] = [m_account_intel, m_command_home, m_demand_gen, m_exports, m_imports, m_opportunities, m_sandbox, m_settings, m_signals];

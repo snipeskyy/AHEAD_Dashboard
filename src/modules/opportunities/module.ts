@@ -72,9 +72,14 @@ const opportunities: AccModule = {
     quarterlyTarget: z
       .number()
       .min(0)
-      .default(30_000_000)
-      .describe("Quarterly bookings target (USD)"),
-    coverageTarget: z.number().min(1).max(6).default(3).describe("Pipeline coverage ratio target"),
+      .default(0)
+      .describe("Quarterly bookings target (USD; 0 = not set)"),
+    coverageTarget: z
+      .number()
+      .min(0)
+      .max(6)
+      .default(0)
+      .describe("Pipeline coverage ratio target (0 = not set)"),
   }),
   exportSections: [
     {

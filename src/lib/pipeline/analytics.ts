@@ -32,6 +32,8 @@ export interface Kpis {
   quarterlyTarget: number;
   coverageRatio: number | null; // pipeline closing this quarter ÷ remaining target
   coverageTarget: number;
+  /** False until the user sets a quarterly target in Settings (targets start blank). */
+  targetSet: boolean;
 }
 
 export function computeKpis(
@@ -64,9 +66,19 @@ export function computeKpis(
     wonThisQuarter: wonQ,
     pipelineThisQuarter: pipeQ,
     quarterlyTarget,
-    coverageRatio: remaining > 0 ? pipeQ / remaining : null,
+    coverageRatio: quarterlyTarget > 0 && remaining > 0 ? pipeQ / remaining : null,
     coverageTarget,
+    targetSet: quarterlyTarget > 0,
   };
+}
+
+/** Tone for the coverage tile; undefined (neutral) until both targets are set. */
+export function coverageTone(k: Kpis): "good" | "warning" | "critical" | undefined {
+  if (!k.targetSet) return undefined;
+  if (k.coverageRatio === null) return "good";
+  if (!k.coverageTarget) return undefined;
+  if (k.coverageRatio >= k.coverageTarget) return "good";
+  return k.coverageRatio >= k.coverageTarget * 0.75 ? "warning" : "critical";
 }
 
 export interface ForecastBucket {

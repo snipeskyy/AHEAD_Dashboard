@@ -46,6 +46,7 @@ model Account {
   planItems      AccountPlanItem[]
   eventInvites   EventInvite[]
   campaigns      Campaign[]
+  partnerReps    PartnerRepAccount[]
 
   @@index([tier])
   @@index([name])
@@ -188,6 +189,7 @@ model Play {
   sequence           Json // [{ day, channel, description }]
   assetsNeeded       Json
   successMetrics     Json
+  origin             String     @default("user") // starter | user | imported
   isDemo             Boolean    @default(false)
   campaigns          Campaign[]
 }
@@ -370,4 +372,67 @@ model SandboxScenario {
   accountId String?
   spec      Json
   createdAt DateTime @default(now())
+}
+
+// ── Phase 5: import batches (undoable), saved column mappings, partner reps ──
+
+model ImportBatch {
+  id        String         @id @default(cuid())
+  kind      String // accounts | contacts | opportunities | notes | partner-reps
+  fileName  String?
+  inputType String // csv | xlsx | paste
+  status    String         @default("applied") // applied | undone
+  counts    Json // { created, merged, skipped, errors }
+  createdAt DateTime       @default(now())
+  undoneAt  DateTime?
+  records   ImportRecord[]
+
+  @@index([createdAt])
+}
+
+/// One row per entity an import touched; `before` holds the pre-merge snapshot used by undo.
+model ImportRecord {
+  id         String      @id @default(cuid())
+  batchId    String
+  entityType String
+  entityId   String
+  action     String // created | merged
+  before     Json?
+  batch      ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+}
+
+model ImportMapping {
+  id        String   @id @default(cuid())
+  kind      String
+  name      String
+  mapping   Json // { fieldId: header }
+  updatedAt DateTime @updatedAt
+
+  @@unique([kind, name])
+}
+
+/// User-entered only (Phase 7.6 builds the co-sell UI on top of this).
+model PartnerRep {
+  id             String              @id @default(cuid())
+  partnerCompany String
+  name           String
+  title          String?
+  territory      String?
+  notes          String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  accounts       PartnerRepAccount[]
+
+  @@index([partnerCompany])
+}
+
+model PartnerRepAccount {
+  repId     String
+  accountId String
+  rep       PartnerRep @relation(fields: [repId], references: [id], onDelete: Cascade)
+  account   Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@id([repId, accountId])
 }

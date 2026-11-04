@@ -5,7 +5,7 @@ import { CalendarDays, MapPin, Plus, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AccountPicker } from "@/components/account-picker";
-import { CardSkeleton } from "@/components/states";
+import { CardSkeleton, EmptyState } from "@/components/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -76,6 +76,17 @@ export function EventsView() {
       </div>
       {isLoading ? (
         <CardSkeleton lines={6} />
+      ) : events.length === 0 ? (
+        <EmptyState
+          icon={CalendarDays}
+          title="No upcoming events"
+          description="Track conferences, webinars, partner events and briefings, then invite accounts and follow up."
+          action={
+            <Button size="sm" onClick={() => setCreating(true)}>
+              <Plus /> New event
+            </Button>
+          }
+        />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {events.map((e) => {

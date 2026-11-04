@@ -1,6 +1,8 @@
 "use client";
+import { FileOutput } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
+import { NeedsAccounts } from "@/components/states/needs-data";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,15 +45,17 @@ export default function ExportsPage() {
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
         <TabsContent value="build" className="mt-3">
-          {accountId && isPending ? (
-            <Skeleton className="h-[640px]" />
-          ) : (
-            <ExportBuilder
-              key={scoped?.id ?? "portfolio"}
-              initial={initial}
-              initialNames={scoped ? { [scoped.id]: scoped.name } : {}}
-            />
-          )}
+          <NeedsAccounts what="Exports" icon={FileOutput}>
+            {accountId && isPending ? (
+              <Skeleton className="h-[640px]" />
+            ) : (
+              <ExportBuilder
+                key={scoped?.id ?? "portfolio"}
+                initial={initial}
+                initialNames={scoped ? { [scoped.id]: scoped.name } : {}}
+              />
+            )}
+          </NeedsAccounts>
         </TabsContent>
         <TabsContent value="history" className="mt-3">
           <ExportHistory />

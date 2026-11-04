@@ -1,5 +1,5 @@
 "use client";
-import { Download, Plus, Search, Upload } from "lucide-react";
+import { Building2, Download, Plus, Search, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -56,16 +56,12 @@ export default function AccountsPage() {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useAccounts();
   const [state, setState] = useState<TableState>(DEFAULT_STATE);
-  const [source, setSource] = useState<string[]>([]);
   const [adding, setAdding] = useState(false);
   const industries = useMemo(
     () => [...new Set((data ?? []).map((a) => a.industry))].sort(),
     [data],
   );
-  const rows = useMemo(
-    () => (data ?? []).filter((a) => !source.length || source.includes(a.isDemo ? "demo" : "real")),
-    [data, source],
-  );
+  const rows = useMemo(() => data ?? [], [data]);
   const visible = useTableRows(rows, accountColumns, state);
   const filterVal = (id: string) =>
     (state.columnFilters.find((f) => f.id === id)?.value as string[] | undefined) ?? [];
@@ -112,8 +108,8 @@ export default function AccountsPage() {
               <Download /> CSV
             </Button>
             <Button variant="outline" size="sm" className="h-8" asChild>
-              <Link href="/accounts/import">
-                <Upload /> Import CSV
+              <Link href="/import?kind=accounts">
+                <Upload /> Import
               </Link>
             </Button>
             <Button size="sm" className="h-8" onClick={() => setAdding(true)}>
@@ -145,15 +141,6 @@ export default function AccountsPage() {
           value={filterVal("industry")}
           onChange={(v) => setFilter("industry", v)}
         />
-        <FilterChip
-          label="Source"
-          options={[
-            { value: "real", label: "My accounts (real)" },
-            { value: "demo", label: "Demo accounts" },
-          ]}
-          value={source}
-          onChange={setSource}
-        />
         <span className="text-muted-foreground ml-auto text-xs" aria-live="polite">
           {formatNumber(visible.length)} of {formatNumber(data?.length ?? 0)} accounts
         </span>
@@ -164,12 +151,20 @@ export default function AccountsPage() {
         <ErrorState error={error} onRetry={() => refetch()} />
       ) : !data?.length ? (
         <EmptyState
+          icon={Building2}
           title="No accounts yet"
-          description="Import your target accounts from a CSV, or reset demo data in Settings."
+          description="Import the accounts you cover from CSV, Excel or a pasted list, or add one by hand."
           action={
-            <Button asChild size="sm">
-              <Link href="/accounts/import">Import CSV</Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button asChild size="sm">
+                <Link href="/import?kind=accounts">
+                  <Upload /> Import accounts
+                </Link>
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
+                Add account
+              </Button>
+            </div>
           }
         />
       ) : (

@@ -7,3 +7,7 @@ src/components/ui
 test-results
 playwright-report
 screenshots
+.next-*
+backups
+PROMPT.md
+PROMPT_ROUND2.md

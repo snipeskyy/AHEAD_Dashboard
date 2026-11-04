@@ -120,6 +120,8 @@ test.describe("Phase 4: accessibility (axe, WCAG 2 AA)", () => {
     "/exports",
     "/sandbox",
     "/settings",
+    "/import",
+    "/import?tab=history",
   ]) {
     test(`no serious violations on ${path}`, async ({ page }) => {
       await page.goto(path);

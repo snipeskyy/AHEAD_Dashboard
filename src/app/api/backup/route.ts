@@ -1,81 +1,10 @@
+import { snapshotAll } from "@/lib/backup/snapshot";
 import { db } from "@/lib/db";
 import { handler } from "@/lib/server/http";
 
 /** Full JSON backup of every table (local data only; nothing leaves the machine). */
 export const GET = handler(async () => {
-  const [
-    accounts,
-    contacts,
-    practiceStatus,
-    initiatives,
-    techStack,
-    signals,
-    opportunities,
-    stageChanges,
-    plays,
-    campaigns,
-    touches,
-    events,
-    eventInvites,
-    planItems,
-    notes,
-    activity,
-    savedViews,
-    layouts,
-    settings,
-    exportTemplates,
-    sandboxScenarios,
-  ] = await Promise.all([
-    db.account.findMany(),
-    db.contact.findMany(),
-    db.accountPracticeStatus.findMany(),
-    db.initiative.findMany(),
-    db.techStackHypothesis.findMany(),
-    db.signal.findMany(),
-    db.opportunity.findMany(),
-    db.stageChange.findMany(),
-    db.play.findMany(),
-    db.campaign.findMany(),
-    db.touch.findMany(),
-    db.event.findMany(),
-    db.eventInvite.findMany(),
-    db.accountPlanItem.findMany(),
-    db.note.findMany(),
-    db.activityLog.findMany(),
-    db.savedView.findMany(),
-    db.dashboardLayout.findMany(),
-    db.setting.findMany(),
-    db.exportTemplate.findMany(),
-    db.sandboxScenario.findMany(),
-  ]);
-  const body = JSON.stringify({
-    format: "acc-backup",
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    data: {
-      accounts,
-      contacts,
-      practiceStatus,
-      initiatives,
-      techStack,
-      signals,
-      opportunities,
-      stageChanges,
-      plays,
-      campaigns,
-      touches,
-      events,
-      eventInvites,
-      planItems,
-      notes,
-      activity,
-      savedViews,
-      layouts,
-      settings,
-      exportTemplates,
-      sandboxScenarios,
-    },
-  });
+  const body = JSON.stringify(await snapshotAll(db));
   const stamp = new Date().toISOString().slice(0, 10);
   return new Response(body, {
     headers: {

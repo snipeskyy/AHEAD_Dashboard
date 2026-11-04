@@ -17,6 +17,8 @@ export interface Play {
   sequence: Array<{ day: number; channel: string; description: string }>;
   assetsNeeded: string[];
   successMetrics: string[];
+  /** starter = generic methodology shipped with ACC; user = created here; imported = from a pack. */
+  origin: "starter" | "user" | "imported";
   isDemo: boolean;
   stats: {
     campaigns: number;

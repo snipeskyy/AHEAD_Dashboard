@@ -6,16 +6,21 @@ export function WidgetList({
   height,
   children,
   empty,
+  emptyState,
 }: {
   height: number;
   children: ReactNode;
   empty?: string;
+  /** Replaces the one-line `empty` text, e.g. a first-run call to action. */
+  emptyState?: ReactNode;
 }) {
   const hasItems = Array.isArray(children) ? children.length > 0 : !!children;
   return (
     <div className="-mx-4 overflow-y-auto" style={{ height }}>
       {hasItems ? (
         <ul className="divide-y">{children}</ul>
+      ) : emptyState ? (
+        emptyState
       ) : (
         <p className="text-muted-foreground px-4 py-6 text-center text-[13px]">
           {empty ?? "Nothing to show."}

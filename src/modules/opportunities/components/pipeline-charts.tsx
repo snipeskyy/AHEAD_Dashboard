@@ -135,7 +135,8 @@ export function ForecastChart({
   compact = false,
 }: {
   buckets: ForecastBucket[];
-  target: number;
+  /** 0 / undefined = not set: no reference line is drawn. */
+  target?: number;
   height?: number;
   compact?: boolean;
 }) {
@@ -155,7 +156,7 @@ export function ForecastChart({
         rows: buckets.map((b) => [
           periodLabel(b.key),
           ...series.map((s) => formatCurrency(b[s.key])),
-          formatCurrency(target),
+          target ? formatCurrency(target) : "Not set",
         ]),
       }}
       option={(t) => {
@@ -185,7 +186,7 @@ export function ForecastChart({
             barGap: "8%",
             itemStyle: { color: colors[s.key], borderRadius: [4, 4, 0, 0] },
             data: buckets.map((b) => b[s.key]),
-            ...(i === 0
+            ...(i === 0 && target
               ? {
                   markLine: {
                     symbol: "none",

@@ -1,6 +1,8 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { StatTile } from "@/components/kpi/stat-tile";
+import { SetTargetLink } from "@/components/kpi/target-hint";
+import { coverageTone } from "@/lib/pipeline/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api-client";
 import { formatCurrencyCompact, formatPercent } from "@/lib/format";
@@ -44,15 +46,17 @@ export function HomeKpis() {
       />
       <StatTile
         label="Coverage vs target"
-        value={cov === null ? "Met" : `${cov.toFixed(1)}×`}
-        sub={`target ${k.coverageTarget.toFixed(1)}×`}
-        tone={
-          cov === null || cov >= k.coverageTarget
-            ? "good"
-            : cov >= k.coverageTarget * 0.75
-              ? "warning"
-              : "critical"
+        value={!k.targetSet ? "Not set" : cov === null ? "Met" : `${cov.toFixed(1)}×`}
+        sub={
+          !k.targetSet ? (
+            <SetTargetLink />
+          ) : k.coverageTarget > 0 ? (
+            `target ${k.coverageTarget.toFixed(1)}×`
+          ) : (
+            "no coverage target set"
+          )
         }
+        tone={coverageTone(k)}
         internal
       />
       <StatTile

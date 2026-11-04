@@ -1,15 +1,17 @@
 # CLAUDE.md — Account Command Center (ACC)
 
 Local-first sales-intelligence dashboard for an enterprise account director. Read this before changing anything.
-The original build spec lives in `PROMPT.md` when present. The approved plan is in `docs/PHASE0_PLAN.md`.
+Build specs: `PROMPT.md` (Phases 0–4) and `PROMPT_ROUND2.md` (Phases 5–9). The approved plan is in `docs/PHASE0_PLAN.md`.
 
 ## Non-negotiable rules (spec §2)
 
 1. **No internal or confidential data.** Never add, request, or expect employer-internal data, CRM exports, pricing,
    margins, contracts, or non-public customer info.
-2. **Seed data is fictional.** Invented company names only. Domains use `.example`, there are no tickers, and the
-   `isDemo` flag is set. The UI shows the `DEMO DATA` badge (`src/components/shell/demo-badge.tsx`) whenever demo rows
-   exist.
+2. **The app never writes demo data (Phase 5).** Synthetic fixtures live in `tests/fixtures/seed/` and are written
+   only to the TEST database (`DATABASE_URL_TEST`) via `scripts/with-test-db.mjs`; the seed CLI refuses otherwise.
+   Fixtures stay fictional (invented names, `.example` domains, no tickers, `isDemo = true`). The `isDemo` column is
+   kept as a guard: if any demo row reaches the real DB, `DemoDataWarning` (`src/components/shell/data-guard.tsx`)
+   shows a red banner until it's removed in Settings → Data.
 3. **Real accounts come from public sources only.** Never generate initiatives, tech stack, or signals for a
    non-demo account. Every intelligence item on a real account needs a public `sourceUrl`, or
    `source = "user-hypothesis"`.
@@ -27,19 +29,20 @@ The original build spec lives in `PROMPT.md` when present. The approved plan is 
 
 | Task               | Command                                                                                                                            |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| First-time setup   | `npm install && npm run setup` (applies migrations + seeds)                                                                        |
+| First-time setup   | `npm install && npm run setup` (applies migrations only; an empty DB opens on the onboarding flow)                                 |
 | Dev (web + worker) | `npm run dev` (web only: `npm run dev:web`)                                                                                        |
-| Reseed demo data   | `npm run seed` (deterministic, ~6s)                                                                                                |
+| Test DB fixtures   | `npm run test:db:seed` (wipes + seeds `prisma/test.db`; never the real DB)                                                         |
+| Backup / reset     | `npm run db:backup`; `npm run db:reset` (typed confirm + backup); `npm run db:purge-demo` (one-time demo removal, backup first)    |
 | Schema change      | edit `prisma/schema.prisma`, then `npm run db:migrate -- --name <change>` (**never** raw `prisma migrate dev`; see "Search index") |
 | Checks             | `npm run check` (typecheck + lint + unit tests)                                                                                    |
-| E2E / screenshots  | `npm run e2e`, `npm run screenshots` (needs dev server or starts one; output in `screenshots/`)                                    |
+| E2E / screenshots  | `npm run e2e`, `npm run screenshots` (own server on :3100 against the test DB; output in `screenshots/`)                           |
 | Format             | `npm run format`                                                                                                                   |
 
 ## Folder map
 
 ```
 prisma/schema.prisma          data model (SQLite now, Postgres-compatible)
-prisma/seed/                  deterministic fictional seed (index.ts = runSeed, run.ts = CLI, generators/*)
+tests/fixtures/seed/          TEST-ONLY fictional fixtures (index.ts = runSeed, run.ts = guarded CLI, wipe.ts, generators/*)
 src/app/(shell)/[[...slug]]   registry-driven router: resolves module routes, so don't add pages here
 src/app/api/*                 route handlers (Zod-validated; wrap with handler() from lib/server/http)
 src/components/ui             shadcn primitives (generated; don't hand-edit except imports)
@@ -51,7 +54,11 @@ src/lib/scoring               health, whitespace, relevance, MEDDPICC, deal risk
 src/lib/tagging               keyword → practice-area rules engine
 src/lib/search                SearchProvider interface + SQLite FTS5 implementation
 src/lib/settings              typed settings registry (schema.ts), DB store, server helpers
-src/lib/adapters              DataAdapter interface + source catalog (public adapters land in Phase 3)
+src/lib/adapters              DataAdapter interface + source catalog + public adapters
+src/lib/import                import kinds (fields + pure normalizers), mapping, paste parser, value parsers
+src/lib/server/import         parse (CSV/XLSX), plan (validate/match/dedupe/diff), commit, undo
+src/lib/backup, src/lib/data  JSON snapshots (backups/), demo purge
+scripts/                      gen-module-index, db-migrate, db-reset, db-backup, purge-demo, with-test-db
 src/modules/<id>/module.ts    module manifests (auto-discovered); pages/, components/, widgets/
 src/modules/registry.ts       registry + validation + route matching (do not list modules by hand)
 src/worker                    background worker process (job queue, rescoring; adapters in Phase 3)
@@ -155,14 +162,14 @@ migrations, because Prisma would otherwise report drift.
   - Adapters run only in the worker, never in Next route handlers.
 - **Per-source rules.**
   - SEC EDGAR needs `SEC_USER_AGENT` and throws `AdapterNotConfiguredError` without it.
-  - Google News and GDELT only run for real (non-demo) accounts.
+  - Google News and GDELT only run for real (non-demo) accounts. Google News is **opt-in per account**
+    (`sourceConfig.googleNews === true`; imports and new accounts default to off) because it has no official API.
   - Job boards roll up into one hiring signal per practice per ISO week, plus job-post evidence.
   - `crm-placeholder` must keep throwing until the company approves an integration.
 - **Worker scheduler** (`src/worker/scheduler.ts`):
   - It runs on the `scheduler.intervalMinutes` interval.
   - Failing adapters back off exponentially, up to 6 hours.
   - "Fetch now" is a `JobRequest` of kind `fetch-now`, created via `/api/sources/fetch` or `/api/jobs`.
-  - The demo simulator (adapter id `seed`) adds synthetic signals for demo accounts every 3 minutes.
   - Other jobs: `rescore-signals` (hourly) and `retag-signals` (after rule or relevance edits).
 - **SSE.** `/api/stream/signals` tails `Signal.createdAt` and `Notification.createdAt` by cursor, ignoring
   future-dated rows. The client side is `LiveSignalsProvider` in the app shell; subscribe with `useLiveSignals()`.
@@ -177,7 +184,8 @@ migrations, because Prisma would otherwise report drift.
     `[brackets]` and are listed.
   - `AiProvider` (`src/lib/ai/provider.ts`) is `nullAiProvider`, which is disabled. Nothing is ever sent.
 - **Account pickers inside dialogs** must use `AccountPicker`. It renders in a portal so results are never clipped.
-- **E2E tests** reseed the demo data in `e2e/global-setup.ts`, so tests may create data freely.
+- **E2E tests** run on the TEST database: `e2e/global-setup.ts` wipes and reseeds `prisma/test.db`, and the
+  Playwright web server runs through `scripts/with-test-db.mjs` on port 3100. Tests may create data freely.
 
 ## Phase 4 conventions (exports, sandbox, presentation)
 
@@ -206,16 +214,45 @@ migrations, because Prisma would otherwise report drift.
 - **Accessibility.** `e2e/phase4.spec.ts` runs axe (WCAG 2.1 AA) on the main pages and fails on serious or critical
   violations.
 
+## Phase 5 conventions (real data, import, first run)
+
+- **No demo data at runtime.** No seed in `setup`, no demo simulator, no "Reset demo data". Remove legacy demo rows
+  with `npm run db:purge-demo` or Settings → Data (both write `backups/pre-purge-<ts>.json` first; `backups/` is
+  git-ignored). `purgeDemoData()` (`src/lib/data/purge-demo.ts`) also removes notes, activity, notifications and export
+  history that point at demo rows.
+- **Starter Plays** (`src/lib/demand-gen/starter-plays.ts`) are methodology, not account data: `Play.origin = "starter"`,
+  installed lazily by `listPlays()` → `ensureStarterPlays()` unless the user cleared them
+  (`demandGen.starterPlaysCleared`). Clear/restore in Settings → Data.
+- **Imports** (`/import`, module `imports`). Kinds live in `src/lib/import/kinds/*`: field list (aliases, example,
+  hint) + a pure `normalize()`. Adding a kind = one file + `KIND_DEFS` + `plan.ts`/`commit.ts`/`undo.ts` cases.
+  - Flow: parse (server, CSV via papaparse / XLSX via exceljs; ≤10 MB, ≤5,000 rows) → map (auto-match by alias, then
+    label; saved `ImportMapping`s) → `planImport()` (validate, resolve account refs, dedupe, diff) → `commitImport()`.
+  - Dedupe: accounts by domain first, then `normalizeLegalName()`; children by account + key. In-file repeats too.
+  - Merge only applies non-blank incoming values that differ (`mergePlan()` in `diff.ts`); blank cells never erase.
+  - Every created/merged entity is an `ImportRecord` with a `before` snapshot; `undoImport()` deletes created rows and
+    restores merged ones. Opportunities go through `createOpportunity(..., { quiet: true })` / `updateOpportunity()`.
+  - Child kinds must reference an existing account; unknown accounts are row errors, never auto-created.
+- **First run.** `/api/meta` returns `empty`; Command Home renders `Onboarding` (`src/lib/onboarding/steps.ts`:
+  Import → Resolve → Enrich → Review; Resolve/Enrich are `available: false` until Phase 6). Pages that need accounts
+  wrap content in `NeedsAccounts`; widgets use `WidgetEmpty` / `NoOppsEmpty`. Never render a zero-data chart.
+- **KPI targets start blank** (`quarterlyTarget`/`coverageTarget` default `0` = not set). `Kpis.targetSet` and
+  `coverageTone()` drive the "Not set → Set a target in Settings" tiles.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
   to the app only through the DB (`JobRequest`, `Signal`, `SourceRun`). SSE will tail the DB by cursor (Phase 3).
 - **ECharts only**, with no Recharts.
-- **Contacts are personas only.** `displayName` is user-entered; nothing is scraped.
+- **Contacts are user-entered.** `displayName` is typed or imported by the user; nothing is scraped. Approved for
+  Phase 6: named executive officers from SEC filings (name + title + source link only) may be offered as Buying
+  Committee _suggestions_ the user accepts one by one — never added automatically.
 - **Module icons** are lucide components (`icon: LucideIcon`), as the spec specifies.
-- **Seed dates** are relative to "today", so the demo always looks current. The content is deterministic
+- **Fixture dates** are relative to "today", so test screenshots always look current. The content is deterministic
   (`SEED = "acc-demo-v1"`).
-- **"Reset demo data"** only deletes `isDemo` rows. User notes and real accounts survive.
+- **Demo badge removed (Phase 5, approved).** Replaced by the `DemoDataWarning` banner (real DB) and a `TEST DB` chip
+  (test DB, `ACC_TEST_DB=1`).
+- **XLSX parsing uses `exceljs`** (approved). The npm `xlsx` package is an abandoned release with known advisories.
+- **Google News stays, opt-in per account** (approved). It has no official API; all other sources use official APIs.
 - **Prisma 6.19** (stable) is pinned. npm's `latest` tag for Prisma pointed at a 8.0 release candidate at build time.
 
 ## Phase status
@@ -225,3 +262,8 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 2: Command Home grid + saved layouts, Account 360 (all tabs), Opportunities (Kanban, table, forecast, analytics), CSV import
 - [x] Phase 3: public adapters, worker scheduler, SSE live feed, tagging/relevance editors, Live Signals, Demand Gen
 - [x] Phase 4: exports, sandbox stub, Presentation Mode polish, performance and a11y pass, docs
+- [x] Phase 5: demo data removed (test-DB fixtures, purge + backups), onboarding + empty states, import wizard
+- [ ] Phase 6: identity resolution + public-data enrichment engine
+- [ ] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
+- [ ] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
+- [ ] Phase 9: polish and hardening

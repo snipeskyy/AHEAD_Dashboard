@@ -9,7 +9,8 @@ const PAGES = [
   { name: "account-360-committee", path: "/accounts/demo-acc-008?tab=committee" },
   { name: "account-360-whitespace", path: "/accounts/demo-acc-008?tab=whitespace" },
   { name: "account-360-plan", path: "/accounts/demo-acc-021?tab=plan" },
-  { name: "accounts-import", path: "/accounts/import" },
+  { name: "import", path: "/import" },
+  { name: "import-history", path: "/import?tab=history" },
   { name: "signals", path: "/signals" },
   { name: "signals-digest", path: "/signals?tab=digest" },
   { name: "signal-detail", path: "/signals?focus=demo-sig-00010" },
@@ -58,7 +59,7 @@ test("mobile shell", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Open navigation" })).toBeVisible();
   await page.waitForLoadState("networkidle");
-  await expect(page.getByRole("status").filter({ hasText: "Demo" })).toBeVisible();
+  await expect(page.getByRole("status", { name: "Connected to the test database" })).toBeVisible();
   await page.screenshot({ path: "screenshots/light/mobile-home.png" });
   await page.getByRole("button", { name: "Open navigation" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();

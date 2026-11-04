@@ -41,7 +41,7 @@ export async function createRealAccounts(rows: ImportRowInput[]) {
         tier: v.tier,
         isDemo: false,
         sourceConfig: {
-          googleNews: true,
+          googleNews: false, // opt-in per account
           rssFeeds: [],
           greenhouseSlug: v.greenhouseSlug,
           leverSlug: v.leverSlug,
