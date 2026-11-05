@@ -31,6 +31,8 @@ const r = spawnSync(cmd, args, {
     ...process.env,
     DATABASE_URL: testUrl,
     ACC_TEST_DB: "1",
+    // Tests never read your real brand pack; screenshots stay neutral and reproducible.
+    ACC_BRAND_DIR: process.env.ACC_BRAND_DIR || "tests/fixtures/no-brand",
     NEXT_TELEMETRY_DISABLED: "1",
     CHECKPOINT_DISABLE: "1",
   },

@@ -116,6 +116,21 @@ test("import accounts by paste, then opportunities by CSV; duplicates are detect
   await expect(page.getByText("GPU pilot")).toBeVisible();
 });
 
+test("Live Signals explains why Fetch now finds nothing and fixes it in one click", async ({
+  page,
+}) => {
+  await page.goto("/signals");
+  const panel = page.getByRole("region", { name: "Source coverage" });
+  await expect(panel.getByText(/No public source can run/)).toBeVisible();
+  await expect(
+    panel.getByText(/SEC requires a contact User-Agent|No account has a stock ticker/),
+  ).toBeVisible();
+  await shoot(page, "signals-coverage");
+  await panel.getByRole("button", { name: /Turn on for all 2 accounts/ }).click();
+  await expect(page.getByText("Google News turned on for 2 accounts")).toBeVisible();
+  await expect(panel.getByText(/No public source can run/)).toHaveCount(0);
+});
+
 test("XLSX re-import proposes a merge; undo restores the previous values", async ({ page }) => {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Accounts");

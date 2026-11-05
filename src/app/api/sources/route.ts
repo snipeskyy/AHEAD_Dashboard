@@ -1,4 +1,7 @@
 import { SOURCE_CATALOG } from "@/lib/adapters/catalog";
+import { computeCoverage, runnableCount } from "@/lib/adapters/coverage";
+import { SIGNAL_ADAPTERS } from "@/lib/adapters";
+import type { AccountSourceConfig } from "@/lib/adapters/types";
 import { db } from "@/lib/db";
 import { getSetting } from "@/lib/settings/server";
 import { handler, json } from "@/lib/server/http";
@@ -18,6 +21,27 @@ export const GET = handler(async () => {
     SEC_USER_AGENT: Boolean(process.env.SEC_USER_AGENT?.trim()),
     PUBLIC_FETCH_ENABLED: process.env.PUBLIC_FETCH_ENABLED !== "false",
   };
+  const accounts = await db.account.findMany({
+    select: {
+      id: true,
+      name: true,
+      domain: true,
+      ticker: true,
+      cik: true,
+      isDemo: true,
+      tier: true,
+      sourceConfig: true,
+    },
+  });
+  const coverage = computeCoverage({
+    adapters: SIGNAL_ADAPTERS,
+    accounts: accounts.map((a) => ({
+      ...a,
+      sourceConfig: (a.sourceConfig ?? {}) as AccountSourceConfig,
+    })),
+    enabled,
+    env: { secUserAgent: env.SEC_USER_AGENT, publicFetch: env.PUBLIC_FETCH_ENABLED },
+  });
   const pending = await db.jobRequest.count({
     where: { kind: "fetch-now", status: { in: ["pending", "running"] } },
   });
@@ -25,6 +49,8 @@ export const GET = handler(async () => {
     fetching: pending > 0,
     intervalMinutes: interval,
     publicFetchEnabled: env.PUBLIC_FETCH_ENABLED,
+    coverage,
+    runnable: runnableCount(coverage),
     sources: SOURCE_CATALOG.map((s, i) => {
       const missing = s.requires && !env[s.requires as keyof typeof env] ? s.requires : null;
       const lastRun = runs[i];

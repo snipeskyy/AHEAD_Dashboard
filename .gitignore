@@ -52,3 +52,8 @@ prisma/*.db-journal
 /backups
 /.next-e2e
 /.next-*
+
+# Local brand pack (logos/trademarks never committed)
+/brand/*
+!/brand/README.md
+!/brand/brand.example.json

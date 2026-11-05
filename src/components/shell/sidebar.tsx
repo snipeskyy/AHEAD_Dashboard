@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useFeatureFlags } from "@/hooks/use-feature-flags";
 import { useSetting } from "@/hooks/use-setting";
+import { brandAssetUrl, useBrand } from "@/components/providers/brand-provider";
 import { themeConfig } from "@/config/theme";
 import { cn } from "@/lib/utils";
 import { registry } from "@/modules/registry";
@@ -115,21 +116,58 @@ export function SidebarNav({
 
 export function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
   const { data } = useSetting("appearance");
-  const mark = data?.wordmark ?? themeConfig.wordmark;
+  const brand = useBrand();
+  const appName = brand?.appName ?? themeConfig.appName;
+  const tagline = brand?.tagline ?? themeConfig.tagline;
+  const mark = (brand?.wordmark ?? data?.wordmark ?? themeConfig.wordmark).slice(0, 3);
+  const logo = brandAssetUrl(brand, "logo");
+  const logoDark = brandAssetUrl(brand, "logoDark") ?? logo;
+  const icon = brandAssetUrl(brand, "mark");
   return (
     <Link
       href="/"
-      className="flex items-center gap-2 rounded-md outline-none"
-      aria-label={`${themeConfig.appName} home`}
+      className="flex min-w-0 items-center gap-2 rounded-md outline-none"
+      aria-label={`${appName} home`}
     >
-      <span className="bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-md text-[11px] font-semibold tracking-tight">
-        {mark.slice(0, 3)}
-      </span>
-      {!collapsed && (
-        <span className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-[13px] font-semibold">{themeConfig.appName}</span>
-          <span className="text-muted-foreground truncate text-[11px]">{themeConfig.tagline}</span>
+      {logo && !collapsed ? (
+        <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
+          {/* eslint-disable-next-line @next/next/no-img-element -- local brand asset, size unknown */}
+          <img
+            src={logo}
+            alt={appName}
+            className="h-6 w-auto max-w-[150px] object-contain object-left dark:hidden"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element -- local brand asset, size unknown */}
+          <img
+            src={logoDark!}
+            alt=""
+            aria-hidden
+            className="hidden h-6 w-auto max-w-[150px] object-contain object-left dark:block"
+          />
+          <span className="text-muted-foreground truncate text-[11px]">{tagline}</span>
         </span>
+      ) : (
+        <>
+          {icon ? (
+            // eslint-disable-next-line @next/next/no-img-element -- local brand asset
+            <img
+              src={icon}
+              alt=""
+              aria-hidden
+              className="size-7 shrink-0 rounded-md object-contain"
+            />
+          ) : (
+            <span className="bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-md text-[11px] font-semibold tracking-tight">
+              {mark}
+            </span>
+          )}
+          {!collapsed && (
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-[13px] font-semibold">{appName}</span>
+              <span className="text-muted-foreground truncate text-[11px]">{tagline}</span>
+            </span>
+          )}
+        </>
       )}
     </Link>
   );

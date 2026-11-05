@@ -85,7 +85,7 @@ export async function purgeDemoData(db: PrismaClient, opts: { exportsDir?: strin
   const dir = opts.exportsDir ?? path.join(process.cwd(), "exports");
   for (const j of demoJobs)
     for (const ext of [".json", ".pdf", ".md", ".pptx"])
-      await rm(path.join(dir, `${j.id}${ext}`), { force: true });
+      await rm(path.join(/*turbopackIgnore: true*/ dir, `${j.id}${ext}`), { force: true });
 
   await db.touch.deleteMany({ where: { isDemo: true } });
   await db.campaign.deleteMany({ where: { isDemo: true } });

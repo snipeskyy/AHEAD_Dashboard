@@ -332,11 +332,14 @@ model SourceRun {
 }
 
 model JobRequest {
-  id        String   @id @default(cuid())
-  kind      String
-  payload   Json?
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
+  id         String    @id @default(cuid())
+  kind       String
+  payload    Json?
+  status     String    @default("pending")
+  /// Structured outcome written by the worker (e.g. per-source results for "fetch-now").
+  result     Json?
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   @@index([status])
 }

@@ -104,6 +104,20 @@ How sources run:
 Contacts, opportunities and notes must name an account that already exists. Real accounts get no generated
 intelligence; it comes only from public sources or your own entries.
 
+## Branding (local brand pack)
+
+To use your company's logo and colors, put the **approved** logo files and a `brand.json` in the `brand/` folder and
+restart (see [brand/README.md](brand/README.md)). The folder is git-ignored, so trademarks never reach the repository.
+The sidebar, browser tab, buttons, links and focus rings take the brand; chart series keep their fixed, colorblind-safe
+palette. Settings → Appearance shows what loaded and switches between Brand and the neutral accents.
+
+## Why "Fetch now" finds nothing
+
+Each public source only runs for accounts it can use. Live Signals shows a **Source coverage** panel whenever no
+source can run, with the fix for each: turn on Google News (opt-in) for all accounts in one click, add
+`SEC_USER_AGENT` to `.env.local` for SEC filings on accounts with tickers, or add job-board slugs / RSS feeds on
+Account 360 → Sources. Fetch now then reports how many new signals each source found.
+
 ## Exports
 
 **Exports** (sidebar → Deliver, or **Export** on any Account 360) assembles a summary from every module's

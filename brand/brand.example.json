@@ -1,0 +1,10 @@
+{
+  "appName": "Account Command Center",
+  "tagline": "Portfolio intelligence",
+  "wordmark": "ACC",
+  "logo": "logo.svg",
+  "logoDark": "logo-dark.svg",
+  "mark": "mark.svg",
+  "colors": { "primary": "#1d4ed8", "primaryDark": "#7aa2f7" },
+  "footerNote": "Internal use only"
+}

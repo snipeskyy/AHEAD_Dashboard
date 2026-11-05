@@ -1,13 +1,12 @@
 "use client";
-import { useMutation } from "@tanstack/react-query";
 import { PlugZap, RefreshCw, X } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api-client";
+import { useFetchNow } from "@/modules/signals/hooks/use-fetch-now";
 import { useAccountMutation, type Account360 } from "../hooks/use-accounts";
 
 interface SourceConfig {
@@ -33,10 +32,7 @@ export function AccountSources({ d }: { d: Account360 }) {
       }),
     "Sources saved",
   );
-  const fetchNow = useMutation({
-    mutationFn: () => api("/api/sources/fetch", { method: "POST", json: { accountId: a.id } }),
-    onSuccess: () => toast.success("Fetching — new signals will stream in"),
-  });
+  const fetchNow = useFetchNow(a.id);
 
   if (a.isDemo)
     return (

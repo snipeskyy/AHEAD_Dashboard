@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMeta } from "@/hooks/use-meta";
 import { api } from "@/lib/api-client";
+import type { SourceCoverage } from "@/lib/adapters/coverage";
 import { cn } from "@/lib/utils";
 import {
   CreateOppDialog,
@@ -21,6 +22,8 @@ import {
 import { useUiStore } from "@/stores/ui-store";
 import { ConvertToPlayDialog, ConvertToTouchDialog } from "../components/convert-dialogs";
 import { DigestView } from "../components/digest-view";
+import { SourceCoveragePanel } from "../components/source-coverage";
+import { useFetchNow } from "../hooks/use-fetch-now";
 import { ManualSignalDialog } from "../components/manual-signal-dialog";
 import { SignalDetailSheet } from "../components/signal-detail-sheet";
 import { SignalFeed } from "../components/signal-feed";
@@ -80,16 +83,12 @@ export default function SignalsPage() {
 
   const { data: sources } = useQuery({
     queryKey: ["sources"],
-    queryFn: () => api<{ fetching: boolean }>("/api/sources"),
+    queryFn: () =>
+      api<{ fetching: boolean; coverage: SourceCoverage[]; runnable: number }>("/api/sources"),
     refetchInterval: (q) => (q.state.data?.fetching ? 3000 : false),
   });
-  const fetchNow = useMutation({
-    mutationFn: () => api("/api/sources/fetch", { method: "POST", json: {} }),
-    onSuccess: () => {
-      toast.success("Fetching public sources — new signals will stream in");
-      qc.invalidateQueries({ queryKey: ["sources"] });
-    },
-  });
+  const fetchNow = useFetchNow();
+  const [showCoverage, setShowCoverage] = useState(false);
   const markAllRead = useMutation({
     mutationFn: () =>
       api("/api/signals/bulk", {
@@ -213,8 +212,10 @@ export default function SignalsPage() {
               onClick={() => fetchNow.mutate()}
               disabled={fetchNow.isPending || sources?.fetching}
             >
-              <RefreshCw className={cn(sources?.fetching && "animate-spin")} />{" "}
-              {sources?.fetching ? "Fetching…" : "Fetch now"}
+              <RefreshCw
+                className={cn((fetchNow.isPending || sources?.fetching) && "animate-spin")}
+              />{" "}
+              {fetchNow.isPending || sources?.fetching ? "Fetching…" : "Fetch now"}
             </Button>
             <Button size="sm" className="h-8" onClick={() => setManual(true)}>
               <Plus /> Add signal
@@ -251,6 +252,21 @@ export default function SignalsPage() {
         />
       ) : tab === "feed" ? (
         <>
+          {sources && (sources.runnable === 0 || showCoverage) && (
+            <SourceCoveragePanel coverage={sources.coverage} runnable={sources.runnable} />
+          )}
+          {sources && sources.runnable > 0 && (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground -mt-2 w-fit text-xs underline-offset-2 hover:underline"
+              onClick={() => setShowCoverage(!showCoverage)}
+              aria-expanded={showCoverage}
+            >
+              {showCoverage
+                ? "Hide source coverage"
+                : `Source coverage: ${sources.coverage.filter((c) => c.enabled && c.eligible).length} of ${sources.coverage.length} sources running`}
+            </button>
+          )}
           <SignalFilterBar value={filters} onChange={setFilters} />
           <SignalFeed
             filters={filters}

@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useBrand } from "@/components/providers/brand-provider";
 import { ACCENT_IDS, ACCENTS, themeConfig } from "@/config/theme";
+import { BrandPackStatus } from "./brand-pack-status";
 import { useMounted } from "@/hooks/use-mounted";
 import { useSaveSetting, useSetting } from "@/hooks/use-setting";
 import { applyAccent } from "@/lib/client/dom";
@@ -24,9 +26,17 @@ export function AppearanceSettings() {
     density: "comfortable" as const,
   };
 
+  const brand = useBrand();
+  // The layout may have applied the brand accent by default before anything was saved.
+  const [accent, setAccent] = useState(brand?.activeAccent ?? appearance.accent);
+  const accents = ACCENT_IDS.filter((id) => id !== "brand" || brand?.hasColors);
+
   const update = (patch: Partial<typeof appearance>) => {
-    const next = { ...appearance, ...patch };
-    if (patch.accent) applyAccent(patch.accent);
+    const next = { ...appearance, accent: accent as typeof appearance.accent, ...patch };
+    if (patch.accent) {
+      applyAccent(patch.accent);
+      setAccent(patch.accent);
+    }
     save.mutate(next, { onError: (e) => toast.error(e.message) });
   };
 
@@ -55,29 +65,32 @@ export function AppearanceSettings() {
           description="Used for primary actions and focus. Chart series colors are fixed for consistency."
         >
           <div role="radiogroup" aria-label="Accent color" className="flex gap-2">
-            {ACCENT_IDS.map((id) => (
+            {accents.map((id) => (
               <button
                 key={id}
                 type="button"
                 role="radio"
-                aria-checked={appearance.accent === id}
+                aria-checked={accent === id}
                 aria-label={ACCENTS[id].label}
                 onClick={() => update({ accent: id })}
                 className={cn(
                   "ring-offset-card grid size-7 place-items-center rounded-full ring-offset-2 transition",
-                  appearance.accent === id && "ring-foreground/70 ring-2",
+                  accent === id && "ring-foreground/70 ring-2",
                 )}
-                style={{ background: ACCENTS[id].swatch }}
+                style={{
+                  background: id === "brand" ? (brand?.swatch ?? undefined) : ACCENTS[id].swatch,
+                }}
               >
-                {appearance.accent === id && <Check className="size-3.5 text-white" aria-hidden />}
+                {accent === id && <Check className="size-3.5 text-white" aria-hidden />}
               </button>
             ))}
           </div>
         </SettingsRow>
       </SettingsSection>
+      <BrandPackStatus />
       <SettingsSection
         title="Wordmark"
-        description="A neutral placeholder. No third-party logos are used anywhere in the app."
+        description="Short text mark shown when there's no logo file in the brand pack."
       >
         <WordmarkEditor
           key={appearance.wordmark}

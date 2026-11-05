@@ -1,6 +1,8 @@
 /**
- * ALL branding lives here. Neutral by design: no third-party logos or brand assets.
- * The wordmark and accent can also be overridden at runtime in Settings → Appearance.
+ * ALL committed branding lives here and stays neutral (no third-party logos).
+ * Company branding comes from the local, git-ignored brand pack in `brand/` (see brand/README.md):
+ * it overrides these names and adds the "brand" accent. The wordmark and accent can also be
+ * changed at runtime in Settings → Appearance.
  */
 export const themeConfig = {
   appName: "Account Command Center",
@@ -15,6 +17,8 @@ export const ACCENTS = {
   violet: { label: "Violet", swatch: "#6250d6" },
   slate: { label: "Graphite", swatch: "#475467" },
   amber: { label: "Amber", swatch: "#b86e00" },
+  /** Colors from brand/brand.json; only offered when the brand pack defines them. */
+  brand: { label: "Brand", swatch: "var(--primary)" },
 } as const;
 
 export type AccentId = keyof typeof ACCENTS;

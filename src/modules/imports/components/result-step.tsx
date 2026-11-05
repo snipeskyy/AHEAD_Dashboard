@@ -31,6 +31,15 @@ export function ResultStep({
   const qc = useQueryClient();
   const def = KIND_DEFS[kind];
   const c = result.counts;
+  const news = useMutation({
+    mutationFn: () =>
+      api<{ updated: number }>("/api/sources/google-news", {
+        method: "POST",
+        json: { enabled: true, accountIds: result.createdAccounts },
+      }),
+    onSuccess: (r) => toast.success(`Google News turned on for ${r.updated} accounts`),
+    onError: (e) => toast.error(e.message),
+  });
   const fetch = useMutation({
     mutationFn: () =>
       api<{ jobs: number }>("/api/sources/fetch", {
@@ -71,16 +80,27 @@ export function ResultStep({
             </div>
             <p className="text-muted-foreground text-xs">
               Runs the public sources you&apos;ve enabled (SEC filings for tickers, job boards with
-              a slug, RSS feeds). Google News stays off until you opt in per account.
+              a slug, RSS feeds). Google News is opt-in: turn it on to get headlines.
             </p>
-            <Button
-              size="sm"
-              className="w-fit"
-              disabled={fetch.isPending || fetch.isSuccess}
-              onClick={() => fetch.mutate()}
-            >
-              {fetch.isSuccess ? "Queued" : `Fetch for ${result.createdAccounts.length} accounts`}
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-fit"
+                disabled={news.isPending || news.isSuccess}
+                onClick={() => news.mutate()}
+              >
+                {news.isSuccess ? "Google News on" : "Turn on Google News (opt-in)"}
+              </Button>
+              <Button
+                size="sm"
+                className="w-fit"
+                disabled={fetch.isPending || fetch.isSuccess}
+                onClick={() => fetch.mutate()}
+              >
+                {fetch.isSuccess ? "Queued" : `Fetch for ${result.createdAccounts.length} accounts`}
+              </Button>
+            </div>
           </div>
           <div className="grid gap-1.5 text-[13px]">
             <div className="flex items-center gap-1.5 font-semibold">

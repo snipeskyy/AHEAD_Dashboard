@@ -3,7 +3,7 @@
  * Runs the public-source adapters on a schedule, processes "Fetch now" jobs, and rescores
  * signal relevance. Talks to the web app only through the database.
  */
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type Prisma } from "@prisma/client";
 import { z } from "zod";
 import { SIGNAL_ADAPTERS } from "../lib/adapters";
 import { computeScoresForAccounts } from "../lib/scoring/account-scores";
@@ -20,7 +20,7 @@ const FetchPayload = z
   .object({ adapterId: z.string().optional(), accountId: z.string().optional() })
   .nullish();
 
-type JobHandler = (payload: unknown) => Promise<string>;
+type JobHandler = (payload: unknown) => Promise<string | { message: string; result: unknown }>;
 const handlers: Partial<Record<string, JobHandler>> = {
   "recompute-scores": async () => {
     await computeScoresForAccounts(db, { now: new Date() });
@@ -31,13 +31,24 @@ const handlers: Partial<Record<string, JobHandler>> = {
   "fetch-now": async (payload) => {
     const p = FetchPayload.parse(payload) ?? {};
     const outs = await scheduler.fetchNow(p);
-    return (
-      outs
-        .map(
-          (o) => `${o.adapterId}:${o.ok ? (o.skipped ?? `+${o.result?.inserted ?? 0}`) : "error"}`,
-        )
-        .join(", ") || "no enabled adapters"
-    );
+    const result = outs.map((o) => ({
+      adapterId: o.adapterId,
+      ok: o.ok,
+      skipped: o.skipped ?? null,
+      inserted: o.result?.inserted ?? 0,
+      duplicates: o.result?.duplicates ?? 0,
+      error: o.error ?? null,
+    }));
+    return {
+      result,
+      message:
+        outs
+          .map(
+            (o) =>
+              `${o.adapterId}:${o.ok ? (o.skipped ?? `+${o.result?.inserted ?? 0}`) : "error"}`,
+          )
+          .join(", ") || "no enabled adapters",
+    };
   },
 };
 
@@ -51,14 +62,28 @@ async function drainJobs() {
     const h = handlers[job.kind];
     await db.jobRequest.update({ where: { id: job.id }, data: { status: "running" } });
     try {
-      const msg = h ? await h(job.payload) : `no handler for ${job.kind}`;
+      const out = h ? await h(job.payload) : `no handler for ${job.kind}`;
+      const msg = typeof out === "string" ? out : out.message;
       await db.jobRequest.update({
         where: { id: job.id },
-        data: { status: h ? "done" : "failed" },
+        data: {
+          status: h ? "done" : "failed",
+          finishedAt: new Date(),
+          result: (typeof out === "string"
+            ? { message: out }
+            : { message: out.message, sources: out.result }) as Prisma.InputJsonValue,
+        },
       });
       log(job.kind, "→", msg);
     } catch (e) {
-      await db.jobRequest.update({ where: { id: job.id }, data: { status: "failed" } });
+      await db.jobRequest.update({
+        where: { id: job.id },
+        data: {
+          status: "failed",
+          finishedAt: new Date(),
+          result: { message: e instanceof Error ? e.message : String(e) },
+        },
+      });
       log(job.kind, "failed:", e instanceof Error ? e.message : e);
     }
   }

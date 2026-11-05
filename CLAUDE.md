@@ -15,8 +15,11 @@ Build specs: `PROMPT.md` (Phases 0–4) and `PROMPT_ROUND2.md` (Phases 5–9). T
 3. **Real accounts come from public sources only.** Never generate initiatives, tech stack, or signals for a
    non-demo account. Every intelligence item on a real account needs a public `sourceUrl`, or
    `source = "user-hypothesis"`.
-4. **No third-party brand assets.** No AHEAD, OEM, or customer logos or names in UI or seed data. All branding lives
-   in `src/config/theme.ts`, and partners and competitors are generic labels ("Compute OEM A").
+4. **No third-party brand assets in the repository.** Committed code, fixtures and docs stay neutral: no AHEAD, OEM
+   or customer logos or names, and partners/competitors are generic labels ("Compute OEM A"). Neutral defaults live in
+   `src/config/theme.ts`. Company branding (approved by the user, Nov 2026) comes only from the local, git-ignored
+   **brand pack** in `brand/` (`brand.json` + the user's official logo files; see `brand/README.md`). Never commit,
+   recreate, trace or guess a company logo or palette.
 5. **Local and private.**
    - No telemetry: `NEXT_TELEMETRY_DISABLED=1` and `CHECKPOINT_DISABLE=1` are set in `.env.local`.
    - No external calls except the public adapters the user enables.
@@ -238,6 +241,22 @@ migrations, because Prisma would otherwise report drift.
 - **KPI targets start blank** (`quarterlyTarget`/`coverageTarget` default `0` = not set). `Kpis.targetSet` and
   `coverageTone()` drive the "Not set → Set a target in Settings" tiles.
 
+## Brand pack & source coverage (post-Phase 5)
+
+- `loadBrandPack()` (`src/lib/brand/brand-pack.ts`) reads `brand/brand.json` (re-read on change; `ACC_BRAND_DIR`
+  overrides the folder, and `scripts/with-test-db.mjs` points it at a non-existent dir so tests never see a real pack).
+  `deriveBrandTokens()` (`colors.ts`, pure) turns the brand hex into `--primary` / `--primary-foreground` /
+  `--brand-soft` for the `brand` accent, adjusting the shade until it reaches 4.5:1 on the app surfaces.
+  The root layout injects that CSS, sets `data-accent="brand"` by default when no appearance row is saved, adds the
+  favicon, and passes `publicBrand()` to `BrandProvider` (`useBrand()`, `brandAssetUrl()`). Logos are served by
+  `/api/brand/asset?name=logo|logoDark|mark` (only files named in brand.json). Chart series colors never change.
+- **Source coverage.** `computeCoverage()` (`src/lib/adapters/coverage.ts`, pure) says per source how many accounts it
+  would query and why not (opt-in Google News, missing `SEC_USER_AGENT`, no tickers/slugs/feeds, disabled source,
+  `PUBLIC_FETCH_ENABLED=false`). `/api/sources` returns `coverage` + `runnable`; Live Signals shows the panel when
+  `runnable === 0`. `POST /api/sources/google-news` bulk opts accounts in or out.
+- **Jobs report results.** The worker writes `JobRequest.result` / `finishedAt`; `useFetchNow()` polls
+  `/api/jobs/<id>` and toasts per-source outcomes (or says the worker isn't running).
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -253,6 +272,8 @@ migrations, because Prisma would otherwise report drift.
   (test DB, `ACC_TEST_DB=1`).
 - **XLSX parsing uses `exceljs`** (approved). The npm `xlsx` package is an abandoned release with known advisories.
 - **Google News stays, opt-in per account** (approved). It has no official API; all other sources use official APIs.
+  Bulk opt-in is one click from Live Signals → Source coverage or after an import.
+- **AHEAD branding via local brand pack** (approved Nov 2026). Assets stay out of git; the public repo stays neutral.
 - **Prisma 6.19** (stable) is pinned. npm's `latest` tag for Prisma pointed at a 8.0 release candidate at build time.
 
 ## Phase status
