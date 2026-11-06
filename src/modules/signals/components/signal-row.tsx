@@ -53,7 +53,7 @@ export const SignalRowView = memo(function SignalRowView({
         s.dismissed && "opacity-60",
       )}
     >
-      <RelevanceBadge value={s.relevance} parts={s.relevanceParts} />
+      <span data-field="signal.relevance"><RelevanceBadge value={s.relevance} parts={s.relevanceParts} /></span>
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-2">
           {!s.read && (

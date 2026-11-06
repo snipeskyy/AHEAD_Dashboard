@@ -36,7 +36,7 @@ export default function UpcomingClosesWidget({ height }: WidgetProps) {
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1" data-internal-only="true">
               <span className="tabular text-[13px] font-medium">
-                {formatCurrencyCompact(o.amount)}
+                <span data-field="opp.amount">{formatCurrencyCompact(o.amount)}</span>
               </span>
               <MeddpiccMeter score={o.meddpiccScore} />
             </div>

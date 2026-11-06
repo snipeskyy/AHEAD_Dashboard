@@ -16,6 +16,11 @@ datasource db {
 
 model Account {
   id                  String    @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId             String    @default("local")
+  teamId              String    @default("local-team")
+  createdBy           String    @default("local")
+  updatedBy           String    @default("local")
   name                String
   domain              String?
   ticker              String?
@@ -79,6 +84,11 @@ model AccountPracticeStatus {
 
 model Contact {
   id          String  @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId     String  @default("local")
+  teamId      String  @default("local-team")
+  createdBy   String  @default("local")
+  updatedBy   String  @default("local")
   accountId   String
   title       String
   function    String
@@ -96,6 +106,11 @@ model Contact {
 
 model Initiative {
   id            String  @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId       String  @default("local")
+  teamId        String  @default("local-team")
+  createdBy     String  @default("local")
+  updatedBy     String  @default("local")
   accountId     String
   title         String
   description   String?
@@ -113,6 +128,11 @@ model Initiative {
 
 model TechStackHypothesis {
   id         String  @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId    String  @default("local")
+  teamId     String  @default("local-team")
+  createdBy  String  @default("local")
+  updatedBy  String  @default("local")
   accountId  String
   category   String
   technology String
@@ -128,6 +148,11 @@ model TechStackHypothesis {
 
 model Signal {
   id             String    @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId        String    @default("local")
+  teamId         String    @default("local-team")
+  createdBy      String    @default("local")
+  updatedBy      String    @default("local")
   accountId      String
   type           String
   title          String
@@ -161,6 +186,11 @@ model Signal {
 
 model Opportunity {
   id               String                  @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId          String                  @default("local")
+  teamId           String                  @default("local-team")
+  createdBy        String                  @default("local")
+  updatedBy        String                  @default("local")
   accountId        String
   name             String
   practiceArea     String
@@ -205,6 +235,11 @@ model StageChange {
 
 model Play {
   id                 String     @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId            String     @default("local")
+  teamId             String     @default("local-team")
+  createdBy          String     @default("local")
+  updatedBy          String     @default("local")
   slug               String     @unique
   name               String
   practiceArea       String
@@ -223,6 +258,11 @@ model Play {
 
 model Campaign {
   id        String   @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId   String   @default("local")
+  teamId    String   @default("local-team")
+  createdBy String   @default("local")
+  updatedBy String   @default("local")
   name      String
   accountId String?
   playId    String?
@@ -236,6 +276,11 @@ model Campaign {
 
 model Touch {
   id             String    @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId        String    @default("local")
+  teamId         String    @default("local-team")
+  createdBy      String    @default("local")
+  updatedBy      String    @default("local")
   accountId      String
   campaignId     String?
   channel        String // email | linkedin | call | meeting | event | briefing
@@ -256,13 +301,18 @@ model Touch {
 }
 
 model Event {
-  id       String        @id @default(cuid())
-  name     String
-  kind     String // conference | webinar | partner | briefing | roundtable
-  startsAt DateTime
-  location String?
-  isDemo   Boolean       @default(false)
-  invites  EventInvite[]
+  id        String        @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId   String        @default("local")
+  teamId    String        @default("local-team")
+  createdBy String        @default("local")
+  updatedBy String        @default("local")
+  name      String
+  kind      String // conference | webinar | partner | briefing | roundtable
+  startsAt  DateTime
+  location  String?
+  isDemo    Boolean       @default(false)
+  invites   EventInvite[]
 }
 
 model EventInvite {
@@ -277,6 +327,11 @@ model EventInvite {
 
 model AccountPlanItem {
   id        String    @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId   String    @default("local")
+  teamId    String    @default("local-team")
+  createdBy String    @default("local")
+  updatedBy String    @default("local")
   accountId String
   kind      String // objective | strategy | action
   parentId  String?
@@ -292,6 +347,11 @@ model AccountPlanItem {
 
 model Note {
   id           String   @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId      String   @default("local")
+  teamId       String   @default("local-team")
+  createdBy    String   @default("local")
+  updatedBy    String   @default("local")
   entityType   String // account | opportunity | signal | play | event
   entityId     String
   body         String
@@ -316,16 +376,26 @@ model ActivityLog {
 }
 
 model SavedView {
-  id     String @id @default(cuid())
-  scope  String
-  name   String
-  config Json
+  id        String @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId   String @default("local")
+  teamId    String @default("local-team")
+  createdBy String @default("local")
+  updatedBy String @default("local")
+  scope     String
+  name      String
+  config    Json
 
   @@unique([scope, name])
 }
 
 model DashboardLayout {
   id        String  @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId   String  @default("local")
+  teamId    String  @default("local-team")
+  createdBy String  @default("local")
+  updatedBy String  @default("local")
   name      String  @unique
   widgets   Json
   isDefault Boolean @default(false)
@@ -389,6 +459,11 @@ model ExportTemplate {
 
 model ExportJob {
   id         String   @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId    String   @default("local")
+  teamId     String   @default("local-team")
+  createdBy  String   @default("local")
+  updatedBy  String   @default("local")
   templateId String?
   title      String
   config     Json
@@ -411,6 +486,11 @@ model SandboxScenario {
 
 model ImportBatch {
   id        String         @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId   String         @default("local")
+  teamId    String         @default("local-team")
+  createdBy String         @default("local")
+  updatedBy String         @default("local")
   kind      String // accounts | contacts | opportunities | notes | partner-reps
   fileName  String?
   inputType String // csv | xlsx | paste
@@ -449,6 +529,11 @@ model ImportMapping {
 /// User-entered only (Phase 7.6 builds the co-sell UI on top of this).
 model PartnerRep {
   id             String                  @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId        String                  @default("local")
+  teamId         String                  @default("local-team")
+  createdBy      String                  @default("local")
+  updatedBy      String                  @default("local")
   partnerCompany String
   name           String
   title          String?
@@ -596,6 +681,11 @@ model CorporateRelation {
 
 model Task {
   id            String       @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId       String       @default("local")
+  teamId        String       @default("local-team")
+  createdBy     String       @default("local")
+  updatedBy     String       @default("local")
   title         String
   notes         String?
   dueDate       DateTime?
@@ -620,6 +710,11 @@ model Task {
 /// Imported from a calendar file (.ics). Only attendee DOMAINS are kept (for account matching), never addresses.
 model Meeting {
   id              String    @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId         String    @default("local")
+  teamId          String    @default("local-team")
+  createdBy       String    @default("local")
+  updatedBy       String    @default("local")
   uid             String
   title           String
   startsAt        DateTime
@@ -636,6 +731,11 @@ model Meeting {
 
 model SmartList {
   id        String   @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId   String   @default("local")
+  teamId    String   @default("local-team")
+  createdBy String   @default("local")
+  updatedBy String   @default("local")
   name      String
   entity    String // account | opportunity | signal
   rules     Json // { match: "all" | "any", rules: [{ field, op, value }] }
@@ -656,6 +756,11 @@ model OpportunityPartnerRep {
 /// Deal registrations with partners (user-entered).
 model PartnerRegistration {
   id             String       @id @default(cuid())
+  /// Ownership (Phase 8): filled from the acting user by the db client; "local" in single-user mode.
+  ownerId        String       @default("local")
+  teamId         String       @default("local-team")
+  createdBy      String       @default("local")
+  updatedBy      String       @default("local")
   partnerCompany String
   repId          String?
   accountId      String
@@ -670,4 +775,61 @@ model PartnerRegistration {
   opportunity    Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
 
   @@index([partnerCompany])
+}
+
+// ── Phase 8: team-ready foundations ──
+
+/// Local profiles. In single-user mode there is one row ("local"); teammates added here are names only
+/// (used for @mentions and ownership), never contact details.
+model User {
+  id          String   @id @default(cuid())
+  displayName String
+  title       String?
+  role        String   @default("associate-client-director") // see src/config/roles.ts
+  teamId      String   @default("local-team")
+  isSelf      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+}
+
+/// Comments with @mentions on accounts and opportunities (stored locally).
+model Comment {
+  id         String    @id @default(cuid())
+  entityType String // account | opportunity
+  entityId   String
+  accountId  String?
+  body       String
+  mentions   Json      @default("[]") // user ids
+  authorId   String    @default("local")
+  authorName String? // denormalized so packs keep the author when the user row isn't present
+  parentId   String?
+  ownerId    String    @default("local")
+  teamId     String    @default("local-team")
+  createdBy  String    @default("local")
+  updatedBy  String    @default("local")
+  createdAt  DateTime  @default(now())
+  editedAt   DateTime?
+
+  @@index([entityType, entityId])
+}
+
+/// Who did what: imports, enrichment decisions, exports, packs and deletes. Append-only.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String // e.g. import.commit, enrichment.accept, export.create, pack.import, delete
+  entityType String?
+  entityId   String?
+  summary    String
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
 }

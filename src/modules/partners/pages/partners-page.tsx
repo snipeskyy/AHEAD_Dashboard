@@ -41,7 +41,7 @@ export default function PartnersPage() {
                 <div>
                   <h2 className="text-base font-semibold">{p.company}</h2>
                   <p className="text-muted-foreground text-xs">
-                    <span data-internal-only="true">{formatCurrencyCompact(p.sharedPipeline)} shared pipeline · </span>
+                    <span data-internal-only="true" data-field="opp.amount">{formatCurrencyCompact(p.sharedPipeline)} shared pipeline · </span>
                     {p.sharedOpps} open deals · {p.openRegistrations} open registrations · last joint touch {ago(p.lastJointTouch)}
                   </p>
                 </div>
@@ -68,7 +68,7 @@ export default function PartnersPage() {
                 </ul>
               )}
               {p.registrations.length > 0 && (
-                <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`${p.company} registrations`}>
+                <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`${p.company} registrations`} data-field="partner.registrations">
                   <table className="w-full text-left text-[13px]">
                     <thead className="text-muted-foreground text-xs"><tr>{["Account", "Deal", "Rep", "Reference", "Status", "Expires"].map((h) => <th key={h} className="py-1 pr-3 font-medium">{h}</th>)}</tr></thead>
                     <tbody className="divide-y">{p.registrations.map((g) => (

@@ -28,9 +28,10 @@ export function HomeKpis() {
   const cov = k.coverageRatio;
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
-      <StatTile label="Pipeline" value={formatCurrencyCompact(k.pipelineTotal)} internal />
+      <StatTile label="Pipeline" value={formatCurrencyCompact(k.pipelineTotal)} internal field="opp.amount" />
       <StatTile
         label="Weighted pipeline"
+        field="opp.amount"
         value={formatCurrencyCompact(k.weightedPipeline)}
         internal
       />

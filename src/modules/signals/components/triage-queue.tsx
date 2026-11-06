@@ -108,7 +108,7 @@ export function TriageQueue({ onAction }: { onAction: (a: SignalAction, s: Signa
                   className={cn("grid cursor-pointer gap-1 px-4 py-2.5 text-[13px]", active && "bg-brand-soft ring-primary/40 ring-1 ring-inset")}>
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-medium">{s.title}</span>
-                    <span className="tabular text-muted-foreground shrink-0 text-xs" data-internal-only="true">{Math.round(s.relevance)}</span>
+                    <span className="tabular text-muted-foreground shrink-0 text-xs" data-internal-only="true" data-field="signal.relevance">{Math.round(s.relevance)}</span>
                   </div>
                   <div className="text-muted-foreground text-xs">
                     {s.accountName} · {s.type.replace(/-/g, " ")} · {formatDistanceToNowStrict(new Date(s.publishedAt))} ago

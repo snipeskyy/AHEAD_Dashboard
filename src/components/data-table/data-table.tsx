@@ -37,6 +37,8 @@ export interface ColumnMetaExt<T> {
   csv?: (row: T) => unknown;
   /** Mark columns that must disappear in Presentation Mode. */
   internalOnly?: boolean;
+  /** Role-visibility key; the column is hidden for roles that may not see it. */
+  field?: string;
   width?: number;
 }
 
@@ -139,6 +141,7 @@ export function DataTable<T>({
                     key={h.id}
                     scope="col"
                     data-internal-only={meta?.internalOnly ? "true" : undefined}
+                    data-field={meta?.field}
                     aria-sort={
                       sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none"
                     }
@@ -205,6 +208,7 @@ export function DataTable<T>({
                     <td
                       key={cell.id}
                       data-internal-only={meta?.internalOnly ? "true" : undefined}
+                    data-field={meta?.field}
                       className={cn(
                         "border-b px-3 whitespace-nowrap",
                         meta?.align === "right" && "tabular text-right",

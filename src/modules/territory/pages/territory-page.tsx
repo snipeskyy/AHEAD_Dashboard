@@ -83,7 +83,7 @@ function Row({ r }: { r: TerritoryRow }) {
       <td className="px-4 py-2 whitespace-nowrap">{r.cadence.daysSinceTouch === null ? "—" : `${r.cadence.daysSinceTouch}d ago`}</td>
       <td className={cn("px-4 py-2 whitespace-nowrap", CADENCE_TONE[r.cadence.status])}>{CADENCE_LABEL[r.cadence.status]}</td>
       <td className="tabular px-4 py-2">{Math.round(r.whitespaceScore)}</td>
-      <td className="tabular px-4 py-2" data-internal-only="true">{formatCurrencyCompact(r.openPipeline)}</td>
+      <td className="tabular px-4 py-2" data-internal-only="true" data-field="opp.amount">{formatCurrencyCompact(r.openPipeline)}</td>
       <td className="text-muted-foreground px-4 py-2 text-xs">{r.fiscal?.label ?? "—"}</td>
     </tr>
   );

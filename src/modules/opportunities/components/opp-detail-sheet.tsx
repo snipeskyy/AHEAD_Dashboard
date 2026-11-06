@@ -21,6 +21,7 @@ import { DEAL_RISK_LABELS } from "@/lib/scoring/deal-risk";
 import { useOpportunity, useUpdateOpportunity, type OppPatch } from "../hooks/use-opportunities";
 import { StageBadge } from "./badges";
 import { forecastLabel } from "./opp-filters";
+import { CommentThread } from "@/components/comments/comment-thread";
 import { MeddpiccPanel } from "./meddpicc-panel";
 
 export function OppDetailSheet({ id, onClose }: { id: string | null; onClose: () => void }) {
@@ -37,15 +38,18 @@ function Field({
   label,
   children,
   internal,
+  field,
 }: {
   label: string;
   children: React.ReactNode;
   internal?: boolean;
+  field?: string;
 }) {
   return (
     <div
       className="grid grid-cols-[120px_1fr] items-center gap-2 py-1"
       data-internal-only={internal ? "true" : undefined}
+      data-field={field}
     >
       <span className="text-muted-foreground text-xs">{label}</span>
       <div className="min-w-0">{children}</div>
@@ -116,7 +120,7 @@ function OppDetail({ id }: { id: string }) {
               onCommit={(v) => patch({ practiceArea: v })}
             />
           </Field>
-          <Field label="Amount" internal>
+          <Field label="Amount" internal field="opp.amount">
             <InlineNumber
               label="Amount"
               value={o.amount}
@@ -125,7 +129,7 @@ function OppDetail({ id }: { id: string }) {
               onCommit={(v) => patch({ amount: v })}
             />
           </Field>
-          <Field label="Probability" internal>
+          <Field label="Probability" internal field="opp.forecast">
             <InlineNumber
               label="Probability"
               value={o.probability}
@@ -135,7 +139,7 @@ function OppDetail({ id }: { id: string }) {
               onCommit={(v) => patch({ probability: Math.round(v) })}
             />
           </Field>
-          <Field label="Forecast" internal>
+          <Field label="Forecast" internal field="opp.forecast">
             <InlineSelect
               label="Forecast category"
               value={o.forecastCategory}
@@ -188,7 +192,7 @@ function OppDetail({ id }: { id: string }) {
               onChange={(v) => patch({ partners: v })}
             />
           </Field>
-          <Field label="Competitors" internal>
+          <Field label="Competitors" internal field="opp.competitors">
             <TagPicker
               label="Competitor"
               value={o.competitors}
@@ -199,12 +203,14 @@ function OppDetail({ id }: { id: string }) {
         </section>
 
         <section data-internal-only="true">
+          <div data-field="opp.meddpicc">
           <MeddpiccPanel
             key={o.id}
             value={o.meddpicc}
             stage={o.stage}
             onChange={(m) => patch({ meddpicc: m })}
           />
+          </div>
         </section>
 
         <section>
@@ -235,6 +241,8 @@ function OppDetail({ id }: { id: string }) {
           <h3 className="mb-2 text-sm font-semibold">Notes</h3>
           <NotesList entityType="opportunity" entityId={o.id} compact />
         </section>
+
+        <CommentThread entityType="opportunity" entityId={o.id} />
       </div>
     </>
   );

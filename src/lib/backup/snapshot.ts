@@ -36,6 +36,25 @@ export async function snapshotAll(db: PrismaClient) {
     importMappings: db.importMapping.findMany(),
     partnerReps: db.partnerRep.findMany(),
     partnerRepAccounts: db.partnerRepAccount.findMany(),
+    // Phase 6: enrichment
+    accountFields: db.accountField.findMany(),
+    accountFieldHistory: db.accountFieldHistory.findMany(),
+    fieldProposals: db.fieldProposal.findMany(),
+    enrichmentRuns: db.enrichmentRun.findMany(),
+    enrichmentJobs: db.enrichmentJob.findMany(),
+    financialFacts: db.financialFact.findMany(),
+    corporateRelations: db.corporateRelation.findMany(),
+    // Phase 7: daily use
+    tasks: db.task.findMany(),
+    meetings: db.meeting.findMany(),
+    smartLists: db.smartList.findMany(),
+    opportunityPartnerReps: db.opportunityPartnerRep.findMany(),
+    partnerRegistrations: db.partnerRegistration.findMany(),
+    // Phase 8: team foundations
+    users: db.user.findMany(),
+    teams: db.team.findMany(),
+    comments: db.comment.findMany(),
+    auditLog: db.auditLog.findMany(),
   };
   const keys = Object.keys(tables) as Array<keyof typeof tables>;
   const values = await Promise.all(keys.map((k) => tables[k]));

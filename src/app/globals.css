@@ -249,6 +249,60 @@
   }
 }
 
+
+/* Role visibility (src/config/roles.ts): elements tagged data-field are hidden for roles that may not see them. */
+[data-field-notice] {
+  display: none;
+}
+:root[data-role-hide~="opp.amount"] [data-field~="opp.amount"] {
+  display: none !important;
+}
+:root[data-role-hide~="opp.amount"] [data-field-notice~="opp.amount"] {
+  display: block;
+}
+:root[data-role-hide~="opp.forecast"] [data-field~="opp.forecast"] {
+  display: none !important;
+}
+:root[data-role-hide~="opp.forecast"] [data-field-notice~="opp.forecast"] {
+  display: block;
+}
+:root[data-role-hide~="opp.meddpicc"] [data-field~="opp.meddpicc"] {
+  display: none !important;
+}
+:root[data-role-hide~="opp.meddpicc"] [data-field-notice~="opp.meddpicc"] {
+  display: block;
+}
+:root[data-role-hide~="opp.competitors"] [data-field~="opp.competitors"] {
+  display: none !important;
+}
+:root[data-role-hide~="opp.competitors"] [data-field-notice~="opp.competitors"] {
+  display: block;
+}
+:root[data-role-hide~="account.scores"] [data-field~="account.scores"] {
+  display: none !important;
+}
+:root[data-role-hide~="account.scores"] [data-field-notice~="account.scores"] {
+  display: block;
+}
+:root[data-role-hide~="signal.relevance"] [data-field~="signal.relevance"] {
+  display: none !important;
+}
+:root[data-role-hide~="signal.relevance"] [data-field-notice~="signal.relevance"] {
+  display: block;
+}
+:root[data-role-hide~="partner.registrations"] [data-field~="partner.registrations"] {
+  display: none !important;
+}
+:root[data-role-hide~="partner.registrations"] [data-field-notice~="partner.registrations"] {
+  display: block;
+}
+:root[data-role-hide~="notes"] [data-field~="notes"] {
+  display: none !important;
+}
+:root[data-role-hide~="notes"] [data-field-notice~="notes"] {
+  display: block;
+}
+
 /* Presentation mode: enlarge type & hide internal-only elements */
 :root[data-presentation="true"] [data-internal-only="true"] {
   display: none !important;

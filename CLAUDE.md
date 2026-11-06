@@ -61,6 +61,10 @@ src/lib/adapters              DataAdapter interface + source catalog + public ad
 src/lib/import                import kinds (fields + pure normalizers), mapping, paste parser, value parsers
 src/lib/server/import         parse (CSV/XLSX), plan (validate/match/dedupe/diff), commit, undo
 src/lib/backup, src/lib/data  JSON snapshots (backups/), demo purge
+src/lib/auth                  actor context (runAs), AuthProvider (local + SSO slot), profile/team helpers
+src/lib/team                  pure team helpers: @mentions, shareable pack schema + section gating
+src/lib/server/packs          pack export / import (+ undo via ImportBatch kind "pack"), Play Library packs
+src/config/roles.ts           roles and field visibility (screen, exports, packs)
 src/lib/enrich                enrichment: fields catalog, merge policy, store, runner, identity, sec/gleif/wikidata helpers
 src/lib/enrich/enrichers/<id> one folder per public source (auto-discovered); __fixtures__ + __tests__
 scripts/                      gen-module-index, db-migrate, db-reset, db-backup, purge-demo, with-test-db
@@ -315,6 +319,36 @@ migrations, because Prisma would otherwise report drift.
 - **Quick capture** (`c`) saves a Note with `#tags` and offers each `Action:` / `Next:` / `TODO` / `- [ ]` line as a task.
 - **Shortcuts** must be listed in the `?` overlay (`help-overlay.tsx`); G-sequences come from module commands.
 
+## Phase 8 conventions (team-ready foundations)
+
+- **Ownership.** Core tables carry `ownerId`, `teamId`, `createdBy`, `updatedBy` (defaults `"local"` / `"local-team"`).
+  `db` is wrapped by `withTeamFoundations()` (`src/lib/db-extensions.ts`), which stamps them on create/update from
+  `currentActor()` (`src/lib/auth/actor.ts`). The worker runs as `system` (records it creates are still owned by the
+  local user). Add a new user-facing model to `OWNED_MODELS` (and the schema columns). The extension is a query
+  extension cast back to `PrismaClient`, so callers keep the plain type.
+- **Audit log.** `AuditLog` is append-only. Deletes of owned models are audited automatically by the extension
+  (single-row deletes keep the record's label). Call `audit(db, { action, … })` for imports (`import.commit`/`undo`),
+  enrichment decisions (`enrichment.accept|reject|manual`), exports (`export.create`), packs and plays. `audit()` never
+  throws. UI: Team & sharing → Audit log (`/api/audit`, cursor-paginated).
+- **Auth.** `getAuthProvider()` (`src/lib/auth/server.ts`): local single-user by default; `ACC_AUTH=sso` selects the SSO
+  slot, which throws `AuthNotConfiguredError` until a hosted version is approved. Read the user with `currentUser()`.
+  Teammates are `User` rows with names only (for @mentions and ownership), never contact details.
+- **Roles & visibility** live in `src/config/roles.ts` (`VISIBILITY_FIELDS` → export field keys; `ROLES` → hidden keys).
+  On screen: tag elements with `data-field="<key>"` (StatTile `field`, DataTable `meta.field`, opp `Field field`);
+  `RoleChip` sets `html[data-role-hide]` and CSS hides them (`[data-field-notice]` shows a placeholder). Exports merge
+  `exportHiddenFor(role)` as locked `roleHidden`; packs gate sections with `effectiveSections()`.
+- **Comments** (`Comment`, `/api/comments`) on accounts and opportunities. Mentions are re-derived server-side from
+  `@Display Name` tokens (`findMentions`, longest name first). A mention of the local user from someone else (e.g. in an
+  imported pack) creates a `mention` notification. Only the author edits/deletes.
+- **Shareable packs** (`acc-pack` v1, `src/lib/team/pack-schema.ts`). Export: chosen accounts + sections (profile
+  fields with provenance, evidence, committee roles, optional names/tier/opps/amounts/notes/comments); demo accounts are
+  refused. Import: preview matches (domain, then legal name) → merge/create/skip → one `ImportBatch` (kind `pack`) so
+  Import → History can undo it. Profile values arrive as `FieldProposal`s (`enricherId: "pack"`) for review; evidence
+  without a public link is stored as `user-hypothesis`; children, notes and comments are de-duplicated on re-import.
+- **Play Library packs** (`acc-plays` v1): export all plays; import previews new / changed / identical and only
+  replaces changed plays when asked (`origin: "imported"`).
+- **Hosting** is a proposal only: `docs/TEAM_DEPLOYMENT.md`. Don't deploy or add hosting.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -348,5 +382,5 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 5: demo data removed (test-DB fixtures, purge + backups), onboarding + empty states, import wizard
 - [x] Phase 6: identity resolution + public-data enrichment engine (10 enrichers, review UI, queue)
 - [x] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
-- [ ] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
+- [x] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
 - [ ] Phase 9: polish and hardening

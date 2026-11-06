@@ -80,7 +80,7 @@ export function useOppColumns(): Col[] {
         id: "amount",
         header: "Amount",
         accessorFn: (r) => r.amount,
-        meta: { align: "right", csv: (r) => r.amount, internalOnly: true, width: 120 },
+        meta: { align: "right", csv: (r) => r.amount, internalOnly: true, width: 120, field: "opp.amount" },
         cell: ({ row: { original: r } }) => (
           <InlineNumber
             label={`Amount for ${r.name}`}

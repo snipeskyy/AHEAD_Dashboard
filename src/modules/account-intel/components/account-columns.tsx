@@ -74,14 +74,14 @@ export const accountColumns: Col[] = [
     id: "health",
     header: "Health",
     accessorFn: (r) => r.healthScore,
-    meta: { csv: (r) => r.healthScore, internalOnly: true },
+    meta: { csv: (r) => r.healthScore, internalOnly: true, field: "account.scores" },
     cell: ({ getValue }) => <ScorePill value={getValue() as number} label="Health" />,
   },
   {
     id: "whitespace",
     header: "Whitespace",
     accessorFn: (r) => r.whitespaceScore,
-    meta: { csv: (r) => r.whitespaceScore, internalOnly: true },
+    meta: { csv: (r) => r.whitespaceScore, internalOnly: true, field: "account.scores" },
     cell: ({ getValue }) => <MagnitudeBar value={getValue() as number} label="Whitespace" />,
   },
   {

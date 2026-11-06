@@ -120,7 +120,7 @@ function Column({
           <span className="text-muted-foreground tabular ml-1 font-normal">{rows.length}</span>
         </h2>
         <span className="text-muted-foreground tabular text-xs" data-internal-only="true">
-          {formatCurrencyCompact(total)}
+          <span data-field="opp.amount">{formatCurrencyCompact(total)}</span>
         </span>
       </header>
       {closed && (
@@ -188,7 +188,7 @@ function CardBody({ row, dragging }: { row: OppRow; dragging?: boolean }) {
       </div>
       <div className="mt-2.5 flex items-center justify-between text-xs">
         <span className="tabular font-medium" data-internal-only="true">
-          {formatCurrencyCompact(row.amount)}
+          <span data-field="opp.amount">{formatCurrencyCompact(row.amount)}</span>
         </span>
         <span className="text-muted-foreground">{format(new Date(row.closeDate), "MMM d")}</span>
       </div>

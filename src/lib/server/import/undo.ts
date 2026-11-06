@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { computeScoresForAccounts } from "@/lib/scoring/account-scores";
+import { audit } from "@/lib/db-extensions";
 import { logActivity } from "../activity";
 import { HttpError } from "../http";
 
@@ -90,6 +91,19 @@ export async function undoImport(batchId: string) {
       case "note":
         await db.note.deleteMany({ where: { id: r.entityId } });
         break;
+      // Shareable packs (Phase 8): items attached to an account; created only, so undo deletes them.
+      case "proposal":
+        await db.fieldProposal.deleteMany({ where: { id: r.entityId, status: "pending" } });
+        break;
+      case "initiative":
+        await db.initiative.deleteMany({ where: { id: r.entityId } });
+        break;
+      case "tech":
+        await db.techStackHypothesis.deleteMany({ where: { id: r.entityId } });
+        break;
+      case "comment":
+        await db.comment.deleteMany({ where: { id: r.entityId } });
+        break;
       case "partner-rep": {
         if (r.action === "created") {
           await db.partnerRep.deleteMany({ where: { id: r.entityId } });
@@ -121,5 +135,6 @@ export async function undoImport(batchId: string) {
     action: "import.undone",
     summary: `Undid ${batch.kind} import${batch.fileName ? ` (${batch.fileName})` : ""}`,
   });
+  await audit(db, { action: "import.undo", entityType: "import", entityId: batchId, summary: `Undid ${batch.kind} import${batch.fileName ? ` (${batch.fileName})` : ""}` });
   return { ok: true };
 }

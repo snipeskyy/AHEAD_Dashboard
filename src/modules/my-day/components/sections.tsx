@@ -87,7 +87,7 @@ export function Signals({ items }: { items: MyDay["signals"] }) {
         <li key={s.id} className="py-2 text-[13px]">
           <div className="flex items-start justify-between gap-2">
             <Link href={`/signals?focus=${s.id}`} className="font-medium hover:underline">{s.title}</Link>
-            <span className="tabular text-muted-foreground shrink-0 text-xs" data-internal-only="true">{Math.round(s.relevance)}</span>
+            <span className="tabular text-muted-foreground shrink-0 text-xs" data-internal-only="true" data-field="signal.relevance">{Math.round(s.relevance)}</span>
           </div>
           <div className="text-muted-foreground text-xs"><Link href={`/accounts/${s.accountId}`} className="hover:underline">{s.accountName}</Link> · {s.type.replace(/-/g, " ")}</div>
           <Suggest s={s.suggestion} />
@@ -122,7 +122,7 @@ export function Deals({ items }: { items: MyDay["deals"] }) {
         <li key={o.id} className="py-2 text-[13px]">
           <div className="flex items-start justify-between gap-2">
             <Link href={`/opportunities?focus=${o.id}`} className="font-medium hover:underline">{o.name}</Link>
-            <span className="tabular shrink-0 text-xs" data-internal-only="true">{formatCurrencyCompact(o.amount)}</span>
+            <span className="tabular shrink-0 text-xs" data-internal-only="true" data-field="opp.amount">{formatCurrencyCompact(o.amount)}</span>
           </div>
           <div className="text-muted-foreground text-xs">{o.accountName} · {o.stage} · closes {format(new Date(o.closeDate), "MMM d")}</div>
           <Suggest s={o.suggestion} />

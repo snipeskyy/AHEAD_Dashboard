@@ -10,12 +10,14 @@ export function PipelineKpiStrip({ k, extra }: { k: Kpis; extra?: React.ReactNod
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
       <StatTile
         label="Pipeline"
+        field="opp.amount"
         value={formatCurrencyCompact(k.pipelineTotal)}
         sub={`${k.activeOpps} active opps`}
         internal
       />
       <StatTile
         label="Weighted pipeline"
+        field="opp.amount"
         value={formatCurrencyCompact(k.weightedPipeline)}
         sub="amount × probability"
         internal

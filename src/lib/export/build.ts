@@ -2,6 +2,8 @@ import "server-only";
 import { db } from "@/lib/db";
 import { discoveredBuilders } from "@/modules/_generated.server";
 import { registry } from "@/modules/registry";
+import { exportHiddenFor } from "@/config/roles";
+import { currentUser } from "@/lib/auth/server";
 import { HttpError } from "@/lib/server/http";
 import type { BuildAccount } from "./builder-types";
 import { renderChartSvg } from "./chart-svg";
@@ -56,6 +58,7 @@ export async function buildDocument(
   const red = applyRedaction(sections, defs, {
     audience: config.audience,
     hiddenFields: config.hiddenFields,
+    roleHidden: exportHiddenFor((await currentUser()).role),
     mode: opts.mode,
   });
   if (opts.renderCharts !== false) {

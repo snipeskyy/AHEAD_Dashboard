@@ -10,9 +10,10 @@ import m_opportunities from "./opportunities/module";
 import m_partners from "./partners/module";
 import m_sandbox from "./sandbox/module";
 import m_settings from "./settings/module";
+import m_sharing from "./sharing/module";
 import m_signals from "./signals/module";
 import m_smart_lists from "./smart-lists/module";
 import m_tasks from "./tasks/module";
 import m_territory from "./territory/module";
 
-export const discoveredModules: AccModule[] = [m_account_intel, m_command_home, m_demand_gen, m_exports, m_imports, m_my_day, m_opportunities, m_partners, m_sandbox, m_settings, m_signals, m_smart_lists, m_tasks, m_territory];
+export const discoveredModules: AccModule[] = [m_account_intel, m_command_home, m_demand_gen, m_exports, m_imports, m_my_day, m_opportunities, m_partners, m_sandbox, m_settings, m_sharing, m_signals, m_smart_lists, m_tasks, m_territory];

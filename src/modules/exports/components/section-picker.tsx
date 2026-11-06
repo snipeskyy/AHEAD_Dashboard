@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ExportConfig } from "@/lib/export/config";
+import { useMe } from "@/hooks/use-me";
 import { fieldStates } from "@/lib/export/redaction";
 import { cn } from "@/lib/utils";
 import { registry } from "@/modules/registry";
@@ -41,6 +42,7 @@ export function SectionPicker({
     [list[i], list[j]] = [list[j], list[i]];
     onChange({ ...config, sections: list });
   };
+  const roleHidden = useMe().data?.role.exportHidden ?? [];
   const toggleField = (key: string, visible: boolean) =>
     onChange({
       ...config,
@@ -55,7 +57,7 @@ export function SectionPicker({
         const on = enabled.includes(d.id);
         const stub = d.status === "stub";
         const internalBlocked = config.audience === "customer" && !!d.internalOnly;
-        const fields = fieldStates(d, config);
+        const fields = fieldStates(d, { ...config, roleHidden });
         const idx = enabled.indexOf(d.id);
         return (
           <li key={d.id} className={cn("bg-card rounded-md border", !on && "bg-muted/30")}>
@@ -152,9 +154,10 @@ export function SectionPicker({
                     {f.visibility === "internal" && (
                       <span className="text-muted-foreground inline-flex items-center gap-0.5 text-[10px]">
                         <Lock className="size-2.5" aria-hidden />
-                        internal{f.locked ? " — hidden for customers" : ""}
+                        internal{f.locked && !roleHidden.includes(f.key) ? " — hidden for customers" : ""}
                       </span>
                     )}
+                    {roleHidden.includes(f.key) && <span className="text-muted-foreground text-[10px]">· hidden for your role</span>}
                   </label>
                 ))}
               </div>

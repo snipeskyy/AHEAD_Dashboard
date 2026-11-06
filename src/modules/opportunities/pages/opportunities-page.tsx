@@ -233,8 +233,13 @@ export default function OpportunitiesPage() {
               onOpen={(id) => setParam({ focus: id })}
             />
           )}
-          {view === "forecast" && <ForecastView a={analytics} />}
-          {view === "analytics" && <AnalyticsView a={analytics} />}
+          {(view === "forecast" || view === "analytics") && (
+            <p data-field-notice="opp.amount" className="bg-card text-muted-foreground rounded-lg border p-4 text-[13px]">
+              Pipeline dollar views are hidden for your role (Settings → Profile & team).
+            </p>
+          )}
+          {view === "forecast" && <div data-field="opp.amount"><ForecastView a={analytics} /></div>}
+          {view === "analytics" && <div data-field="opp.amount"><AnalyticsView a={analytics} /></div>}
           {filtered.length === 0 && view !== "table" && (
             <StatTile
               label="No matches"

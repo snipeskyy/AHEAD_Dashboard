@@ -5,14 +5,16 @@ export interface RedactionPolicy {
   audience: "internal" | "customer";
   hiddenFields: string[];
   mode: "apply" | "preview";
+  /** Export fields the user's role may not export (src/config/roles.ts). Locked off, like customer audience. */
+  roleHidden?: string[];
 }
 
 /** The set of "<sectionId>.<fieldId>" keys that must not appear, given audience + explicit toggles. */
 export function hiddenFieldSet(
   defs: ExportSectionDefinition[],
-  policy: Pick<RedactionPolicy, "audience" | "hiddenFields">,
+  policy: Pick<RedactionPolicy, "audience" | "hiddenFields" | "roleHidden">,
 ): Set<string> {
-  const hidden = new Set(policy.hiddenFields);
+  const hidden = new Set([...policy.hiddenFields, ...(policy.roleHidden ?? [])]);
   if (policy.audience === "customer")
     for (const d of defs)
       for (const f of d.fields) if (f.visibility === "internal") hidden.add(`${d.id}.${f.id}`);
@@ -22,11 +24,11 @@ export function hiddenFieldSet(
 /** Fields the user may toggle; in customer mode internal fields are locked off. */
 export function fieldStates(
   def: ExportSectionDefinition,
-  policy: Pick<RedactionPolicy, "audience" | "hiddenFields">,
+  policy: Pick<RedactionPolicy, "audience" | "hiddenFields" | "roleHidden">,
 ) {
   return def.fields.map((f) => {
     const key = `${def.id}.${f.id}`;
-    const locked = policy.audience === "customer" && f.visibility === "internal";
+    const locked = (policy.audience === "customer" && f.visibility === "internal") || !!policy.roleHidden?.includes(key);
     return { ...f, key, locked, visible: !locked && !policy.hiddenFields.includes(key) };
   });
 }

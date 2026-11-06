@@ -9,6 +9,7 @@ export function StatTile({
   internal,
   className,
   tone,
+  field,
 }: {
   label: string;
   value: ReactNode;
@@ -16,10 +17,13 @@ export function StatTile({
   internal?: boolean;
   className?: string;
   tone?: "good" | "warning" | "critical";
+  /** Role-visibility key (src/config/roles.ts); hidden for roles that may not see it. */
+  field?: string;
 }) {
   return (
     <div
       data-internal-only={internal ? "true" : undefined}
+      data-field={field}
       className={cn("bg-card min-w-0 rounded-lg border px-4 py-3", className)}
     >
       <div className="text-muted-foreground truncate text-xs">{label}</div>

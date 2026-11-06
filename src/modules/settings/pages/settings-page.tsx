@@ -1,17 +1,19 @@
 "use client";
-import { Blocks, Database, Palette, PlugZap, Sigma, Tags } from "lucide-react";
+import { Blocks, Database, Palette, PlugZap, Sigma, Tags, UserRound } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import { AppearanceSettings } from "../components/appearance-settings";
 import { DataSettings } from "../components/data-settings";
 import { ModuleSettings } from "../components/module-settings";
+import { ProfileSettings } from "../components/profile-settings";
 import { ScoringSettings } from "../components/scoring-settings";
 import { SourceSettings } from "../components/source-settings";
 import { TaxonomySettings } from "../components/taxonomy-settings";
 
 const SECTIONS = [
   { id: "appearance", label: "Appearance", icon: Palette, Component: AppearanceSettings },
+  { id: "profile", label: "Profile & team", icon: UserRound, Component: ProfileSettings },
   { id: "modules", label: "Modules & flags", icon: Blocks, Component: ModuleSettings },
   { id: "sources", label: "Data sources", icon: PlugZap, Component: SourceSettings },
   { id: "scoring", label: "Scoring", icon: Sigma, Component: ScoringSettings },

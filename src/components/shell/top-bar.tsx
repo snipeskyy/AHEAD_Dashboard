@@ -7,6 +7,7 @@ import { useUiStore } from "@/stores/ui-store";
 import { TestDbChip } from "./data-guard";
 import { NotificationCenter } from "./notification-center";
 import { PresentationToggle } from "./presentation-toggle";
+import { RoleChip } from "./role-chip";
 import { SidebarNav, Wordmark } from "./sidebar";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -51,6 +52,7 @@ export function TopBar() {
 
       <div className="ml-auto flex shrink-0 items-center gap-1.5">
         <TestDbChip />
+        <RoleChip />
         <PresentationToggle />
         <ThemeToggle />
         <NotificationCenter />

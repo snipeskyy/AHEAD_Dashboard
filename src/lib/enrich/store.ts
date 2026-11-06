@@ -4,6 +4,7 @@
  */
 import type { Prisma, PrismaClient } from "@prisma/client";
 import { inferSeniority } from "@/lib/import/kinds/contacts";
+import { audit } from "@/lib/db-extensions";
 import { columnValue, FIELD_BY_ID, listKind } from "./fields";
 import { decide, type Confidence } from "./merge";
 import type { EnrichResult, ProposalInput } from "./types";
@@ -241,21 +242,22 @@ export async function acceptProposal(db: PrismaClient, id: string, now = new Dat
       });
   }
   await db.fieldProposal.update({ where: { id }, data: { status: "accepted", decidedAt: now } });
+  await audit(db, { action: "enrichment.accept", entityType: "account", entityId: p.accountId, summary: `Accepted ${p.field} from ${p.source}`, meta: { proposalId: id, field: p.field, sourceUrl: p.sourceUrl } });
   return p;
 }
 
-export const rejectProposal = (db: PrismaClient, id: string, now = new Date()) =>
-  db.fieldProposal.updateMany({
-    where: { id, status: "pending" },
-    data: { status: "rejected", decidedAt: now },
-  });
+export async function rejectProposal(db: PrismaClient, id: string, now = new Date()) {
+  const p = await db.fieldProposal.findUnique({ where: { id }, select: { accountId: true, field: true, source: true } });
+  const r = await db.fieldProposal.updateMany({ where: { id, status: "pending" }, data: { status: "rejected", decidedAt: now } });
+  if (p && r.count) await audit(db, { action: "enrichment.reject", entityType: "account", entityId: p.accountId, summary: `Rejected ${p.field} from ${p.source}`, meta: { proposalId: id } });
+  return r;
+}
 
 /** The user typed a value: highest precedence, locked against enrichment. */
-export const setManualValue = (
-  db: PrismaClient,
-  accountId: string,
-  field: string,
-  value: unknown,
-) => applyValue(db, accountId, field, value, { source: "user", confidence: "user", lock: true });
+export async function setManualValue(db: PrismaClient, accountId: string, field: string, value: unknown) {
+  const r = await applyValue(db, accountId, field, value, { source: "user", confidence: "user", lock: true });
+  await audit(db, { action: "enrichment.manual", entityType: "account", entityId: accountId, summary: `Set ${field} by hand (locked)` });
+  return r;
+}
 
 export type { ProposalInput };

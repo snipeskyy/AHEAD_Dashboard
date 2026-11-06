@@ -64,7 +64,7 @@ export function ImportHistory() {
               <td className="px-4 py-2 whitespace-nowrap">
                 {format(new Date(b.createdAt), "MMM d, yyyy h:mm a")}
               </td>
-              <td className="px-4 py-2">{KIND_DEFS[b.kind]?.label ?? b.kind}</td>
+              <td className="px-4 py-2">{(b.kind as string) === "pack" ? "Shareable pack" : (KIND_DEFS[b.kind as keyof typeof KIND_DEFS]?.label ?? b.kind)}</td>
               <td className="max-w-56 truncate px-4 py-2">
                 {b.fileName ?? (b.inputType === "paste" ? "Pasted list" : b.inputType)}
               </td>

@@ -61,7 +61,7 @@ export function PartnerPanel({ accountId }: { accountId: string }) {
         ))}
       </ul>
       {data.registrations.length > 0 && (
-        <p className="text-muted-foreground text-xs">Registrations: {data.registrations.map((g) => `${g.partnerCompany} ${g.reference ?? ""} (${g.status}${g.opportunity ? `, ${g.opportunity.name}` : ""})`).join(" · ")}</p>
+        <p className="text-muted-foreground text-xs" data-field="partner.registrations">Registrations: {data.registrations.map((g) => `${g.partnerCompany} ${g.reference ?? ""} (${g.status}${g.opportunity ? `, ${g.opportunity.name}` : ""})`).join(" · ")}</p>
       )}
     </section>
   );

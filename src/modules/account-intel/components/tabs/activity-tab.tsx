@@ -51,7 +51,7 @@ export function ActivityTab({ accountId }: { accountId: string }) {
           </div>
         );
         return (
-          <li key={`${i.kind}-${i.id}`}>
+          <li key={`${i.kind}-${i.id}`} data-field={i.kind === "note" ? "notes" : undefined}>
             {header && (
               <h3 className="text-muted-foreground mt-3 mb-1 text-xs font-medium first:mt-0">
                 {header}

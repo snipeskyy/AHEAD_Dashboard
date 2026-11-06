@@ -9,6 +9,7 @@ import type { OppImportValue } from "@/lib/import/kinds/opportunities";
 import type { PartnerRepImportValue } from "@/lib/import/kinds/partner-reps";
 import type { ImportKind, InputType, MappedRow } from "@/lib/import/types";
 import { computeScoresForAccounts } from "@/lib/scoring/account-scores";
+import { audit } from "@/lib/db-extensions";
 import { logActivity } from "../activity";
 import { createOpportunity, updateOpportunity } from "../opportunities";
 import { mergePlan } from "./diff";
@@ -82,6 +83,13 @@ export async function commitImport(input: CommitInput) {
       summary: `Imported ${input.kind}: ${counts.created} created, ${counts.merged} merged${input.fileName ? ` from ${input.fileName}` : ""}`,
       diff: counts,
     });
+  await audit(db, {
+    action: "import.commit",
+    entityType: "import",
+    entityId: batch.id,
+    summary: `Imported ${input.kind}${input.fileName ? ` from ${input.fileName}` : ""}: ${counts.created} created, ${counts.merged} merged, ${counts.skipped} skipped`,
+    meta: counts,
+  });
   const createdAccounts =
     input.kind === "accounts"
       ? records.filter((r) => r.action === "created").map((r) => r.entityId)

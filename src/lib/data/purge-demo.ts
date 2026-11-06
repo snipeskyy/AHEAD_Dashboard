@@ -66,6 +66,7 @@ export async function purgeDemoData(db: PrismaClient, opts: { exportsDir?: strin
   await inChunks(demoEntityIds, async (chunk) => {
     notes += (await db.note.deleteMany({ where: { entityId: { in: chunk } } })).count;
     activity += (await db.activityLog.deleteMany({ where: { entityId: { in: chunk } } })).count;
+    await db.comment.deleteMany({ where: { entityId: { in: chunk } } });
   });
   const notifications = (
     await db.notification.deleteMany({

@@ -69,7 +69,7 @@ export function NotesList({
       {isLoading ? null : !data?.length ? (
         <p className="text-muted-foreground text-sm">No notes yet.</p>
       ) : (
-        <ul className="grid gap-2">
+        <ul className="grid gap-2" data-field="notes">
           {data.map((n) => (
             <li
               key={n.id}

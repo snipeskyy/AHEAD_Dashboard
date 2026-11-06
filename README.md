@@ -179,6 +179,13 @@ screen-sharing. A banner stays visible with a one-click **Exit**.
 - Triage (Live Signals → Triage): `J`/`K` move, `S` star, `D` dismiss, `P` play, `O` opp, `N` note, `T` task, `E` handled
 - `G ,`: open Settings
 
+**Team & sharing (local, no hosting):** set your name and role in Settings → Profile & team (roles hide fields such as
+deal amounts on screen, in exports and in packs). Share accounts with a teammate as a **pack** file (Team & sharing →
+Share accounts); they import it with a preview, matched by domain/legal name, and can undo it from Import → History.
+The Play Library exports/imports the same way. Comments with @mentions sit on every account and opportunity, and the
+Audit log records imports, enrichment decisions, exports and deletes. The hosted multi-user path is a proposal in
+`docs/TEAM_DEPLOYMENT.md`.
+
 **Calendar:** export your calendar as `.ics` and import it on My Day. Only titles, times and attendee **domains** are
 stored (never addresses or names); meetings are matched to accounts by domain and get a one-click prep brief.
 
@@ -193,5 +200,6 @@ stored (never addresses or names); meetings are matched to accounts by domain an
 | 5. Clean slate, onboarding, import wizard with dedupe + undo    | ✅     |
 | 6. Identity resolution and public-data enrichment               | ✅     |
 | 7. My Day, prep briefs, triage, tasks, cadence, partners, lists | ✅     |
+| 8. Team foundations: ownership, roles, comments, packs, audit   | ✅     |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

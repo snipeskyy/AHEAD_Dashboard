@@ -6,13 +6,16 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
 import { z } from "zod";
 import { SIGNAL_ADAPTERS } from "../lib/adapters";
+import { SYSTEM_ACTOR, setDefaultActor } from "../lib/auth/actor";
+import { withTeamFoundations } from "../lib/db-extensions";
 import { drainEnrichmentQueue, queueStaleRefresh } from "../lib/enrich/runner";
 import { computeScoresForAccounts } from "../lib/scoring/account-scores";
 import { createSqliteSearchProvider } from "../lib/search/sqlite-provider";
 import { rescoreSignals, retagSignals } from "./rescore";
 import { createScheduler } from "./scheduler";
 
-const db = new PrismaClient();
+setDefaultActor(SYSTEM_ACTOR);
+const db = withTeamFoundations(new PrismaClient());
 const log = (...a: unknown[]) =>
   console.log(`[worker ${new Date().toISOString().slice(11, 19)}]`, ...a);
 const scheduler = createScheduler(db, SIGNAL_ADAPTERS, log);

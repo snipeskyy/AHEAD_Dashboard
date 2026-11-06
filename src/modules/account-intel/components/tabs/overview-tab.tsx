@@ -12,6 +12,7 @@ import type { Account360 } from "../../hooks/use-accounts";
 import { useAccountMutation } from "../../hooks/use-accounts";
 import { SourceTag } from "../evidence-link";
 import { ScoreBreakdown } from "../score-breakdown";
+import { CommentThread } from "@/components/comments/comment-thread";
 import { PartnerPanel } from "../partner-panel";
 
 const rel = (iso: string) => formatDistanceToNowStrict(new Date(iso), { addSuffix: true });
@@ -43,11 +44,12 @@ export function OverviewTab({ d }: { d: Account360 }) {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile
           label="Open pipeline"
+          field="opp.amount"
           value={formatCurrencyCompact(d.opps.openAmount)}
           sub={`${d.opps.openCount} open opps · ${formatCurrencyCompact(d.opps.weighted)} weighted`}
           internal
         />
-        <StatTile label="Won (all time)" value={formatCurrencyCompact(d.opps.wonAmount)} internal />
+        <StatTile label="Won (all time)" value={formatCurrencyCompact(d.opps.wonAmount)} internal field="opp.amount" />
         <StatTile
           label="Last touch"
           value={d.touches.last ? rel(d.touches.last.at) : "Never"}
@@ -236,6 +238,7 @@ export function OverviewTab({ d }: { d: Account360 }) {
         </section>
       </div>
       <PartnerPanel accountId={d.account.id} />
+      <CommentThread entityType="account" entityId={d.account.id} />
     </div>
   );
 }

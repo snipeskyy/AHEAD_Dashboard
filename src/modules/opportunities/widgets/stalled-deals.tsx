@@ -31,7 +31,7 @@ export default function StalledDealsWidget({ height }: WidgetProps) {
               </div>
             </div>
             <span className="tabular shrink-0 text-[13px] font-medium" data-internal-only="true">
-              {formatCurrencyCompact(o.amount)}
+              <span data-field="opp.amount">{formatCurrencyCompact(o.amount)}</span>
             </span>
           </Link>
         </WidgetRow>
