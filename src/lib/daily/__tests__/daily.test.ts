@@ -117,3 +117,11 @@ describe("smart lists", () => {
     expect(matches(row, { match: "all", rules: [{ field: "name", op: "contains", value: "holdings" }] }, now)).toBe(true);
   });
 });
+
+describe("forDeal past close date", () => {
+  it("says the close date passed instead of a negative countdown", async () => {
+    const { forDeal } = await import("../next-action");
+    const s = forDeal({ closeInDays: -24, stalledDays: null, hasNextStepDate: true, meddpiccScore: 20 }, 21);
+    expect(s.reason).toBe("Close date passed 24 days ago");
+  });
+});

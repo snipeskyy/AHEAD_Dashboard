@@ -100,11 +100,11 @@ export function TriageQueue({ onAction }: { onAction: (a: SignalAction, s: Signa
         {!items.length ? (
           <EmptyState icon={PartyPopper} title="Inbox zero" description="Every recent signal has been triaged. New ones appear here as public sources report them." />
         ) : (
-          <ul ref={listRef} className="bg-card divide-y rounded-lg border" role="listbox" aria-label="Signals to triage" aria-activedescendant={cur ? `tri-${cur.id}` : undefined} tabIndex={0}>
+          <ul ref={listRef} className="bg-card divide-y rounded-lg border" aria-label="Signals to triage" tabIndex={0}>
             {items.map((s, i) => {
               const active = s.id === cur?.id;
               return (
-                <li key={s.id} id={`tri-${s.id}`} role="option" aria-selected={active} aria-current={active} onClick={() => setIdx(i)}
+                <li key={s.id} id={`tri-${s.id}`} aria-current={active ? "true" : undefined} onClick={() => setIdx(i)}
                   className={cn("grid cursor-pointer gap-1 px-4 py-2.5 text-[13px]", active && "bg-brand-soft ring-primary/40 ring-1 ring-inset")}>
                   <div className="flex items-start justify-between gap-3">
                     <span className="font-medium">{s.title}</span>

@@ -37,6 +37,8 @@ export function forCadence(a: { name: string; tier: string; daysSinceTouch: numb
 }
 
 export function forDeal(o: { closeInDays: number; stalledDays: number | null; hasNextStepDate: boolean; meddpiccScore: number }, stalledThreshold: number): Suggestion {
+  if (o.closeInDays < 0)
+    return { action: "Update the close date or close the deal out", reason: `Close date passed ${-o.closeInDays} day${o.closeInDays === -1 ? "" : "s"} ago` };
   if (!o.hasNextStepDate) return { action: "Set a dated next step", reason: "Every open deal needs a next step with a date" };
   if (o.stalledDays !== null && o.stalledDays >= stalledThreshold)
     return { action: "Re-engage the champion and confirm the decision timeline", reason: `No stage change in ${o.stalledDays} days` };

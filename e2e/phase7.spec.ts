@@ -131,7 +131,7 @@ test.describe("Phase 7: daily use", () => {
     await hydrated(page);
     const before = Number((await counter.innerText()).match(/\d+/)![0]);
     expect(before).toBeGreaterThan(2);
-    await page.getByRole("listbox", { name: "Signals to triage" }).focus();
+    await page.getByRole("list", { name: "Signals to triage" }).focus();
     await page.keyboard.press("j");
     await page.keyboard.press("k");
     await page.keyboard.press("s");
