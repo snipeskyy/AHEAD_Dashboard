@@ -61,6 +61,8 @@ src/lib/adapters              DataAdapter interface + source catalog + public ad
 src/lib/import                import kinds (fields + pure normalizers), mapping, paste parser, value parsers
 src/lib/server/import         parse (CSV/XLSX), plan (validate/match/dedupe/diff), commit, undo
 src/lib/backup, src/lib/data  JSON snapshots (backups/), demo purge
+src/lib/enrich                enrichment: fields catalog, merge policy, store, runner, identity, sec/gleif/wikidata helpers
+src/lib/enrich/enrichers/<id> one folder per public source (auto-discovered); __fixtures__ + __tests__
 scripts/                      gen-module-index, db-migrate, db-reset, db-backup, purge-demo, with-test-db
 src/modules/<id>/module.ts    module manifests (auto-discovered); pages/, components/, widgets/
 src/modules/registry.ts       registry + validation + route matching (do not list modules by hand)
@@ -257,6 +259,31 @@ migrations, because Prisma would otherwise report drift.
 - **Jobs report results.** The worker writes `JobRequest.result` / `finishedAt`; `useFetchNow()` polls
   `/api/jobs/<id>` and toasts per-source outcomes (or says the worker isn't running).
 
+## Phase 6 conventions (public-data enrichment)
+
+- **Pipeline.** Identity resolution → enrichers → proposals → merge policy → review. Enrichers live in
+  `src/lib/enrich/enrichers/<id>/` (default-export `Enricher`, pure `normalize.ts`, fictional fixtures); see
+  `docs/ADDING_AN_ENRICHER.md`. They run in the **worker** (`drainEnrichmentQueue`, own lane, concurrency +
+  pause from settings). The only server-side call path in Next is identity search (`/api/accounts/:id/identity`, read-only).
+- **Every write goes through `src/lib/enrich/store.ts`**: `recordResult()` (per enricher run), `applyValue()`
+  (provenance + history + Account column mirror + sourceConfig for job board / RSS), `acceptProposal()`,
+  `rejectProposal()`, `setManualValue()` (user value, locked). Never write `AccountField` directly.
+- **Merge policy** (`merge.ts`, pure, tested): user > verified > high > medium > low. Locked fields never change
+  ("newer public value available" instead). High-confidence values auto-fill EMPTY or lower-precedence fields when
+  `enrichment.autoApply` is on; everything else is pending. List items (`evidence.initiative:*`, `tech:*`,
+  `contact:*`) are always reviewed; accepting creates Initiative / TechStackHypothesis / Contact with sourceUrl;
+  decided list items aren't re-proposed.
+- **Fields** are declared in `fields.ts` (`FIELD_DEFS`: section, kind, tier weights for completeness, Account column).
+  Completeness = weighted filled fields + contacts ≥ 3 + initiatives > 0 (`completeness.ts`).
+- **Sources & policy.** SEC (submissions, XBRL facts, 10-K text, Form 3/4 officers) needs `SEC_USER_AGENT`.
+  Others send `ENRICH_USER_AGENT` (fallback SEC UA). Host gaps in `http.ts` (`HOST_GAP`). Website fetches go through
+  `ctx.http.page()` (robots.txt honored). PeeringDB and USAspending are optional (off by default). Wikidata/GLEIF only
+  auto-match on an exact normalized legal name; anything ambiguous is left for the identity dialog.
+- **Material 8-K items** (1.01, 1.05, 2.01, 5.02) are `priority: "high"` signals: relevance floor 90, always alert.
+- **Status** (`status.ts`): not-enriched / queued / running / review / up-to-date / stale / failed, from the latest job,
+  runs vs TTL and pending proposals. `/api/enrichment/overview` feeds the Accounts columns and "Stale data" filter.
+- **Contacts from filings** are suggestions with `Contact.source/sourceUrl`; nothing is added without acceptance.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -274,6 +301,10 @@ migrations, because Prisma would otherwise report drift.
 - **Google News stays, opt-in per account** (approved). It has no official API; all other sources use official APIs.
   Bulk opt-in is one click from Live Signals → Source coverage or after an import.
 - **AHEAD branding via local brand pack** (approved Nov 2026). Assets stay out of git; the public repo stays neutral.
+- **Enrichers (Phase 6) verified live at build time (Nov 2026)**: SEC submissions/companyfacts/Archives, GLEIF
+  lei-records (+ parent/children), dns.google JSON, Greenhouse/Lever/Ashby/SmartRecruiters posting APIs, PeeringDB
+  org/net/netfac, USAspending spending_by_award (POST). Wikidata returned 429 from the shared cloud IP during the build,
+  so its parser is fixture-tested against the documented entity JSON; it backs off on 429.
 - **Prisma 6.19** (stable) is pinned. npm's `latest` tag for Prisma pointed at a 8.0 release candidate at build time.
 
 ## Phase status
@@ -284,7 +315,7 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 3: public adapters, worker scheduler, SSE live feed, tagging/relevance editors, Live Signals, Demand Gen
 - [x] Phase 4: exports, sandbox stub, Presentation Mode polish, performance and a11y pass, docs
 - [x] Phase 5: demo data removed (test-DB fixtures, purge + backups), onboarding + empty states, import wizard
-- [ ] Phase 6: identity resolution + public-data enrichment engine
+- [x] Phase 6: identity resolution + public-data enrichment engine (10 enrichers, review UI, queue)
 - [ ] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
 - [ ] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
 - [ ] Phase 9: polish and hardening

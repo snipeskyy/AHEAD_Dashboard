@@ -59,14 +59,14 @@ test.describe("Phase 2: Account 360", () => {
       .getByRole("region", { name: "Accounts table" })
       .locator("tbody tr[data-index]")
       .first();
-    const name = (
-      await firstRow.locator("td").first().locator("div > div").first().innerText()
-    ).trim();
+    const name = (await firstRow.locator("td").nth(1).locator("div > div").first().innerText()) // td 0 = select
+      .trim();
     await firstRow.click();
     await expect(page).toHaveURL(/\/accounts\/[\w-]+/);
     await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Health score" })).toBeVisible();
     for (const [tab, marker] of [
+      ["Profile", "Public sources for this account"],
       ["Intelligence", "Opening angles"],
       ["Buying Committee", "Coverage gaps"],
       ["Whitespace", "Whitespace map"],

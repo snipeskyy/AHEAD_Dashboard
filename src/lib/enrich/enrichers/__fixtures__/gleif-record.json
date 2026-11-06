@@ -1,0 +1,29 @@
+{
+  "data": {
+    "type": "lei-records",
+    "id": "5299000EXAMPLE0000A1",
+    "attributes": {
+      "lei": "5299000EXAMPLE0000A1",
+      "entity": {
+        "legalName": { "name": "Aurelian Logistics Holdings, Inc." },
+        "legalAddress": {
+          "addressLines": ["C/O Registered Agent"],
+          "city": "Wilmington",
+          "region": "US-DE",
+          "country": "US",
+          "postalCode": "19801"
+        },
+        "headquartersAddress": {
+          "addressLines": ["400 Example Blvd"],
+          "city": "Memphis",
+          "region": "US-TN",
+          "country": "US",
+          "postalCode": "38103"
+        },
+        "jurisdiction": "US-DE",
+        "status": "ACTIVE"
+      },
+      "registration": { "status": "ISSUED" }
+    }
+  }
+}

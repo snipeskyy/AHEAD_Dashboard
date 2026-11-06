@@ -1,5 +1,6 @@
 "use client";
-import { Building2, Download, Plus, Search, Upload } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Building2, Download, Plus, Search, Sparkles, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -20,9 +21,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TIERS } from "@/lib/domain/enums";
 import { downloadText, toCsv } from "@/lib/csv";
 import { formatNumber } from "@/lib/format";
+import { STATUS_LABEL, type EnrichStatus } from "@/lib/enrich/status";
 import { accountColumns } from "../components/account-columns";
+import {
+  enrichColumns,
+  selectColumn,
+  type EnrichedRow,
+} from "../components/enrichment/enrich-columns";
+import { QueueSheet } from "../components/enrichment/queue-sheet";
+import { useEnqueue, useEnrichmentOverview } from "../hooks/use-enrichment";
 import { AddAccountDialog } from "../components/add-account-dialog";
-import { useAccounts, type AccountRow } from "../hooks/use-accounts";
+import { useAccounts } from "../hooks/use-accounts";
 
 const DEFAULT_STATE: TableState = {
   ...EMPTY_TABLE_STATE,
@@ -61,8 +70,43 @@ export default function AccountsPage() {
     () => [...new Set((data ?? []).map((a) => a.industry))].sort(),
     [data],
   );
-  const rows = useMemo(() => data ?? [], [data]);
-  const visible = useTableRows(rows, accountColumns, state);
+  const overview = useEnrichmentOverview();
+  const enqueue = useEnqueue();
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const rows = useMemo<EnrichedRow[]>(() => {
+    const ov = new Map((overview.data ?? []).map((o) => [o.accountId, o]));
+    return (data ?? []).map((a) => {
+      const o = ov.get(a.id);
+      return {
+        ...a,
+        enrichStatus: o?.status ?? "not-enriched",
+        completeness: o?.completeness ?? 0,
+        pending: o?.pending ?? 0,
+        topMissing: o?.topMissing ?? [],
+      };
+    });
+  }, [data, overview.data]);
+  const baseCols = accountColumns as unknown as ColumnDef<EnrichedRow>[];
+  const enqueueMutate = enqueue.mutate;
+  const extra = useMemo(
+    () => enrichColumns((id) => enqueueMutate({ accountIds: [id] })),
+    [enqueueMutate],
+  );
+  const dataCols = useMemo(
+    () => [baseCols[0], extra[0], extra[1], ...baseCols.slice(1), extra[2]],
+    [baseCols, extra],
+  );
+  const visible = useTableRows(rows, dataCols, state);
+  const visibleIds = useMemo(() => visible.map((r) => r.id), [visible]);
+  const toggle = (id: string) =>
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  const toggleAll = (on: boolean) => setSelected(on ? new Set(visibleIds) : new Set());
+  const columns = [selectColumn(selected, toggle, toggleAll, visibleIds), ...dataCols];
   const filterVal = (id: string) =>
     (state.columnFilters.find((f) => f.id === id)?.value as string[] | undefined) ?? [];
   const setFilter = (id: string, value: string[]) =>
@@ -75,11 +119,11 @@ export default function AccountsPage() {
     });
 
   const exportCsv = () => {
-    const metas = accountColumns.map((c) => c.meta as ColumnMetaExt<AccountRow> | undefined);
+    const metas = dataCols.map((c) => c.meta as ColumnMetaExt<EnrichedRow> | undefined);
     downloadText(
       `accounts-${new Date().toISOString().slice(0, 10)}.csv`,
       toCsv(
-        accountColumns.map((c) => String(c.header)),
+        dataCols.filter((c) => typeof c.header === "string").map((c) => String(c.header)),
         visible.map((r) => metas.map((m) => m?.csv?.(r) ?? "")),
       ),
     );
@@ -112,6 +156,17 @@ export default function AccountsPage() {
                 <Upload /> Import
               </Link>
             </Button>
+            <QueueSheet />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              disabled={!rows.length || enqueue.isPending}
+              onClick={() => enqueue.mutate({ all: true, force: false })}
+              title="Fetch public data for every account (skips sources that are still fresh)"
+            >
+              <Sparkles /> Enrich all
+            </Button>
             <Button size="sm" className="h-8" onClick={() => setAdding(true)}>
               <Plus /> Add account
             </Button>
@@ -141,6 +196,45 @@ export default function AccountsPage() {
           value={filterVal("industry")}
           onChange={(v) => setFilter("industry", v)}
         />
+        <FilterChip
+          label="Public data"
+          options={(Object.keys(STATUS_LABEL) as EnrichStatus[]).map((v) => ({
+            value: v,
+            label: v === "stale" ? "Stale data" : STATUS_LABEL[v],
+          }))}
+          value={filterVal("enrichment")}
+          onChange={(v) => setFilter("enrichment", v)}
+        />
+        {selected.size > 0 && (
+          <div
+            className="bg-brand-soft flex items-center gap-2 rounded-md px-2 py-1 text-xs"
+            role="region"
+            aria-label="Selection actions"
+          >
+            <span className="font-medium">{selected.size} selected</span>
+            <Button
+              size="sm"
+              className="h-7"
+              disabled={enqueue.isPending}
+              onClick={() =>
+                enqueue.mutate(
+                  { accountIds: [...selected] },
+                  { onSuccess: () => setSelected(new Set()) },
+                )
+              }
+            >
+              <Sparkles /> Enrich selected
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7"
+              onClick={() => setSelected(new Set())}
+            >
+              Clear
+            </Button>
+          </div>
+        )}
         <span className="text-muted-foreground ml-auto text-xs" aria-live="polite">
           {formatNumber(visible.length)} of {formatNumber(data?.length ?? 0)} accounts
         </span>
@@ -171,7 +265,7 @@ export default function AccountsPage() {
         <DataTable
           label="Accounts table"
           data={rows}
-          columns={accountColumns}
+          columns={columns}
           state={state}
           onStateChange={setState}
           getRowId={(r) => r.id}

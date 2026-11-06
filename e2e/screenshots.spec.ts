@@ -5,6 +5,7 @@ const PAGES = [
   { name: "home", path: "/" },
   { name: "accounts", path: "/accounts" },
   { name: "account-360", path: "/accounts/demo-acc-008" },
+  { name: "account-360-profile-demo", path: "/accounts/demo-acc-008?tab=profile" },
   { name: "account-360-intelligence", path: "/accounts/demo-acc-008?tab=intelligence" },
   { name: "account-360-committee", path: "/accounts/demo-acc-008?tab=committee" },
   { name: "account-360-whitespace", path: "/accounts/demo-acc-008?tab=whitespace" },

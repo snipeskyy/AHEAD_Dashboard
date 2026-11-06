@@ -104,6 +104,30 @@ How sources run:
 Contacts, opportunities and notes must name an account that already exists. Real accounts get no generated
 intelligence; it comes only from public sources or your own entries.
 
+## Public-data enrichment
+
+**Enrich all** / **Enrich selected** on Accounts, or **Fetch public data** on any Account 360, queues the account for
+the background worker. Each source proposes values with a source link and confidence; review them on the account's
+**Profile** tab (accept all, by section, or per field). Fields you edit are locked and never overwritten.
+
+| Source                 | Fills                                                                                               | Needs                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Company website        | Description, HQ, careers/newsroom/IR links, RSS feed, job board, web-tech hypotheses                | Domain (robots.txt honored)                        |
+| SEC EDGAR              | CIK, SIC industry, HQ, fiscal year end, 5-year revenue / net income / capex                         | Ticker or CIK + `SEC_USER_AGENT`                   |
+| 10-K text              | Initiative evidence (AI, data center, cloud, consolidation, cost, security, ERP, M&A) with snippets | Same as SEC                                        |
+| SEC insider filings    | Executive officers (name + title) as Buying Committee suggestions                                   | Same as SEC                                        |
+| GLEIF                  | Legal name, HQ, parent / ultimate parent / subsidiaries                                             | —                                                  |
+| Wikidata / Wikipedia   | Founded, employees, revenue, CEO, industry, subsidiaries, summary                                   | —                                                  |
+| Public DNS             | Email platform and SaaS verified on the domain (hypotheses)                                         | Domain                                             |
+| Job boards             | Open roles by function (trend), hiring-based evidence, tech hypotheses                              | Greenhouse / Lever / Ashby / SmartRecruiters board |
+| PeeringDB (optional)   | Networks and peering facilities                                                                     | —                                                  |
+| USAspending (optional) | Federal contract awards by agency                                                                   | —                                                  |
+
+**Resolve identity** (Account 360) searches SEC, GLEIF and Wikidata and asks you to pick when there's more than one
+plausible company. Add `ENRICH_USER_AGENT="Account Command Center (research) you@yourcompany.com"` to `.env.local`
+(Wikimedia asks for a contact User-Agent). Toggle sources and auto-fill in Settings → Data sources. To add a source,
+see [docs/ADDING_AN_ENRICHER.md](docs/ADDING_AN_ENRICHER.md).
+
 ## Branding (local brand pack)
 
 To use your company's logo and colors, put the **approved** logo files and a `brand.json` in the `brand/` folder and
@@ -161,6 +185,6 @@ screen-sharing. A banner stays visible with a one-click **Exit**.
 | 3. Public adapters, SSE live feed, demand gen                   | ✅     |
 | 4. Exports, sandbox stub, presentation and performance polish   | ✅     |
 | 5. Clean slate, onboarding, import wizard with dedupe + undo    | ✅     |
-| 6. Identity resolution and public-data enrichment               | next   |
+| 6. Identity resolution and public-data enrichment               | ✅     |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

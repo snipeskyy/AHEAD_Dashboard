@@ -12,6 +12,7 @@ import { ErrorState, CardSkeleton } from "@/components/states";
 import { useSaveSetting, useSetting } from "@/hooks/use-setting";
 import { api } from "@/lib/api-client";
 import { SettingsSection } from "./section";
+import { EnrichmentSettings } from "./enrichment-settings";
 
 interface SourceStatus {
   id: string;
@@ -139,6 +140,7 @@ export function SourceSettings() {
           })}
         </ul>
       </SettingsSection>
+      <EnrichmentSettings />
     </div>
   );
 }

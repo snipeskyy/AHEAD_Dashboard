@@ -32,6 +32,9 @@ export const TickerMapSchema = z.record(
 const FORMS = new Set(["8-K", "10-K", "10-Q", "8-K/A", "10-K/A"]);
 
 /** 8-K item codes → human label + signal type. */
+/** Material 8-K items surfaced as high-priority signals (executive change, M&A, cyber incident, major agreement). */
+export const HIGH_PRIORITY_ITEMS = new Set(["1.01", "1.05", "2.01", "5.02"]);
+
 export const EIGHT_K_ITEMS: Record<string, { label: string; type: SignalType }> = {
   "1.01": { label: "material definitive agreement", type: "partnership" },
   "1.05": { label: "material cybersecurity incident", type: "incident" },
@@ -140,6 +143,9 @@ export const secEdgarAdapter: DataAdapter<NormalizedSignal, Submissions> = {
         source: "sec-edgar",
         publishedAt: filed,
         dedupeKey: `sec:${r.accessionNumber[i]}`,
+        ...(form.startsWith("8-K") && items.some((c) => HIGH_PRIORITY_ITEMS.has(c))
+          ? { priority: "high" as const }
+          : {}),
       });
     }
     return out;

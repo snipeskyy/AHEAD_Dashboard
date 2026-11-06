@@ -26,7 +26,9 @@ import { AccountSources } from "../components/account-sources";
 import { ActivityTab } from "../components/tabs/activity-tab";
 import { CommitteeTab } from "../components/tabs/committee-tab";
 import { IntelligenceTab } from "../components/tabs/intelligence-tab";
+import { EnrichActions } from "../components/enrichment/enrich-actions";
 import { OppsTab } from "../components/tabs/opps-tab";
+import { ProfileTab } from "../components/tabs/profile-tab";
 import { OverviewTab } from "../components/tabs/overview-tab";
 import { PlanTab } from "../components/tabs/plan-tab";
 import { SignalsTab } from "../components/tabs/signals-tab";
@@ -35,6 +37,7 @@ import { useAccount360 } from "../hooks/use-accounts";
 
 const TABS = [
   { id: "overview", label: "Overview" },
+  { id: "profile", label: "Profile" },
   { id: "intelligence", label: "Intelligence" },
   { id: "committee", label: "Buying Committee", internal: true },
   { id: "whitespace", label: "Whitespace" },
@@ -135,7 +138,8 @@ export default function Account360Page({ params }: { params: Record<string, stri
               {a.ticker && <span>Ticker {a.ticker}</span>}
             </p>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <EnrichActions accountId={a.id} accountName={a.name} isDemo={a.isDemo} />
             <Button variant="outline" size="sm" asChild>
               <Link href={`/exports?account=${a.id}`}>
                 <FileOutput /> Export
@@ -174,6 +178,7 @@ export default function Account360Page({ params }: { params: Record<string, stri
 
       <div role="tabpanel" aria-label={TABS.find((t) => t.id === tab)?.label}>
         {tab === "overview" && <OverviewTab d={d} />}
+        {tab === "profile" && <ProfileTab accountId={a.id} accountName={a.name} />}
         {tab === "intelligence" && <IntelligenceTab d={d} />}
         {tab === "committee" && <CommitteeTab d={d} />}
         {tab === "whitespace" && <WhitespaceTab d={d} />}

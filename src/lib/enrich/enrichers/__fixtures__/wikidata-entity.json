@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "Q999001": {
+      "id": "Q999001",
+      "labels": { "en": { "value": "Ostrander Freight" } },
+      "descriptions": { "en": { "value": "fictional American freight company" } },
+      "sitelinks": { "enwiki": { "title": "Ostrander Freight" } },
+      "claims": {
+        "P571": [
+          {
+            "rank": "normal",
+            "mainsnak": {
+              "snaktype": "value",
+              "datavalue": { "value": { "time": "+1958-03-01T00:00:00Z" }, "type": "time" }
+            }
+          }
+        ],
+        "P1128": [
+          {
+            "rank": "normal",
+            "mainsnak": {
+              "snaktype": "value",
+              "datavalue": { "value": { "amount": "+11000", "unit": "1" } }
+            },
+            "qualifiers": {
+              "P585": [{ "datavalue": { "value": { "time": "+2023-12-31T00:00:00Z" } } }]
+            }
+          },
+          {
+            "rank": "normal",
+            "mainsnak": {
+              "snaktype": "value",
+              "datavalue": { "value": { "amount": "+12500", "unit": "1" } }
+            },
+            "qualifiers": {
+              "P585": [{ "datavalue": { "value": { "time": "+2025-12-31T00:00:00Z" } } }]
+            }
+          }
+        ],
+        "P2139": [
+          {
+            "rank": "preferred",
+            "mainsnak": {
+              "snaktype": "value",
+              "datavalue": {
+                "value": { "amount": "+3200000000", "unit": "http://www.wikidata.org/entity/Q4917" }
+              }
+            }
+          }
+        ],
+        "P169": [
+          {
+            "rank": "normal",
+            "mainsnak": { "snaktype": "value", "datavalue": { "value": { "id": "Q999100" } } }
+          }
+        ],
+        "P452": [
+          {
+            "rank": "normal",
+            "mainsnak": { "snaktype": "value", "datavalue": { "value": { "id": "Q999200" } } }
+          }
+        ],
+        "P856": [
+          {
+            "rank": "normal",
+            "mainsnak": {
+              "snaktype": "value",
+              "datavalue": { "value": "https://www.ostrander.example" }
+            }
+          }
+        ],
+        "P355": [
+          {
+            "rank": "normal",
+            "mainsnak": { "snaktype": "value", "datavalue": { "value": { "id": "Q999300" } } }
+          },
+          {
+            "rank": "deprecated",
+            "mainsnak": { "snaktype": "value", "datavalue": { "value": { "id": "Q999301" } } }
+          }
+        ],
+        "P749": [
+          {
+            "rank": "normal",
+            "mainsnak": { "snaktype": "value", "datavalue": { "value": { "id": "Q999400" } } }
+          }
+        ]
+      }
+    }
+  }
+}

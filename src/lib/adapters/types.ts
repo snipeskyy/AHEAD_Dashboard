@@ -56,6 +56,8 @@ export interface NormalizedSignal {
   /** Stable identity for dedupe when url+title is not enough (e.g. weekly hiring roll-ups). */
   dedupeKey?: string;
   evidence?: DerivedEvidence[];
+  /** "high" = material event (e.g. 8-K Items 1.01, 1.05, 2.01, 5.02): relevance floor 90 and always alerts. */
+  priority?: "high";
 }
 
 /**

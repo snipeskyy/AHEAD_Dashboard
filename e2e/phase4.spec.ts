@@ -113,6 +113,7 @@ test.describe("Phase 4: accessibility (axe, WCAG 2 AA)", () => {
     "/",
     "/accounts",
     "/accounts/demo-acc-008",
+    "/accounts/demo-acc-008?tab=profile",
     "/signals",
     "/opportunities",
     "/opportunities?view=table",

@@ -15,6 +15,12 @@ export interface HttpOptions {
   retries?: number;
   timeoutMs?: number;
   signal?: AbortSignal;
+  method?: "GET" | "POST";
+  body?: string;
+  /** Don't write the response to HttpCache (large documents such as 10-K filings). */
+  noStore?: boolean;
+  /** Truncate bodies larger than this (bytes of text). */
+  maxBytes?: number;
   /** For tests: injectable fetch + sleep. */
   fetchImpl?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
@@ -45,8 +51,8 @@ export async function fetchText(
 ): Promise<{ body: string; cached: boolean }> {
   const sleep = opts.sleep ?? realSleep;
   const f = opts.fetchImpl ?? fetch;
-  const key = url;
-  const cached = await opts.db.httpCache.findUnique({ where: { key } });
+  const key = opts.method === "POST" ? `POST ${url} ${opts.body ?? ""}` : url;
+  const cached = opts.noStore ? null : await opts.db.httpCache.findUnique({ where: { key } });
   if (cached && Date.now() - cached.fetchedAt.getTime() < opts.ttlMs)
     return { body: cached.body, cached: true };
 
@@ -61,6 +67,8 @@ export async function fetchText(
     lastHit.set(host, Date.now());
     try {
       const res = await f(url, {
+        method: opts.method ?? "GET",
+        body: opts.body,
         headers: {
           "user-agent": DEFAULT_USER_AGENT,
           accept: "*/*",
@@ -83,8 +91,10 @@ export async function fetchText(
         throw lastErr;
       }
       if (!res.ok) throw new HttpError(res.status, `${res.status} ${res.statusText} from ${host}`);
-      const body = await res.text();
+      let body = await res.text();
+      if (opts.maxBytes && body.length > opts.maxBytes) body = body.slice(0, opts.maxBytes);
       const etag = res.headers.get("etag");
+      if (opts.noStore) return { body, cached: false };
       await opts.db.httpCache.upsert({
         where: { key },
         create: { key, body, etag, fetchedAt: new Date() },

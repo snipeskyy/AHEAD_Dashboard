@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<ownershipDocument><documentType>4</documentType>
+<issuer><issuerCik>0000999001</issuerCik><issuerName>CRESTLINE REGIONAL HEALTH INC</issuerName></issuer>
+<reportingOwner><reportingOwnerId><rptOwnerCik>0001900001</rptOwnerCik><rptOwnerName>Quill Avery J</rptOwnerName></reportingOwnerId>
+<reportingOwnerRelationship><isDirector>false</isDirector><isOfficer>true</isOfficer><officerTitle>Chief Executive Officer</officerTitle></reportingOwnerRelationship></reportingOwner>
+<reportingOwner><reportingOwnerId><rptOwnerCik>0001900002</rptOwnerCik><rptOwnerName>Marsh Dana</rptOwnerName></reportingOwnerId>
+<reportingOwnerRelationship><isDirector>true</isDirector><isOfficer>false</isOfficer></reportingOwnerRelationship></reportingOwner>
+</ownershipDocument>

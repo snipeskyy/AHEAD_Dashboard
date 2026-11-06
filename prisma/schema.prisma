@@ -15,26 +15,31 @@ datasource db {
 }
 
 model Account {
-  id              String    @id @default(cuid())
-  name            String
-  domain          String?
-  ticker          String?
-  cik             String?
-  industry        String
-  subIndustry     String?
-  hq              String?
-  employeeBand    String?
-  revenueBand     String?
-  tier            String // Strategic | Growth | Maintain
-  ownerNotes      String?
-  healthScore     Float     @default(0)
-  whitespaceScore Float     @default(0)
-  isDemo          Boolean   @default(false)
-  sourceConfig    Json? // { googleNews, greenhouseSlug, leverSlug, rssFeeds[] }
-  lastTouchAt     DateTime?
-  nextTouchAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                  String    @id @default(cuid())
+  name                String
+  domain              String?
+  ticker              String?
+  cik                 String?
+  lei                 String?
+  wikidataId          String?
+  /// Set when the user confirms which legal entity this account is (identity resolution).
+  identityConfirmedAt DateTime?
+  fiscalYearEnd       String? // "MMDD" from SEC (or entered by the user)
+  industry            String
+  subIndustry         String?
+  hq                  String?
+  employeeBand        String?
+  revenueBand         String?
+  tier                String // Strategic | Growth | Maintain
+  ownerNotes          String?
+  healthScore         Float     @default(0)
+  whitespaceScore     Float     @default(0)
+  isDemo              Boolean   @default(false)
+  sourceConfig        Json? // { googleNews, greenhouseSlug, leverSlug, rssFeeds[] }
+  lastTouchAt         DateTime?
+  nextTouchAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   contacts       Contact[]
   initiatives    Initiative[]
@@ -47,6 +52,13 @@ model Account {
   eventInvites   EventInvite[]
   campaigns      Campaign[]
   partnerReps    PartnerRepAccount[]
+  fields         AccountField[]
+  fieldHistory   AccountFieldHistory[]
+  proposals      FieldProposal[]
+  enrichRuns     EnrichmentRun[]
+  enrichJobs     EnrichmentJob[]
+  financials     FinancialFact[]
+  relations      CorporateRelation[]
 
   @@index([tier])
   @@index([name])
@@ -69,7 +81,9 @@ model Contact {
   function    String
   seniority   String // C-Level | VP | Director | Manager | IC
   buyingRole  String // EconomicBuyer | Champion | Technical | Influencer | Blocker
-  displayName String? // user-entered only; never scraped or generated
+  displayName String? // user-entered, or an accepted public suggestion (SEC filing) with sourceUrl
+  source      String? // null = user-entered | "sec-officers" (accepted suggestion)
+  sourceUrl   String?
   reportsToId String?
   engagement  String  @default("None") // None | Light | Engaged | Strong
   account     Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -83,6 +97,8 @@ model Initiative {
   title         String
   description   String?
   practiceAreas Json // string[]
+  evidence      String? // short supporting excerpt (never whole sections)
+  section       String? // e.g. "10-K Item 1A"
   source        String // seed | signal | filing | job-post | user-hypothesis
   sourceUrl     String?
   signalId      String?
@@ -99,8 +115,9 @@ model TechStackHypothesis {
   technology String
   evidence   String
   sourceUrl  String?
-  source     String // seed | job-post | filing | news | user-hypothesis
+  source     String // seed | job-post | filing | news | dns | web | user-hypothesis
   confidence Float
+  status     String  @default("hypothesis") // hypothesis | confirmed | rejected
   account    Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([accountId])
@@ -438,4 +455,124 @@ model PartnerRepAccount {
   account   Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@id([repId, accountId])
+}
+
+// ── Phase 6: public-data enrichment ─────────────────────────────────────────
+
+/// Current value of an enrichable field, with provenance. Precedence:
+/// user > user-verified > high > medium > low. `locked` fields are never overwritten by enrichment.
+model AccountField {
+  id         String    @id @default(cuid())
+  accountId  String
+  field      String // e.g. "firmographics.employeeCount"
+  value      Json
+  source     String // "user" | enricher id
+  sourceUrl  String?
+  confidence String // user | verified | high | medium | low
+  fetchedAt  DateTime?
+  locked     Boolean   @default(false)
+  updatedAt  DateTime  @updatedAt
+  account    Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, field])
+}
+
+model AccountFieldHistory {
+  id        String   @id @default(cuid())
+  accountId String
+  field     String
+  oldValue  Json?
+  newValue  Json?
+  source    String
+  sourceUrl String?
+  changedAt DateTime @default(now())
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, field])
+}
+
+/// One value proposed by an enricher. Reviewed in Account 360 → Proposed updates.
+model FieldProposal {
+  id              String    @id @default(cuid())
+  accountId       String
+  field           String
+  value           Json
+  enricherId      String
+  source          String // human label, e.g. "SEC EDGAR"
+  sourceUrl       String
+  confidence      String // high | medium | low
+  evidenceSnippet String?
+  /// pending | accepted | rejected | applied (auto) | superseded
+  status          String    @default("pending")
+  fetchedAt       DateTime
+  createdAt       DateTime  @default(now())
+  decidedAt       DateTime?
+  account         Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, status])
+  @@index([accountId, field])
+}
+
+model EnrichmentRun {
+  id         String    @id @default(cuid())
+  accountId  String
+  enricherId String
+  startedAt  DateTime
+  finishedAt DateTime?
+  ok         Boolean   @default(false)
+  proposals  Int       @default(0)
+  error      String?
+  account    Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, enricherId, startedAt])
+}
+
+/// Bulk enrichment queue (survives restarts; the worker drains it with a concurrency limit).
+model EnrichmentJob {
+  id          String    @id @default(cuid())
+  accountId   String
+  enricherIds Json? // string[]; null = all eligible
+  force       Boolean   @default(false)
+  status      String    @default("queued") // queued | running | done | failed | cancelled
+  attempts    Int       @default(0)
+  error       String?
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+}
+
+/// Annual financial facts from SEC XBRL (public companies).
+model FinancialFact {
+  id         String   @id @default(cuid())
+  accountId  String
+  metric     String // revenue | netIncome | capex
+  fiscalYear Int
+  periodEnd  DateTime
+  value      Float
+  unit       String   @default("USD")
+  sourceUrl  String
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, metric, periodEnd])
+}
+
+/// Corporate hierarchy from GLEIF / Wikidata.
+model CorporateRelation {
+  id              String  @id @default(cuid())
+  accountId       String
+  relation        String // direct-parent | ultimate-parent | subsidiary
+  name            String
+  lei             String?
+  wikidataId      String?
+  country         String?
+  source          String
+  sourceUrl       String
+  /// Set when the user rolled this related company up as its own account.
+  linkedAccountId String?
+  account         Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, relation, name])
 }

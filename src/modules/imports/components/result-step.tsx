@@ -9,6 +9,7 @@ import { KIND_DEFS } from "@/lib/import/kinds";
 import type { ImportKind } from "@/lib/import/types";
 import type { CommitResult } from "./review-step";
 import { UndoImportDialog } from "./undo-dialog";
+import { useEnqueue } from "@/modules/account-intel/hooks/use-enrichment";
 
 const NEXT: Partial<Record<ImportKind, { href: string; label: string }>> = {
   accounts: { href: "/accounts", label: "Open accounts" },
@@ -31,6 +32,7 @@ export function ResultStep({
   const qc = useQueryClient();
   const def = KIND_DEFS[kind];
   const c = result.counts;
+  const enrich = useEnqueue();
   const news = useMutation({
     mutationFn: () =>
       api<{ updated: number }>("/api/sources/google-news", {
@@ -107,11 +109,16 @@ export function ResultStep({
               <Sparkles className="size-4" aria-hidden /> Enrich all imported accounts
             </div>
             <p className="text-muted-foreground text-xs">
-              Identity resolution and full public-data enrichment (firmographics, financials,
-              hierarchy, evidence) arrive in the next update.
+              Fills firmographics, financials, hierarchy, initiative evidence and tech hypotheses
+              from public sources, each with its source link, for your review.
             </p>
-            <Button size="sm" variant="outline" className="w-fit" disabled>
-              Coming next
+            <Button
+              size="sm"
+              className="w-fit"
+              disabled={enrich.isPending || enrich.isSuccess}
+              onClick={() => enrich.mutate({ accountIds: result.createdAccounts })}
+            >
+              {enrich.isSuccess ? "Queued" : `Enrich ${result.createdAccounts.length} accounts now`}
             </Button>
           </div>
         </div>

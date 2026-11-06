@@ -6,6 +6,7 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
 import { z } from "zod";
 import { SIGNAL_ADAPTERS } from "../lib/adapters";
+import { drainEnrichmentQueue, queueStaleRefresh } from "../lib/enrich/runner";
 import { computeScoresForAccounts } from "../lib/scoring/account-scores";
 import { createSqliteSearchProvider } from "../lib/search/sqlite-provider";
 import { rescoreSignals, retagSignals } from "./rescore";
@@ -93,6 +94,7 @@ async function main() {
   await createSqliteSearchProvider(db).ensureReady();
   // Jobs left "running" by a previous crash go back to pending.
   await db.jobRequest.updateMany({ where: { status: "running" }, data: { status: "pending" } });
+  await db.enrichmentJob.updateMany({ where: { status: "running" }, data: { status: "queued" } });
   log(
     `started — ${SIGNAL_ADAPTERS.length} adapters; public fetch ${process.env.PUBLIC_FETCH_ENABLED === "false" ? "DISABLED" : "enabled"}`,
   );
@@ -116,6 +118,26 @@ async function main() {
     guarded(async () => log(`rescored ${await rescoreSignals(db, new Date())} signals`));
   setTimeout(rescore, 5_000);
   setInterval(rescore, 60 * 60_000);
+
+  // Enrichment queue runs on its own lane so a long bulk run never blocks Fetch now / signals.
+  let enriching = false;
+  setInterval(async () => {
+    if (enriching) return;
+    enriching = true;
+    try {
+      await drainEnrichmentQueue(db, log);
+    } catch (e) {
+      log("[enrich] error", e instanceof Error ? e.message : e);
+    } finally {
+      enriching = false;
+    }
+  }, 3_000);
+  const refresh = async () => {
+    const n = await queueStaleRefresh(db).catch(() => 0);
+    if (n) log(`[enrich] queued ${n} stale accounts for refresh`);
+  };
+  setTimeout(refresh, 60_000);
+  setInterval(refresh, 24 * 60 * 60_000);
 }
 
 process.on("SIGINT", () => db.$disconnect().finally(() => process.exit(0)));

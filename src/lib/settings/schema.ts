@@ -54,6 +54,17 @@ export const SETTINGS = {
     } as Record<string, boolean>,
   },
   "scheduler.intervalMinutes": { schema: z.number().int().min(5).max(1440), defaults: 30 },
+  /** Phase 6 enrichment: per-enricher on/off (missing = the enricher's default). */
+  "enrichment.enabled": {
+    schema: z.record(z.string(), z.boolean()),
+    defaults: {} as Record<string, boolean>,
+  },
+  /** Fill EMPTY fields automatically with high-confidence public values (everything else is reviewed). */
+  "enrichment.autoApply": { schema: z.boolean(), defaults: true },
+  "enrichment.concurrency": { schema: z.number().int().min(1).max(4), defaults: 2 },
+  "enrichment.paused": { schema: z.boolean(), defaults: false },
+  /** Re-run enrichers for already-enriched accounts when their TTL expires. */
+  "enrichment.autoRefresh": { schema: z.boolean(), defaults: true },
   "modules.settings": {
     schema: z.record(z.string(), z.record(z.string(), z.unknown())),
     defaults: {} as Record<string, Record<string, unknown>>,

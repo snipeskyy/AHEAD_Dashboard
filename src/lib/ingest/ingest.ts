@@ -19,6 +19,7 @@ export const NormalizedSignalSchema = z.object({
   tagText: z.string().optional(),
   dedupeKey: z.string().optional(),
   evidence: z.array(z.any()).optional(),
+  priority: z.literal("high").optional(),
 });
 
 export interface IngestResult {
@@ -79,7 +80,7 @@ export async function ingestSignals(
       continue;
     }
     const tags = tagText(`${s.title} ${s.summary ?? ""} ${s.tagText ?? ""}`, rules);
-    const rel = computeRelevance(
+    const scored = computeRelevance(
       {
         publishedAt: s.publishedAt,
         source: s.source,
@@ -89,6 +90,10 @@ export async function ingestSignals(
       },
       relCfg,
     );
+    const rel =
+      s.priority === "high" && scored.value < 90
+        ? { ...scored, value: 90, parts: { ...scored.parts, priorityFloor: 90 } }
+        : scored;
     const created = await db.signal.create({
       data: {
         accountId: s.accountId,
@@ -160,7 +165,7 @@ export async function ingestSignals(
       }
     }
 
-    if (rel.value >= threshold) {
+    if (rel.value >= threshold || s.priority === "high") {
       await db.notification.create({
         data: {
           kind: "signal",

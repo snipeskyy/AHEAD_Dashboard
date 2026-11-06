@@ -1,5 +1,5 @@
 "use client";
-import { Copy, Lightbulb, Plus, Trash2 } from "lucide-react";
+import { Copy, Lightbulb, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,9 @@ import { DEFAULT_PRACTICE_AREAS, practiceLabel } from "@/config/practice-areas";
 import { api } from "@/lib/api-client";
 import type { Account360 } from "../../hooks/use-accounts";
 import { useAccountMutation } from "../../hooks/use-accounts";
-import { EvidenceLink, SourceTag } from "../evidence-link";
+import { EvidenceLink } from "../evidence-link";
+import { EvidenceBoard } from "../enrichment/evidence-board";
+import { TechHypotheses } from "../enrichment/tech-hypotheses";
 
 function Card({
   title,
@@ -50,51 +52,23 @@ export function IntelligenceTab({ d }: { d: Account360 }) {
     (tid: string) => api(`/api/tech-stack/${tid}`, { method: "DELETE" }),
     "Removed",
   );
+  const techStatus = useAccountMutation(
+    id,
+    ({ tid, status }: { tid: string; status: string }) =>
+      api(`/api/tech-stack/${tid}`, { method: "PATCH", json: { status } }),
+    "Updated",
+  );
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card
-        title="Strategic initiatives"
-        description="Inferred from evidence or entered by you as hypotheses."
+        title="Initiative evidence"
+        description="Grouped by practice area. Each item cites its public source, or is your hypothesis."
         action={<AddInitiative accountId={id} />}
       >
         {d.initiatives.length === 0 ? (
           <Empty real={!d.account.isDemo} what="initiatives" />
         ) : (
-          <ul className="divide-y">
-            {d.initiatives.map((i) => (
-              <li key={i.id} className="group flex items-start justify-between gap-3 py-2.5">
-                <div className="min-w-0">
-                  <div className="text-[13px] font-medium">{i.title}</div>
-                  {i.description && (
-                    <p className="text-muted-foreground text-xs">{i.description}</p>
-                  )}
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {i.practiceAreas.map((p) => (
-                      <Badge key={p} variant="secondary" className="font-normal">
-                        {practiceLabel(p, true)}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="tabular text-xs" data-internal-only="true">
-                    {Math.round(i.confidence * 100)}% confidence
-                  </span>
-                  <SourceTag source={i.source} url={i.sourceUrl} />
-                  {i.source === "user-hypothesis" && (
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label={`Delete ${i.title}`}
-                      onClick={() => delInit.mutate(i.id)}
-                    >
-                      <Trash2 />
-                    </Button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+          <EvidenceBoard items={d.initiatives} onDelete={(iid) => delInit.mutate(iid)} />
         )}
       </Card>
 
@@ -159,58 +133,17 @@ export function IntelligenceTab({ d }: { d: Account360 }) {
 
       <Card
         title="Tech stack hypotheses"
-        description="What we believe they run, and why."
+        description="Grouped by category, with evidence. Confirm or reject as you learn more."
         action={<AddTech accountId={id} />}
       >
         {d.techStack.length === 0 ? (
           <Empty real={!d.account.isDemo} what="tech-stack hypotheses" />
         ) : (
-          <table className="w-full text-[13px]">
-            <caption className="sr-only">Tech stack hypotheses</caption>
-            <thead className="text-muted-foreground text-xs">
-              <tr className="border-b">
-                <th scope="col" className="py-1.5 text-left font-medium">
-                  Category
-                </th>
-                <th scope="col" className="py-1.5 text-left font-medium">
-                  Technology
-                </th>
-                <th scope="col" className="py-1.5 text-left font-medium">
-                  Evidence
-                </th>
-                <th scope="col" className="py-1.5 text-right font-medium" data-internal-only="true">
-                  Conf.
-                </th>
-                <th className="w-6" />
-              </tr>
-            </thead>
-            <tbody>
-              {d.techStack.map((t) => (
-                <tr key={t.id} className="border-b last:border-0">
-                  <td className="text-muted-foreground py-2 pr-2">{t.category}</td>
-                  <td className="py-2 pr-2">{t.technology}</td>
-                  <td className="text-muted-foreground py-2 pr-2 text-xs">
-                    {t.evidence} <SourceTag source={t.source} url={t.sourceUrl} />
-                  </td>
-                  <td className="tabular py-2 text-right text-xs" data-internal-only="true">
-                    {Math.round(t.confidence * 100)}%
-                  </td>
-                  <td>
-                    {t.source === "user-hypothesis" && (
-                      <Button
-                        variant="ghost"
-                        size="icon-xs"
-                        aria-label={`Delete ${t.technology}`}
-                        onClick={() => delTech.mutate(t.id)}
-                      >
-                        <Trash2 />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <TechHypotheses
+            items={d.techStack}
+            onStatus={(tid, status) => techStatus.mutate({ tid, status })}
+            onDelete={(tid) => delTech.mutate(tid)}
+          />
         )}
       </Card>
     </div>
