@@ -390,6 +390,9 @@ migrations, because Prisma would otherwise report drift.
   lei-records (+ parent/children), dns.google JSON, Greenhouse/Lever/Ashby/SmartRecruiters posting APIs, PeeringDB
   org/net/netfac, USAspending spending_by_award (POST). Wikidata returned 429 from the shared cloud IP during the build,
   so its parser is fixture-tested against the documented entity JSON; it backs off on 429.
+- **Round 3 approved (Nov 2026)** — `docs/ROUND3_PLAN.md`: deliverables engine → TCO → full Sandbox → data contract →
+  team polish. TCO inputs are user-entered assumptions only (no company pricing or margins in the repo). The internal
+  AI-tool port gets a neutral, file-based data contract; any live connection waits for company approval.
 - **Prisma 6.19** (stable) is pinned. npm's `latest` tag for Prisma pointed at a 8.0 release candidate at build time.
 
 ## Phase status
@@ -404,3 +407,8 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
 - [x] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
 - [x] Phase 9: polish and hardening
+- [ ] Phase 10: deliverables engine (layouts, branded theme, templates, native charts, deck preview)
+- [ ] Phase 11: TCO / business-case builder
+- [ ] Phase 12: Data Center Sandbox (full)
+- [ ] Phase 13: data contract for the internal-tool port
+- [ ] Phase 14: team value and polish
