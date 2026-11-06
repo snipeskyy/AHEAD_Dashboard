@@ -42,6 +42,8 @@ const Create = z.object({
   completed: z.boolean().default(false),
   outcome: z.enum(["no-response", "replied", "meeting", "opp-created"]).nullish(),
   campaignId: z.string().nullish(),
+  /** Joint touch with a partner rep (co-sell tracker). */
+  partnerRepId: z.string().nullish(),
 });
 
 export const POST = handler(async (req: Request) => {
@@ -56,6 +58,7 @@ export const POST = handler(async (req: Request) => {
       completedAt: b.completed ? b.scheduledAt : null,
       outcome: b.completed ? (b.outcome ?? "no-response") : null,
       campaignId: b.campaignId ?? null,
+      partnerRepId: b.partnerRepId ?? null,
     },
   });
   await logActivity({

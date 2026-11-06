@@ -19,6 +19,7 @@ export type OppPatch = Partial<{
   probability: number;
   forecastCategory: string;
   nextStep: string | null;
+  nextStepDate: string | null;
   practiceArea: string;
   partners: string[];
   competitors: string[];

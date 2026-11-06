@@ -2,6 +2,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export interface TaskDefaults {
+  title?: string;
+  account?: { id: string; name: string };
+  opportunityId?: string;
+  signalId?: string;
+  dueDate?: string;
+  source?: "manual" | "signal" | "quick-capture" | "next-step" | "my-day";
+}
+
 interface UiState {
   sidebarCollapsed: boolean;
   presentationMode: boolean;
@@ -9,6 +18,18 @@ interface UiState {
   activeLayoutId: string | null;
   setActiveLayoutId: (id: string | null) => void;
   noteDialog: { open: boolean; entityType?: string; entityId?: string };
+  /** Phase 7 global dialogs. */
+  taskDialog: { open: boolean; defaults?: TaskDefaults };
+  captureOpen: boolean;
+  captureAccount?: { id: string; name: string };
+  helpOpen: boolean;
+  /** True while the triage queue owns single-key shortcuts (t, n, …). */
+  triageActive: boolean;
+  openTaskDialog: (defaults?: TaskDefaults) => void;
+  closeTaskDialog: () => void;
+  setCaptureOpen: (v: boolean, account?: { id: string; name: string }) => void;
+  setHelpOpen: (v: boolean) => void;
+  setTriageActive: (v: boolean) => void;
   toggleSidebar: () => void;
   setPresentationMode: (v: boolean) => void;
   setCommandOpen: (v: boolean) => void;
@@ -25,6 +46,15 @@ export const useUiStore = create<UiState>()(
       activeLayoutId: null,
       setActiveLayoutId: (id) => set({ activeLayoutId: id }),
       noteDialog: { open: false },
+      taskDialog: { open: false },
+      captureOpen: false,
+      helpOpen: false,
+      triageActive: false,
+      openTaskDialog: (defaults) => set({ taskDialog: { open: true, defaults } }),
+      closeTaskDialog: () => set({ taskDialog: { open: false } }),
+      setCaptureOpen: (v, account) => set({ captureOpen: v, captureAccount: v ? account : undefined }),
+      setHelpOpen: (v) => set({ helpOpen: v }),
+      setTriageActive: (v) => set({ triageActive: v }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setPresentationMode: (v) => set({ presentationMode: v }),
       setCommandOpen: (v) => set({ commandOpen: v }),

@@ -2,7 +2,15 @@ import { test, expect, type Page } from "@playwright/test";
 
 /** Screenshot pass of every main page in light and dark mode → ./screenshots (git-ignored). */
 const PAGES = [
-  { name: "home", path: "/" },
+  { name: "my-day", path: "/" },
+  { name: "command-home", path: "/dashboard" },
+  { name: "tasks", path: "/tasks" },
+  { name: "territory", path: "/territory" },
+  { name: "fix-it", path: "/fix-it" },
+  { name: "partners", path: "/partners" },
+  { name: "smart-lists", path: "/lists" },
+  { name: "signals-triage", path: "/signals?tab=triage" },
+  { name: "meeting-brief", path: "/accounts/demo-acc-008/brief" },
   { name: "accounts", path: "/accounts" },
   { name: "account-360", path: "/accounts/demo-acc-008" },
   { name: "account-360-profile-demo", path: "/accounts/demo-acc-008?tab=profile" },

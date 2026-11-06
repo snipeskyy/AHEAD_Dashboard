@@ -17,6 +17,7 @@ export interface OppRow {
   probability: number;
   forecastCategory: string;
   nextStep: string | null;
+  nextStepDate: string | null;
   partners: string[];
   competitors: string[];
   closeDatePushes: number;

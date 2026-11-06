@@ -1,6 +1,6 @@
 "use client";
 import { format } from "date-fns";
-import { ExternalLink } from "lucide-react";
+import { AlertTriangle, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { NotesList } from "@/components/notes-list";
 import { CardSkeleton, ErrorState } from "@/components/states";
@@ -158,12 +158,27 @@ function OppDetail({ id }: { id: string }) {
             </div>
           </Field>
           <Field label="Next step">
-            <InlineText
-              label="Next step"
-              value={o.nextStep ?? ""}
-              placeholder="Add next step…"
-              onCommit={(v) => patch({ nextStep: v || null })}
-            />
+            <div className="grid gap-1.5">
+              <InlineText
+                label="Next step"
+                value={o.nextStep ?? ""}
+                placeholder="Add next step…"
+                onCommit={(v) => patch({ nextStep: v || null })}
+              />
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground">Due</span>
+                <InlineDate
+                  label="Next step due date"
+                  value={o.nextStepDate ?? ""}
+                  onCommit={(iso) => patch({ nextStepDate: iso || null })}
+                />
+                {o.riskFlags.includes("no-next-step") && (
+                  <span className="text-warning-text inline-flex items-center gap-1" role="status">
+                    <AlertTriangle className="size-3" aria-hidden /> Needs a dated next step
+                  </span>
+                )}
+              </div>
+            </div>
           </Field>
           <Field label="Partners / OEMs">
             <TagPicker

@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 import { LiveSignalsProvider } from "@/components/providers/live-signals";
 import { CommandPalette } from "./command-palette";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
+import { TaskDialog } from "@/components/tasks/task-dialog";
+import { HelpOverlay } from "./help-overlay";
 import { NoteDialog } from "./note-dialog";
+import { QuickCapture } from "./quick-capture";
 import { Sidebar } from "./sidebar";
 import { DemoDataWarning } from "./data-guard";
 import { PresentationBanner } from "./presentation-toggle";
@@ -29,6 +32,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <CommandPalette />
         <NoteDialog />
+        <TaskDialog />
+        <QuickCapture />
+        <HelpOverlay />
         <KeyboardShortcuts />
       </div>
     </LiveSignalsProvider>

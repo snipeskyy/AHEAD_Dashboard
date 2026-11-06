@@ -44,6 +44,7 @@ export function toOppRow(o: OppWithAccount, now: Date, stalled: number): OppRow 
     probability: o.probability,
     forecastCategory: o.forecastCategory,
     nextStep: o.nextStep,
+    nextStepDate: o.nextStepDate?.toISOString() ?? null,
     partners: o.partners as string[],
     competitors: o.competitors as string[],
     closeDatePushes: o.closeDatePushes,
@@ -58,6 +59,7 @@ export function toOppRow(o: OppWithAccount, now: Date, stalled: number): OppRow 
         closeDate: o.closeDate,
         closeDatePushes: o.closeDatePushes,
         meddpicc,
+        nextStepDate: o.nextStepDate,
       },
       now,
       stalled,
@@ -114,6 +116,7 @@ export interface OppPatch {
   probability?: number;
   forecastCategory?: string;
   nextStep?: string | null;
+  nextStepDate?: Date | null;
   practiceArea?: string;
   partners?: string[];
   competitors?: string[];
@@ -133,6 +136,10 @@ export async function updateOpportunity(id: string, patch: OppPatch) {
     changes.push(`amount → ${Math.round(patch.amount).toLocaleString("en-US")}`);
   }
   if (patch.nextStep !== undefined) data.nextStep = patch.nextStep;
+  if (patch.nextStepDate !== undefined) {
+    data.nextStepDate = patch.nextStepDate;
+    changes.push(patch.nextStepDate ? `next step due ${patch.nextStepDate.toISOString().slice(0, 10)}` : "next step date cleared");
+  }
   if (patch.practiceArea !== undefined) data.practiceArea = patch.practiceArea;
   if (patch.partners !== undefined) data.partners = patch.partners;
   if (patch.competitors !== undefined) data.competitors = patch.competitors;

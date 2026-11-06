@@ -9,7 +9,7 @@ const isTyping = (el: EventTarget | null) =>
   el instanceof HTMLElement &&
   (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName));
 
-/** ⌘K / Ctrl+K opens the palette; two-key "G X" sequences come from registry command shortcuts. */
+/** ⌘K / Ctrl+K opens the palette; T task, C capture, ? help; two-key "G X" sequences come from registry command shortcuts. */
 export function KeyboardShortcuts() {
   const setOpen = useUiStore((s) => s.setCommandOpen);
   const run = useRunCommand();
@@ -37,6 +37,23 @@ export function KeyboardShortcuts() {
       )
         return;
       const key = e.key.toLowerCase();
+      const ui = useUiStore.getState();
+      const dialogOpen = ui.taskDialog.open || ui.captureOpen || ui.helpOpen || ui.noteDialog.open;
+      if (!pending && !dialogOpen) {
+        if (e.key === "?") {
+          e.preventDefault();
+          return ui.setHelpOpen(true);
+        }
+        if (!e.shiftKey && key === "c") {
+          e.preventDefault();
+          return ui.setCaptureOpen(true);
+        }
+        // In the triage queue, T creates a task for the focused signal (handled there).
+        if (!e.shiftKey && key === "t" && !ui.triageActive) {
+          e.preventDefault();
+          return ui.openTaskDialog();
+        }
+      }
       if (pending) {
         const fn = sequences.get(`${pending} ${key}`);
         pending = null;

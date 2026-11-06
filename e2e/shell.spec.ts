@@ -1,11 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("app shell", () => {
-  test("loads Command Home with the test-DB chip and no console errors", async ({ page }) => {
+  test("lands on My Day with the test-DB chip and no console errors", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Portfolio overview" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Good (morning|afternoon|evening)/ }),
+    ).toBeVisible();
+    await expect(page.getByRole("region", { name: "Deals needing attention" })).toBeVisible();
     await expect(
       page.getByRole("status", { name: "Connected to the test database" }),
     ).toBeVisible();
@@ -41,7 +44,7 @@ test.describe("app shell", () => {
   });
 
   test("presentation mode hides internal-only tiles and persists", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
     const internal = page.locator('[data-internal-only="true"]').first();
     await expect(internal).toBeVisible();
     await page.getByRole("button", { name: "Presentation Mode" }).click();

@@ -13,6 +13,7 @@ import { registry } from "@/modules/registry";
 import type { AccModule } from "@/modules/types";
 import { useUiStore } from "@/stores/ui-store";
 import { NAV_GROUPS, routeHref } from "./nav-config";
+import { PinnedLists } from "./pinned-lists";
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
@@ -78,7 +79,8 @@ export function SidebarNav({
 }) {
   const flags = useFeatureFlags();
   const modules = registry.enabled(flags);
-  const home = modules.filter((m) => m.id === "command-home");
+  const TOP = ["my-day", "command-home"];
+  const home = TOP.map((id) => modules.find((m) => m.id === id)).filter((m): m is AccModule => !!m);
   const system = modules.filter((m) => m.category === "system");
   return (
     <nav aria-label="Primary" className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 py-3">
@@ -89,7 +91,7 @@ export function SidebarNav({
       </div>
       {NAV_GROUPS.map((g) => {
         const items = modules.filter(
-          (m) => g.categories.includes(m.category) && m.id !== "command-home",
+          (m) => g.categories.includes(m.category) && !TOP.includes(m.id),
         );
         if (!items.length) return null;
         return (
@@ -105,6 +107,7 @@ export function SidebarNav({
           </div>
         );
       })}
+      <PinnedLists collapsed={collapsed} onNavigate={onNavigate} />
       <div className="mt-auto flex flex-col gap-0.5">
         {system.map((m) => (
           <NavItem key={m.id} m={m} collapsed={collapsed} onNavigate={onNavigate} />

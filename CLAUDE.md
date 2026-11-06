@@ -237,7 +237,7 @@ migrations, because Prisma would otherwise report drift.
   - Every created/merged entity is an `ImportRecord` with a `before` snapshot; `undoImport()` deletes created rows and
     restores merged ones. Opportunities go through `createOpportunity(..., { quiet: true })` / `updateOpportunity()`.
   - Child kinds must reference an existing account; unknown accounts are row errors, never auto-created.
-- **First run.** `/api/meta` returns `empty`; Command Home renders `Onboarding` (`src/lib/onboarding/steps.ts`:
+- **First run.** `/api/meta` returns `empty`; My Day (`/`) renders `Onboarding` (`src/lib/onboarding/steps.ts`:
   Import → Resolve → Enrich → Review; all steps available since Phase 6). Pages that need accounts
   wrap content in `NeedsAccounts`; widgets use `WidgetEmpty` / `NoOppsEmpty`. Never render a zero-data chart.
 - **KPI targets start blank** (`quarterlyTarget`/`coverageTarget` default `0` = not set). `Kpis.targetSet` and
@@ -284,6 +284,37 @@ migrations, because Prisma would otherwise report drift.
   runs vs TTL and pending proposals. `/api/enrichment/overview` feeds the Accounts columns and "Stale data" filter.
 - **Contacts from filings** are suggestions with `Contact.source/sourceUrl`; nothing is added without acceptance.
 
+## Phase 7 conventions (daily use)
+
+- **Landing page.** My Day (module `my-day`, route `""`) is `/`; Command Home moved to `/dashboard` (`G B`).
+  `myDay()` (`src/lib/server/my-day.ts`) assembles meetings, signals since `myDay.lastSeenAt`, due tasks, cadence,
+  deals and budget timing. **Every item carries a `suggestion: { action, reason }`** from the pure helpers in
+  `src/lib/daily/next-action.ts`; never show a suggestion without its reason.
+- **Pure daily libs** live in `src/lib/daily/` (fiscal window, cadence, recurrence, notes parser, .ics parser, smart-list
+  evaluator, questions), all unit-tested in `__tests__/daily.test.ts`.
+- **Tasks** (`src/lib/server/tasks.ts`, `/api/tasks`) link to account / opp / signal / contact; the account is inferred
+  from the opp or signal. Completing a recurring task creates the next occurrence. Quick add: `t` or ⌘K; the global
+  `TaskDialog` is opened through `useUiStore().openTaskDialog(defaults)`.
+- **Dated next step.** `Opportunity.nextStepDate`; `dealRiskFlags` adds `no-next-step` only when `nextStepDate` is
+  passed (so old callers are unaffected). Set it through `updateOpportunity()`.
+- **Calendar (.ics).** `parseIcs()` keeps attendee/organizer **domains only** (no addresses, no names), skips cancelled
+  events, expands DAILY/WEEKLY RRULEs inside the import window. Your own domain (on ≥60% of meetings) and webmail
+  domains are ignored when matching accounts.
+- **Meeting prep brief.** `buildBrief()` (`src/lib/server/brief.ts`) feeds both `/accounts/:id/brief` and the export
+  section `account-intel.brief` (`internalOnly`, so it never reaches a customer-audience export).
+- **Triage.** `Signal.triagedAt/triageAction`; queue = untriaged, not dismissed, last 30 days, top 100 by relevance.
+  `triageActive` in the UI store suppresses the global `t` / `c` shortcuts while the queue has focus.
+- **Cadence & fiscal settings** are the `territory` module's `settingsSchema` (Settings → Modules), read with
+  `territoryConfig()`. Planning window = FY start minus `planningStartMonths` .. minus `planningEndMonths`; labels say
+  "likely" because they are an estimate from the public fiscal year end.
+- **Partners** are user-entered only (`PartnerRep`, `OpportunityPartnerRep`, `PartnerRegistration`, `Touch.partnerRepId`).
+  Shared pipeline = open opps a company's reps are on, or whose `partners` list names the company.
+- **Smart lists.** Rules are `{ match: all|any, rules: [{ field, op, value }] }` validated by `RulesSchema`; fields per
+  entity are declared in `src/lib/daily/smart-fields.ts` and evaluated in memory by `matches()` over `rowsFor(entity)`.
+  Add a field = one `SMART_FIELDS` entry + its value in `rowsFor()`. Pinned lists appear in the sidebar (`PinnedLists`).
+- **Quick capture** (`c`) saves a Note with `#tags` and offers each `Action:` / `Next:` / `TODO` / `- [ ]` line as a task.
+- **Shortcuts** must be listed in the `?` overlay (`help-overlay.tsx`); G-sequences come from module commands.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -316,6 +347,6 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 4: exports, sandbox stub, Presentation Mode polish, performance and a11y pass, docs
 - [x] Phase 5: demo data removed (test-DB fixtures, purge + backups), onboarding + empty states, import wizard
 - [x] Phase 6: identity resolution + public-data enrichment engine (10 enrichers, review UI, queue)
-- [ ] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
+- [x] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
 - [ ] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
 - [ ] Phase 9: polish and hardening

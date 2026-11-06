@@ -18,6 +18,7 @@ const accountIntel: AccModule = {
       load: () => import("./pages/import-redirect"),
     },
     { path: "accounts/[id]", title: "Account 360", load: () => import("./pages/account-360-page") },
+    { path: "accounts/[id]/brief", title: "Meeting prep brief", load: () => import("./pages/brief-page") },
   ],
   widgets: [
     {
@@ -47,6 +48,23 @@ const accountIntel: AccModule = {
       .describe("Days without a touch before an account is flagged"),
   }),
   exportSections: [
+    {
+      id: "account-intel.brief",
+      title: "Meeting prep brief",
+      description: "One page: snapshot, latest signals, open deals, buying committee, recent touches, evidence, plays and questions.",
+      scopes: ["account"],
+      internalOnly: true,
+      fields: [
+        { id: "snapshot", label: "Snapshot", visibility: "customer-safe" },
+        { id: "signals", label: "Latest signals", visibility: "internal" },
+        { id: "opps", label: "Open opportunities", visibility: "internal" },
+        { id: "committee", label: "Buying committee", visibility: "internal" },
+        { id: "touches", label: "Recent touches", visibility: "internal" },
+        { id: "evidence", label: "Initiative evidence", visibility: "customer-safe" },
+        { id: "plays", label: "Recommended plays", visibility: "internal" },
+        { id: "questions", label: "Suggested questions", visibility: "internal" },
+      ],
+    },
     {
       id: "account-intel.overview",
       title: "Account overview",

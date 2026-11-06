@@ -52,6 +52,9 @@ model Account {
   eventInvites   EventInvite[]
   campaigns      Campaign[]
   partnerReps    PartnerRepAccount[]
+  tasks          Task[]
+  meetings       Meeting[]
+  registrations  PartnerRegistration[]
   fields         AccountField[]
   fieldHistory   AccountFieldHistory[]
   proposals      FieldProposal[]
@@ -124,7 +127,7 @@ model TechStackHypothesis {
 }
 
 model Signal {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   accountId      String
   type           String
   title          String
@@ -132,18 +135,21 @@ model Signal {
   url            String?
   source         String // adapter id
   publishedAt    DateTime
-  dedupeHash     String   @unique
+  dedupeHash     String    @unique
   practiceTags   Json // string[]
-  tagIndex       String   @default("") // ",ai-infra,cloud," — portable LIKE filter (Json array filters aren't portable)
+  tagIndex       String    @default("") // ",ai-infra,cloud," — portable LIKE filter (Json array filters aren't portable)
   relevance      Float
   relevanceParts Json // { recency, sourceWeight, practiceMatch, tierFactor }
-  read           Boolean  @default(false)
-  starred        Boolean  @default(false)
-  dismissed      Boolean  @default(false)
-  inNextSummary  Boolean  @default(false)
-  isDemo         Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  read           Boolean   @default(false)
+  starred        Boolean   @default(false)
+  dismissed      Boolean   @default(false)
+  inNextSummary  Boolean   @default(false)
+  /// Phase 7 triage: when and how the signal was handled in the triage queue.
+  triagedAt      DateTime?
+  triageAction   String? // read | starred | dismissed | play | opportunity | note | task
+  isDemo         Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  account        Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([accountId, publishedAt])
   @@index([publishedAt])
@@ -154,7 +160,7 @@ model Signal {
 }
 
 model Opportunity {
-  id               String        @id @default(cuid())
+  id               String                  @id @default(cuid())
   accountId        String
   name             String
   practiceArea     String
@@ -164,17 +170,21 @@ model Opportunity {
   probability      Int
   forecastCategory String // Pipeline | BestCase | Commit | Closed | Omitted
   nextStep         String?
+  nextStepDate     DateTime?
   meddpicc         Json
   partners         Json // string[]
   competitors      Json // string[]
-  closeDatePushes  Int           @default(0)
+  closeDatePushes  Int                     @default(0)
   stageChangedAt   DateTime
   closedAt         DateTime?
   sourceSignalId   String?
-  isDemo           Boolean       @default(false)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  account          Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  isDemo           Boolean                 @default(false)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  account          Account                 @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tasks            Task[]
+  partnerReps      OpportunityPartnerRep[]
+  registrations    PartnerRegistration[]
   stageHistory     StageChange[]
 
   @@index([stage])
@@ -235,6 +245,8 @@ model Touch {
   completedAt    DateTime?
   outcome        String? // replied | meeting | opp-created | no-response
   sourceSignalId String?
+  /// Joint touch with a partner rep (co-sell tracker).
+  partnerRepId   String?
   isDemo         Boolean   @default(false)
   account        Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
   campaign       Campaign? @relation(fields: [campaignId], references: [id])
@@ -284,6 +296,7 @@ model Note {
   entityId     String
   body         String
   internalOnly Boolean  @default(true)
+  tags         Json? // string[] (quick capture)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -435,15 +448,17 @@ model ImportMapping {
 
 /// User-entered only (Phase 7.6 builds the co-sell UI on top of this).
 model PartnerRep {
-  id             String              @id @default(cuid())
+  id             String                  @id @default(cuid())
   partnerCompany String
   name           String
   title          String?
   territory      String?
   notes          String?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
   accounts       PartnerRepAccount[]
+  opportunities  OpportunityPartnerRep[]
+  registrations  PartnerRegistration[]
 
   @@index([partnerCompany])
 }
@@ -575,4 +590,84 @@ model CorporateRelation {
   account         Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@unique([accountId, relation, name])
+}
+
+// ── Phase 7: daily-use features ──────────────────────────────────────────────
+
+model Task {
+  id            String       @id @default(cuid())
+  title         String
+  notes         String?
+  dueDate       DateTime?
+  priority      String       @default("normal") // low | normal | high | urgent
+  status        String       @default("open") // open | done | cancelled
+  recurrence    String? // weekly | biweekly | monthly | quarterly
+  accountId     String?
+  opportunityId String?
+  signalId      String?
+  contactId     String?
+  source        String       @default("manual") // manual | signal | quick-capture | next-step | my-day
+  completedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  account       Account?     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@index([status, dueDate])
+  @@index([accountId])
+}
+
+/// Imported from a calendar file (.ics). Only attendee DOMAINS are kept (for account matching), never addresses.
+model Meeting {
+  id              String    @id @default(cuid())
+  uid             String
+  title           String
+  startsAt        DateTime
+  endsAt          DateTime?
+  location        String?
+  attendeeDomains Json // string[]
+  accountId       String?
+  importedAt      DateTime  @default(now())
+  account         Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@unique([uid, startsAt])
+  @@index([startsAt])
+}
+
+model SmartList {
+  id        String   @id @default(cuid())
+  name      String
+  entity    String // account | opportunity | signal
+  rules     Json // { match: "all" | "any", rules: [{ field, op, value }] }
+  pinned    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model OpportunityPartnerRep {
+  opportunityId String
+  repId         String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  rep           PartnerRep  @relation(fields: [repId], references: [id], onDelete: Cascade)
+
+  @@id([opportunityId, repId])
+}
+
+/// Deal registrations with partners (user-entered).
+model PartnerRegistration {
+  id             String       @id @default(cuid())
+  partnerCompany String
+  repId          String?
+  accountId      String
+  opportunityId  String?
+  reference      String?
+  status         String       @default("submitted") // submitted | approved | rejected | expired
+  expiresAt      DateTime?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  rep            PartnerRep?  @relation(fields: [repId], references: [id], onDelete: SetNull)
+  account        Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  opportunity    Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  @@index([partnerCompany])
 }

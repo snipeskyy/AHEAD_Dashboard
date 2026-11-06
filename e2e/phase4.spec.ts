@@ -91,7 +91,7 @@ test.describe("Phase 4: sandbox & presentation", () => {
   });
 
   test("presentation mode hides internal-only UI and can be exited", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
     await expect(page.getByRole("heading", { name: "Portfolio overview" })).toBeVisible({
       timeout: 60_000,
     });
@@ -111,6 +111,14 @@ test.describe("Phase 4: sandbox & presentation", () => {
 test.describe("Phase 4: accessibility (axe, WCAG 2 AA)", () => {
   for (const path of [
     "/",
+    "/dashboard",
+    "/tasks",
+    "/territory",
+    "/fix-it",
+    "/partners",
+    "/lists",
+    "/signals?tab=triage",
+    "/accounts/demo-acc-008/brief",
     "/accounts",
     "/accounts/demo-acc-008",
     "/accounts/demo-acc-008?tab=profile",

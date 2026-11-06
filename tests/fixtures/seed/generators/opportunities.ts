@@ -70,6 +70,7 @@ export interface SeedOpp {
   probability: number;
   forecastCategory: string;
   nextStep: string | null;
+  nextStepDate: Date | null;
   meddpicc: Meddpicc;
   partners: string[];
   competitors: string[];
@@ -193,6 +194,11 @@ export function generateOpportunity(
     probability: prob,
     forecastCategory,
     nextStep: outcome === "open" ? rng.pick(NEXT_STEPS) : null,
+    // Deterministic without consuming the RNG (keeps every other fixture value stable); ~20% left undated.
+    nextStepDate:
+      outcome === "open" && index % 5 !== 0
+        ? new Date(anchor.getTime() + (((index * 7) % 27) - 5) * 86_400_000)
+        : null,
     meddpicc: meddpiccFor(rng, stageIdx),
     partners: rng.sample(GENERIC_PARTNERS, rng.int(0, 2)),
     competitors: rng.sample(GENERIC_COMPETITORS, rng.int(0, 2)),

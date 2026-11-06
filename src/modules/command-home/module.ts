@@ -7,9 +7,11 @@ const commandHome: AccModule = {
   description: "Portfolio dashboard with a customizable widget grid.",
   icon: LayoutDashboard,
   category: "intel",
-  order: 0,
+  order: 1,
   status: "stable",
-  routes: [{ path: "", title: "Command Home", nav: true, load: () => import("./pages/home-page") }],
+  routes: [
+    { path: "dashboard", title: "Command Home", nav: true, load: () => import("./pages/home-page") },
+  ],
   widgets: [
     {
       id: "command-home.next-best-actions",
@@ -52,7 +54,7 @@ const commandHome: AccModule = {
     },
   ],
   commands: [
-    { id: "nav.home", label: "Go to Command Home", group: "Navigate", href: "/", shortcut: "G H" },
+    { id: "nav.home", label: "Go to Command Home (dashboard)", group: "Navigate", href: "/dashboard", shortcut: "G B" },
   ],
 };
 

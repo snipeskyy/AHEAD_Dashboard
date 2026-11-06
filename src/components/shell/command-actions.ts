@@ -23,6 +23,12 @@ export function useRunCommand() {
           return setPresentation(!presentation);
         case "note.create":
           return openNote();
+        case "task.create":
+          return useUiStore.getState().openTaskDialog();
+        case "capture.open":
+          return useUiStore.getState().setCaptureOpen(true);
+        case "help.open":
+          return useUiStore.getState().setHelpOpen(true);
         case "opportunity.create":
           return router.push("/opportunities?create=1");
         default:

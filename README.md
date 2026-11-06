@@ -20,7 +20,7 @@ npm run setup        # applies database migrations (no demo data)
 npm run dev          # http://localhost:3000 (web) + background worker
 ```
 
-On first run Command Home shows a short onboarding: **Import accounts → Resolve identities → Enrich → Review**. Use
+The landing page is **My Day** (Command Home moved to `/dashboard`). On first run it shows a short onboarding: **Import accounts → Resolve identities → Enrich → Review**. Use
 **Import** (sidebar, or ⌘K → "Import") to bring in accounts from CSV, Excel or a pasted list.
 
 **Upgrading an existing install that has demo data:**
@@ -173,8 +173,14 @@ screen-sharing. A banner stays visible with a one-click **Exit**.
 ## Keyboard
 
 - `⌘K` / `Ctrl+K`: command palette (jump to an account, search, create, run actions)
-- `G H` / `G A` / `G S` / `G O` / `G D`: go to Home, Accounts, Signals, Opportunities, Demand Gen
+- `G H` / `G B` / `G A` / `G S` / `G O` / `G D`: go to My Day, Command Home, Accounts, Signals, Opportunities, Demand Gen
+- `G T` / `G R` / `G P` / `G L`: Tasks, Territory, Partners, Smart lists
+- `T`: new task · `C`: quick capture (notes → tagged note + tasks from `Action:`/`Next:`/`TODO` lines) · `?`: all shortcuts
+- Triage (Live Signals → Triage): `J`/`K` move, `S` star, `D` dismiss, `P` play, `O` opp, `N` note, `T` task, `E` handled
 - `G ,`: open Settings
+
+**Calendar:** export your calendar as `.ics` and import it on My Day. Only titles, times and attendee **domains** are
+stored (never addresses or names); meetings are matched to accounts by domain and get a one-click prep brief.
 
 ## Status
 
@@ -186,5 +192,6 @@ screen-sharing. A banner stays visible with a one-click **Exit**.
 | 4. Exports, sandbox stub, presentation and performance polish   | ✅     |
 | 5. Clean slate, onboarding, import wizard with dedupe + undo    | ✅     |
 | 6. Identity resolution and public-data enrichment               | ✅     |
+| 7. My Day, prep briefs, triage, tasks, cadence, partners, lists | ✅     |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

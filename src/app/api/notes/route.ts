@@ -8,6 +8,7 @@ const Body = z.object({
   entityId: z.string().min(1),
   body: z.string().trim().min(1).max(20_000),
   internalOnly: z.boolean().default(true),
+  tags: z.array(z.string().trim().min(1).max(32)).max(20).optional(),
 });
 
 export const GET = handler(async (req: Request) => {

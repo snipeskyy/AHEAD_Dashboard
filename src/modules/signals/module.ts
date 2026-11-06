@@ -54,6 +54,7 @@ const signals: AccModule = {
     },
   ],
   commands: [
+    { id: "nav.triage", label: "Triage signals (inbox)", group: "Navigate", href: "/signals?tab=triage", keywords: ["inbox", "triage", "review"] },
     {
       id: "nav.signals",
       label: "Go to Live Signals",

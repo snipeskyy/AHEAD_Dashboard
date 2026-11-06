@@ -1,5 +1,6 @@
 "use client";
 import {
+  ClipboardList,
   FileOutput,
   ArrowLeft,
   ExternalLink,
@@ -26,6 +27,7 @@ import { AccountSources } from "../components/account-sources";
 import { ActivityTab } from "../components/tabs/activity-tab";
 import { CommitteeTab } from "../components/tabs/committee-tab";
 import { IntelligenceTab } from "../components/tabs/intelligence-tab";
+import { BudgetTiming } from "../components/budget-timing";
 import { EnrichActions } from "../components/enrichment/enrich-actions";
 import { OppsTab } from "../components/tabs/opps-tab";
 import { ProfileTab } from "../components/tabs/profile-tab";
@@ -136,9 +138,15 @@ export default function Account360Page({ params }: { params: Record<string, stri
                   </a>
                 ))}
               {a.ticker && <span>Ticker {a.ticker}</span>}
+              <BudgetTiming fye={(a as { fiscalYearEnd?: string | null }).fiscalYearEnd} />
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/accounts/${a.id}/brief`}>
+                <ClipboardList /> Prep brief
+              </Link>
+            </Button>
             <EnrichActions accountId={a.id} accountName={a.name} isDemo={a.isDemo} />
             <Button variant="outline" size="sm" asChild>
               <Link href={`/exports?account=${a.id}`}>

@@ -22,6 +22,7 @@ import {
 import { useUiStore } from "@/stores/ui-store";
 import { ConvertToPlayDialog, ConvertToTouchDialog } from "../components/convert-dialogs";
 import { DigestView } from "../components/digest-view";
+import { TriageQueue } from "../components/triage-queue";
 import { SourceCoveragePanel } from "../components/source-coverage";
 import { useFetchNow } from "../hooks/use-fetch-now";
 import { ManualSignalDialog } from "../components/manual-signal-dialog";
@@ -60,7 +61,8 @@ export default function SignalsPage() {
   const qc = useQueryClient();
   const live = useLiveSignals();
   const { data: meta } = useMeta();
-  const tab = params.get("tab") === "digest" ? "digest" : "feed";
+  const tabParam = params.get("tab");
+  const tab = tabParam === "digest" || tabParam === "triage" ? tabParam : "feed";
   const focus = params.get("focus");
   const setParam = useCallback(
     (k: string, v: string | null) => {
@@ -233,6 +235,12 @@ export default function SignalsPage() {
           </TabsTrigger>
           <TabsTrigger
             aria-controls={undefined /* URL-driven tabs: the panel is rendered outside <Tabs> */}
+            value="triage"
+          >
+            Triage
+          </TabsTrigger>
+          <TabsTrigger
+            aria-controls={undefined /* URL-driven tabs: the panel is rendered outside <Tabs> */}
             value="digest"
           >
             Digest
@@ -250,6 +258,8 @@ export default function SignalsPage() {
             </Button>
           }
         />
+      ) : tab === "triage" ? (
+        <TriageQueue onAction={onAction} />
       ) : tab === "feed" ? (
         <>
           {sources && (sources.runnable === 0 || showCoverage) && (

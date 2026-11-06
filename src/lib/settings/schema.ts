@@ -65,6 +65,8 @@ export const SETTINGS = {
   "enrichment.paused": { schema: z.boolean(), defaults: false },
   /** Re-run enrichers for already-enriched accounts when their TTL expires. */
   "enrichment.autoRefresh": { schema: z.boolean(), defaults: true },
+  /** My Day: when the user last marked the day as seen (signals since then rank first). */
+  "myDay.lastSeenAt": { schema: z.string().nullable(), defaults: null as string | null },
   "modules.settings": {
     schema: z.record(z.string(), z.record(z.string(), z.unknown())),
     defaults: {} as Record<string, Record<string, unknown>>,

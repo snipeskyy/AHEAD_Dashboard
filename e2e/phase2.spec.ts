@@ -9,7 +9,7 @@ async function json<T>(req: APIRequestContext, url: string): Promise<T> {
 
 test.describe("Phase 2: Command Home", () => {
   test("loads KPI strip and the default layout widgets", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
     await expect(page.getByText("Weighted pipeline")).toBeVisible();
     await expect(page.getByRole("region", { name: "Forecast vs target" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Next best actions" })).toBeVisible();
@@ -20,7 +20,7 @@ test.describe("Phase 2: Command Home", () => {
     page,
     request,
   }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
     await page.getByRole("button", { name: "Customize" }).click();
     await expect(page.getByTestId("widget-grid")).toHaveAttribute("data-editing", "true");
     await page.getByRole("button", { name: "Add widget" }).click();
@@ -42,7 +42,7 @@ test.describe("Phase 2: Command Home", () => {
   });
 
   test("switches between saved layouts", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
     await page.getByRole("button", { name: "Choose layout" }).click();
     await page.getByRole("menuitem", { name: /Account Prep/ }).click();
     await expect(page.getByRole("region", { name: "Signal feed" })).toBeVisible();

@@ -12,6 +12,7 @@ import type { Account360 } from "../../hooks/use-accounts";
 import { useAccountMutation } from "../../hooks/use-accounts";
 import { SourceTag } from "../evidence-link";
 import { ScoreBreakdown } from "../score-breakdown";
+import { PartnerPanel } from "../partner-panel";
 
 const rel = (iso: string) => formatDistanceToNowStrict(new Date(iso), { addSuffix: true });
 
@@ -234,6 +235,7 @@ export function OverviewTab({ d }: { d: Account360 }) {
           )}
         </section>
       </div>
+      <PartnerPanel accountId={d.account.id} />
     </div>
   );
 }

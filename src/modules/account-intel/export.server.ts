@@ -15,7 +15,90 @@ const STATUS: Record<string, string> = {
 const srcLabel = (source: string) =>
   source === "user-hypothesis" ? "Hypothesis" : source === "seed" ? "Demo data" : source;
 
+const money = (n: number) => (n >= 1e6 ? `$${(n / 1e6).toFixed(1)}M` : `$${Math.round(n / 1e3)}K`);
+
 export const builders: SectionBuilders = {
+  "account-intel.brief": (ctx) =>
+    perAccount(ctx, async (acc) => {
+      const { buildBrief } = await import("@/lib/server/brief");
+      const b = await buildBrief(ctx.db, acc.id, ctx.now);
+      const blocks: Block[] = [
+        {
+          kind: "kv",
+          field: "snapshot",
+          items: [
+            { label: "Industry", value: b.account.industry },
+            { label: "Headquarters", value: b.account.hq ?? "—" },
+            { label: "Size", value: [b.account.employeeBand, b.account.revenueBand].filter(Boolean).join(" · ") || "—" },
+            { label: "Budget timing", value: b.fiscal?.label ?? "Fiscal year end unknown" },
+            ...(b.meeting ? [{ label: "Meeting", value: `${b.meeting.title} · ${new Date(b.meeting.startsAt).toLocaleString("en-US")}` }] : []),
+          ],
+        },
+      ];
+      if (b.account.description) blocks.push({ kind: "paragraph", field: "snapshot", text: b.account.description });
+      blocks.push(
+        { kind: "heading", level: 3, text: "Suggested questions", field: "questions" },
+        { kind: "list", ordered: true, field: "questions", items: b.questions.map((q) => ({ text: q.q, sub: q.why })) },
+      );
+      if (b.signals.length)
+        blocks.push(
+          { kind: "heading", level: 3, text: "Latest signals", field: "signals" },
+          { kind: "list", field: "signals", items: b.signals.map((s) => ({ text: s.title, sub: `${s.type} · ${day(new Date(s.publishedAt))}`, href: s.url ?? undefined })) },
+        );
+      if (b.opps.length)
+        blocks.push(
+          { kind: "heading", level: 3, text: "Open opportunities", field: "opps" },
+          {
+            kind: "table",
+            field: "opps",
+            columns: [
+              { key: "name", label: "Opportunity" },
+              { key: "stage", label: "Stage" },
+              { key: "amount", label: "Amount", align: "right" },
+              { key: "close", label: "Close" },
+              { key: "next", label: "Next step" },
+            ],
+            rows: b.opps.map((o) => ({
+              name: { text: o.name },
+              stage: { text: o.stage },
+              amount: { text: money(o.amount) },
+              close: { text: day(new Date(o.closeDate)) },
+              next: { text: [o.nextStep, o.nextStepDate ? `by ${day(new Date(o.nextStepDate))}` : ""].filter(Boolean).join(" ") || "—" },
+            })),
+          },
+        );
+      blocks.push(
+        { kind: "heading", level: 3, text: "Buying committee", field: "committee" },
+        {
+          kind: "list",
+          field: "committee",
+          items: [
+            ...b.committee.contacts.map((c) => ({ text: [c.name, c.title].filter(Boolean).join(", "), sub: `${c.role} · ${c.engagement}` })),
+            ...b.committee.gaps.map((g) => ({ text: `Gap: ${g}` })),
+          ],
+        },
+      );
+      if (b.touches.length)
+        blocks.push(
+          { kind: "heading", level: 3, text: "Last touches", field: "touches" },
+          { kind: "list", field: "touches", items: b.touches.map((t) => ({ text: `${t.channel} with ${t.persona}`, sub: [day(new Date(t.completedAt)), t.outcome, t.angle].filter(Boolean).join(" · ") })) },
+        );
+      if (b.initiatives.length)
+        blocks.push(
+          { kind: "heading", level: 3, text: "Initiative evidence", field: "evidence" },
+          {
+            kind: "list",
+            field: "evidence",
+            items: b.initiatives.map((i) => ({ text: i.title, sub: [i.evidence ? `“${i.evidence}”` : "", i.section].filter(Boolean).join(" · "), href: i.sourceUrl ?? undefined })),
+          },
+        );
+      if (b.plays.length)
+        blocks.push(
+          { kind: "heading", level: 3, text: "Recommended plays", field: "plays" },
+          { kind: "list", field: "plays", items: b.plays.map((p) => ({ text: p.name, sub: p.reasons.slice(0, 2).join("; ") })) },
+        );
+      return blocks;
+    }),
   "account-intel.overview": (ctx) =>
     perAccount(ctx, async (acc) => {
       const a = await ctx.db.account.findUniqueOrThrow({ where: { id: acc.id } });

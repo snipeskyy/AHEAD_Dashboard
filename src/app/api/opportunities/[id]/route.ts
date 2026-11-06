@@ -40,6 +40,7 @@ const Patch = z
     probability: z.number().int().min(0).max(100),
     forecastCategory: z.enum(FORECAST_CATEGORIES),
     nextStep: z.string().max(500).nullable(),
+    nextStepDate: z.coerce.date().nullable(),
     practiceArea: z.string().min(1),
     partners: z.array(z.string().max(80)).max(20),
     competitors: z.array(z.string().max(80)).max(20),
