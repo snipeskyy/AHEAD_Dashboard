@@ -26,6 +26,8 @@ import {
   type ExportFormat,
 } from "@/lib/export/config";
 import type { ExportDocument } from "@/lib/export/types";
+import { DeckOptions } from "./deck-options";
+import { DeckPreview, type DeckDoc } from "./deck-preview";
 import { ExportOptions } from "./export-options";
 import { ScopePicker } from "./scope-picker";
 import { SectionPicker } from "./section-picker";
@@ -96,9 +98,9 @@ export function ExportBuilder({
   const preview = useQuery({
     queryKey: ["export-preview", debounced],
     queryFn: () =>
-      api<ExportDocument>("/api/exports/preview", {
+      api<ExportDocument | DeckDoc>("/api/exports/preview", {
         method: "POST",
-        json: { config: debounced, mode: "preview" },
+        json: { config: debounced, mode: "preview", view: debounced.style },
       }),
     enabled: valid.success && !needsAccount,
     placeholderData: (prev) => prev,
@@ -169,6 +171,14 @@ export function ExportBuilder({
         </Card>
         <Card size="sm">
           <CardHeader>
+            <CardTitle className="text-sm">Style & theme</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DeckOptions config={config} onChange={setConfig} />
+          </CardContent>
+        </Card>
+        <Card size="sm">
+          <CardHeader>
             <CardTitle className="text-sm">Sections</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
@@ -221,7 +231,7 @@ export function ExportBuilder({
                 ) : (
                   <Icon />
                 )}
-                {FORMAT_META[f].label}
+                {f === "pdf" && config.style === "deck" ? "PDF (slides)" : FORMAT_META[f].label}
               </Button>
             );
           })}
@@ -269,6 +279,8 @@ export function ExportBuilder({
             />
           ) : !doc ? (
             <Skeleton className="mx-auto h-[640px] max-w-[820px]" />
+          ) : config.style === "deck" && "deck" in doc ? (
+            <DeckPreview doc={doc as DeckDoc} config={config} onChange={setConfig} />
           ) : (
             <div className="mx-auto max-w-[820px]">
               <DocumentView doc={highlight ? doc : stripMarked(doc)} />

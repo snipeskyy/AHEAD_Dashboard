@@ -179,6 +179,11 @@ screen-sharing. A banner stays visible with a one-click **Exit**.
 - Triage (Live Signals → Triage): `J`/`K` move, `S` star, `D` dismiss, `P` play, `O` opp, `N` note, `T` task, `E` handled
 - `G ,`: open Settings
 
+**Presentations:** Exports → pick a template (Customer QBR deck, Executive summary deck, Account plan, Partner
+co-sell brief, Portfolio readout, …) → **Slide deck** style. You get live slide thumbnails (hide any slide, edit
+speaker notes), a full-screen **Present** mode (←/→, N for notes, Esc), and PowerPoint with editable charts and
+notes, or a 16:9 PDF. With a brand pack in `brand/`, decks use your logo and colors; otherwise a neutral theme.
+
 **Backups:** the background worker saves a full JSON backup to `backups/` once a day and keeps the last 14
 (Settings → Data → Backups & restore). From there you can back up now, download a backup, or restore one (type
 RESTORE to confirm; your current data is saved first). Copy `backups/` somewhere safe from time to time.

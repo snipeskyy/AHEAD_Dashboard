@@ -6,7 +6,8 @@ import "server-only";
  */
 export async function renderPdf(
   printUrl: string,
-  footer: { left: string; right: string },
+  /** Document footer; null for decks (16:9 pages, slides carry their own footer). */
+  footer: { left: string; right: string } | null,
 ): Promise<Buffer> {
   const { chromium } = await import("playwright");
   const browser = await chromium.launch();
@@ -17,6 +18,7 @@ export async function renderPdf(
     await page.emulateMedia({ media: "print" });
     const esc = (s: string) =>
       s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
+    if (!footer) return await page.pdf({ width: "13.333in", height: "7.5in", printBackground: true, margin: { top: "0", bottom: "0", left: "0", right: "0" } });
     return await page.pdf({
       format: "Letter",
       printBackground: true,

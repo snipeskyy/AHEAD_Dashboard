@@ -24,7 +24,7 @@ export default function ExportsPage() {
     enabled: !!accountId,
   });
   const scoped = accountId && acc ? acc : null;
-  const { scopeType, ...rest } = DEFAULT_TEMPLATES[scoped ? 0 : 2].config;
+  const { scopeType, ...rest } = DEFAULT_TEMPLATES[scoped ? 0 : DEFAULT_TEMPLATES.length - 1].config;
   const initial: ExportConfig = {
     ...rest,
     hiddenFields: rest.hiddenFields ?? [],

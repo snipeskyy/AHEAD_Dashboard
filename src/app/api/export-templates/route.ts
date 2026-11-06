@@ -3,11 +3,11 @@ import { db } from "@/lib/db";
 import { DEFAULT_TEMPLATES } from "@/lib/export/config";
 import { handler, json, readJson } from "@/lib/server/http";
 
+/** Installs any built-in template that's missing (by name); never overwrites one the user saved. */
 async function ensureDefaults() {
-  if ((await db.exportTemplate.count()) > 0) return;
-  await db.exportTemplate.createMany({
-    data: DEFAULT_TEMPLATES.map((t) => ({ name: t.name, config: t.config })),
-  });
+  const have = new Set((await db.exportTemplate.findMany({ select: { name: true } })).map((t) => t.name));
+  const missing = DEFAULT_TEMPLATES.filter((t) => !have.has(t.name));
+  if (missing.length) await db.exportTemplate.createMany({ data: missing.map((t) => ({ name: t.name, config: t.config })) });
 }
 
 export const GET = handler(async () => {

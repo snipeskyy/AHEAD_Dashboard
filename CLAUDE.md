@@ -369,6 +369,29 @@ migrations, because Prisma would otherwise report drift.
 - **Screenshots** cover every page in light and dark, populated (`screenshots/<theme>/*.png`) and empty
   (`screenshots/<theme>/empty-*.png`).
 
+## Phase 10 conventions (deliverables engine)
+
+- **Slides are planned, not hand-built.** `planSlides(doc, deckOptions)` (`src/lib/deck/plan.ts`, pure, tested) turns
+  the redacted `ExportDocument` into slides with a layout each: kv → `kpis` (or `facts`), chart (+ the paragraph or
+  callout after it) → `chart-takeaway`, table → paginated `table` (8 rows), list → `bullets` / `two-column`, callout →
+  `quote`; level-3 headings title the slides after them; the cover becomes the title slide; a `*.next-steps` section
+  becomes the closing slide. Slide ids (`<sectionId>:<n>`) are stable, so hidden slides and edited speaker notes
+  (`config.deck.hiddenSlides` / `notes`) survive regeneration.
+- **Takeaways are computed, never invented** (`narrative.ts`): leader + share, trend %, periods at target. A
+  section's own sentence after a chart wins; the computed line goes to the speaker notes.
+- **Renderers** draw the same layouts: `slidesToPptx()` (`src/lib/deck/pptx.ts`: master with logo/footer/slide
+  numbers, native editable charts, notes) and `SlideView` (`src/components/deck/slide-view.tsx`, 1280×720 canvas) for
+  the 16:9 PDF route `/print/deck/<id>`, builder thumbnails and the presenter. Change a layout in both.
+  `withSlideCharts()` re-renders chart SVGs at slide aspect.
+- **Theme**: `resolveDeckTheme("brand" | "neutral")` (`theme.server.ts`) reads the local brand pack (AA-adjusted
+  primary + logo as a data URL); neutral otherwise. Chart series always use the validated palette.
+- **Config**: `style` (`document` | `deck`; PPTX is always slides), `theme`, `deck` (agenda, dividers, closing,
+  hiddenSlides, notes). Deck exports store `{ slides, theme }` in the snapshot.
+- **Presenter** (`deck-presenter.tsx`) shows `audienceSlides()`: redaction marks removed, not outlined.
+- **New sections**: `exports.exec-summary` (situation, public priorities with sources, where we can help),
+  `exports.next-steps` (plan actions customer-safe; deal steps and tasks internal), `partners.co-sell` (internal).
+  Built-in templates install by name, so new ones reach existing workspaces without touching saved ones.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -407,7 +430,7 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
 - [x] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
 - [x] Phase 9: polish and hardening
-- [ ] Phase 10: deliverables engine (layouts, branded theme, templates, native charts, deck preview)
+- [x] Phase 10: deliverables engine (layouts, branded theme, templates, native charts, deck preview)
 - [ ] Phase 11: TCO / business-case builder
 - [ ] Phase 12: Data Center Sandbox (full)
 - [ ] Phase 13: data contract for the internal-tool port

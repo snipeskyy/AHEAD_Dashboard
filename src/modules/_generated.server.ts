@@ -6,7 +6,8 @@ import { builders as m_command_home } from "./command-home/export.server";
 import { builders as m_demand_gen } from "./demand-gen/export.server";
 import { builders as m_exports } from "./exports/export.server";
 import { builders as m_opportunities } from "./opportunities/export.server";
+import { builders as m_partners } from "./partners/export.server";
 import { builders as m_sandbox } from "./sandbox/export.server";
 import { builders as m_signals } from "./signals/export.server";
 
-export const discoveredBuilders: SectionBuilders = { ...m_account_intel, ...m_command_home, ...m_demand_gen, ...m_exports, ...m_opportunities, ...m_sandbox, ...m_signals };
+export const discoveredBuilders: SectionBuilders = { ...m_account_intel, ...m_command_home, ...m_demand_gen, ...m_exports, ...m_opportunities, ...m_partners, ...m_sandbox, ...m_signals };

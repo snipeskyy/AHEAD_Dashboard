@@ -1,7 +1,11 @@
 import "server-only";
 import type { SectionBuilders } from "@/lib/export/builder-types";
+import { execSummary } from "./builders/exec-summary";
+import { nextSteps } from "./builders/next-steps";
 
 export const builders: SectionBuilders = {
+  "exports.exec-summary": execSummary,
+  "exports.next-steps": nextSteps,
   "exports.cover": async (ctx) => {
     const n = ctx.accounts.length;
     const industries = [...new Set(ctx.accounts.map((a) => a.industry))];

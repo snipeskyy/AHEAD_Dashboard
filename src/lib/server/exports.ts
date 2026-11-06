@@ -11,8 +11,12 @@ import {
 } from "@/lib/export/config";
 import { documentToMarkdown } from "@/lib/export/markdown";
 import { renderPdf } from "@/lib/export/pdf";
-import { documentToPptx } from "@/lib/export/pptx";
 import type { ExportDocument } from "@/lib/export/types";
+import { withSlideCharts } from "@/lib/deck/charts.server";
+import { planSlides } from "@/lib/deck/plan";
+import { slidesToPptx } from "@/lib/deck/pptx";
+import { resolveDeckTheme } from "@/lib/deck/theme.server";
+import type { DeckTheme, Slide } from "@/lib/deck/types";
 import { logActivity } from "./activity";
 import { HttpError } from "./http";
 
@@ -26,9 +30,12 @@ export const snapshotPath = (id: string) => path.join(EXPORT_DIR, `${safeId(id)}
 export const outputPath = (id: string, format: ExportFormat) =>
   path.join(EXPORT_DIR, `${safeId(id)}.${FORMAT_META[format].ext}`);
 
-export async function readSnapshot(id: string): Promise<ExportDocument | null> {
+/** A saved export: the redacted document, plus the planned slides + theme when it's a deck. */
+export type ExportSnapshot = ExportDocument & { deck?: { slides: Slide[]; theme: DeckTheme } };
+
+export async function readSnapshot(id: string): Promise<ExportSnapshot | null> {
   try {
-    return JSON.parse(await readFile(snapshotPath(id), "utf8")) as ExportDocument;
+    return JSON.parse(await readFile(snapshotPath(id), "utf8")) as ExportSnapshot;
   } catch {
     return null;
   }
@@ -58,11 +65,15 @@ export async function createExport(rawConfig: unknown, format: ExportFormat, ori
     data: { title: config.title, config, format, status: "running", version: config.version },
   });
   await mkdir(EXPORT_DIR, { recursive: true });
-  await writeFile(snapshotPath(job.id), JSON.stringify(doc));
+  // Slides: PPTX always; PDF when the deck style is chosen. Planned once, from the redacted document.
+  const asDeck = format === "pptx" || (format === "pdf" && config.style === "deck");
+  const snap: ExportSnapshot = asDeck ? { ...doc, deck: { slides: withSlideCharts(planSlides(doc, config.deck)), theme: await resolveDeckTheme(config.theme) } } : doc;
+  await writeFile(snapshotPath(job.id), JSON.stringify(snap));
   try {
     const out = outputPath(job.id, format);
     if (format === "markdown") await writeFile(out, documentToMarkdown(doc));
-    else if (format === "pptx") await writeFile(out, await documentToPptx(doc));
+    else if (format === "pptx") await writeFile(out, await slidesToPptx(doc, snap.deck!.slides, snap.deck!.theme));
+    else if (snap.deck) await writeFile(out, await renderPdf(`${origin}/print/deck/${job.id}`, null));
     else {
       const left = [doc.title, doc.watermark].filter(Boolean).join(" · ");
       const right = [
