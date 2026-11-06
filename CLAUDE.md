@@ -238,7 +238,7 @@ migrations, because Prisma would otherwise report drift.
     restores merged ones. Opportunities go through `createOpportunity(..., { quiet: true })` / `updateOpportunity()`.
   - Child kinds must reference an existing account; unknown accounts are row errors, never auto-created.
 - **First run.** `/api/meta` returns `empty`; Command Home renders `Onboarding` (`src/lib/onboarding/steps.ts`:
-  Import → Resolve → Enrich → Review; Resolve/Enrich are `available: false` until Phase 6). Pages that need accounts
+  Import → Resolve → Enrich → Review; all steps available since Phase 6). Pages that need accounts
   wrap content in `NeedsAccounts`; widgets use `WidgetEmpty` / `NoOppsEmpty`. Never render a zero-data chart.
 - **KPI targets start blank** (`quarterlyTarget`/`coverageTarget` default `0` = not set). `Kpis.targetSet` and
   `coverageTone()` drive the "Not set → Set a target in Settings" tiles.
