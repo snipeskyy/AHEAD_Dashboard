@@ -1,0 +1,54 @@
+/**
+ * Every user-data table in a backup, as [snapshot key, Prisma model], parents before children.
+ * Caches and job bookkeeping (HttpCache, JobRequest, SourceRun) are intentionally excluded.
+ * Adding a model = add it here (snapshot, restore and the backup test all read this list).
+ */
+export const BACKUP_TABLES = [
+  ["users", "User"],
+  ["teams", "Team"],
+  ["settings", "Setting"],
+  ["accounts", "Account"],
+  ["partnerReps", "PartnerRep"],
+  ["partnerRepAccounts", "PartnerRepAccount"],
+  ["contacts", "Contact"],
+  ["practiceStatus", "AccountPracticeStatus"],
+  ["signals", "Signal"],
+  ["initiatives", "Initiative"],
+  ["techStack", "TechStackHypothesis"],
+  ["opportunities", "Opportunity"],
+  ["stageChanges", "StageChange"],
+  ["opportunityPartnerReps", "OpportunityPartnerRep"],
+  ["partnerRegistrations", "PartnerRegistration"],
+  ["plays", "Play"],
+  ["campaigns", "Campaign"],
+  ["touches", "Touch"],
+  ["events", "Event"],
+  ["eventInvites", "EventInvite"],
+  ["planItems", "AccountPlanItem"],
+  ["notes", "Note"],
+  ["comments", "Comment"],
+  ["tasks", "Task"],
+  ["meetings", "Meeting"],
+  ["smartLists", "SmartList"],
+  ["activity", "ActivityLog"],
+  ["notifications", "Notification"],
+  ["savedViews", "SavedView"],
+  ["layouts", "DashboardLayout"],
+  ["exportTemplates", "ExportTemplate"],
+  ["exportJobs", "ExportJob"],
+  ["sandboxScenarios", "SandboxScenario"],
+  ["importBatches", "ImportBatch"],
+  ["importRecords", "ImportRecord"],
+  ["importMappings", "ImportMapping"],
+  ["accountFields", "AccountField"],
+  ["accountFieldHistory", "AccountFieldHistory"],
+  ["fieldProposals", "FieldProposal"],
+  ["enrichmentRuns", "EnrichmentRun"],
+  ["enrichmentJobs", "EnrichmentJob"],
+  ["financialFacts", "FinancialFact"],
+  ["corporateRelations", "CorporateRelation"],
+  ["auditLog", "AuditLog"],
+] as const;
+
+export type BackupKey = (typeof BACKUP_TABLES)[number][0];
+export const delegateName = (model: string) => model[0].toLowerCase() + model.slice(1);

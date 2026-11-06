@@ -175,7 +175,7 @@ export function HomeDashboard() {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" aria-label="Choose layout">
+                  <Button variant="outline" size="sm" aria-label={`Choose layout: ${active?.name ?? "Layout"}`}>
                     <LayoutGrid /> {active?.name ?? "Layout"}
                   </Button>
                 </DropdownMenuTrigger>

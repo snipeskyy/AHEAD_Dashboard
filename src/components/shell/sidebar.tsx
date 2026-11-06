@@ -130,7 +130,8 @@ export function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
     <Link
       href="/"
       className="flex min-w-0 items-center gap-2 rounded-md outline-none"
-      aria-label={`${appName} home`}
+      // Expanded, the visible name + tagline is the link text (WCAG 2.5.3); collapsed, only the mark shows.
+      aria-label={collapsed ? `${appName} home` : undefined}
     >
       {logo && !collapsed ? (
         <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
@@ -160,7 +161,7 @@ export function Wordmark({ collapsed = false }: { collapsed?: boolean }) {
               className="size-7 shrink-0 rounded-md object-contain"
             />
           ) : (
-            <span className="bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-md text-[11px] font-semibold tracking-tight">
+            <span aria-hidden className="bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-md text-[11px] font-semibold tracking-tight">
               {mark}
             </span>
           )}

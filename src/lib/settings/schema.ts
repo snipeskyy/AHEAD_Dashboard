@@ -54,6 +54,9 @@ export const SETTINGS = {
     } as Record<string, boolean>,
   },
   "scheduler.intervalMinutes": { schema: z.number().int().min(5).max(1440), defaults: 30 },
+  /** Phase 9: automatic daily JSON backup to backups/ (worker), keeping the newest N. */
+  "backup.autoDaily": { schema: z.boolean(), defaults: true },
+  "backup.keep": { schema: z.number().int().min(3).max(90), defaults: 14 },
   /** Phase 6 enrichment: per-enricher on/off (missing = the enricher's default). */
   "enrichment.enabled": {
     schema: z.record(z.string(), z.boolean()),

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useMeta } from "@/hooks/use-meta";
 import { api } from "@/lib/api-client";
+import { BackupSettings } from "./backup-settings";
 import { SettingsRow, SettingsSection } from "./section";
 
 interface PurgeResult {
@@ -111,6 +112,7 @@ export function DataSettings() {
           )}
         </div>
       </SettingsSection>
+      <BackupSettings />
       <p className="text-muted-foreground text-xs">
         Full reset (deletes everything): stop the app and run <code>npm run db:reset</code>. It asks
         for confirmation and writes a backup first.

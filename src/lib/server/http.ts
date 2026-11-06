@@ -1,4 +1,5 @@
 import "server-only";
+import { gzipSync } from "node:zlib";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
@@ -25,11 +26,30 @@ export class HttpError extends Error {
   }
 }
 
-/** Wraps a route handler with consistent error handling. */
+const GZIP_MIN_BYTES = 16 * 1024;
+
+/**
+ * Route handler JSON isn't compressed by `next start`, so large payloads (e.g. 2,000 opportunities ≈ 1.3 MB)
+ * are gzipped here when the client accepts it (~8× smaller over a LAN). Streams and downloads pass through.
+ */
+async function maybeCompress(req: unknown, res: Response): Promise<Response> {
+  if (!(req instanceof Request) || !/\bgzip\b/.test(req.headers.get("accept-encoding") ?? "")) return res;
+  if (res.headers.get("content-encoding") || res.headers.get("content-disposition")) return res;
+  if (!(res.headers.get("content-type") ?? "").includes("application/json") || !res.body) return res;
+  const buf = Buffer.from(await res.arrayBuffer());
+  const headers = new Headers(res.headers);
+  if (buf.byteLength < GZIP_MIN_BYTES) return new Response(buf, { status: res.status, headers });
+  headers.set("content-encoding", "gzip");
+  headers.set("vary", "accept-encoding");
+  headers.delete("content-length");
+  return new Response(gzipSync(buf, { level: 5 }), { status: res.status, headers });
+}
+
+/** Wraps a route handler with consistent error handling (and gzip for large JSON). */
 export function handler<A extends unknown[]>(fn: (...args: A) => Promise<Response>) {
   return async (...args: A) => {
     try {
-      return await fn(...args);
+      return await maybeCompress(args[0], await fn(...args));
     } catch (e) {
       return errorResponse(e);
     }

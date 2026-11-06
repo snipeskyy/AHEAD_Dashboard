@@ -123,6 +123,7 @@ test.describe("Phase 4: accessibility (axe, WCAG 2 AA)", () => {
     "/share?tab=import",
     "/share?tab=plays",
     "/share?tab=audit",
+    "/settings?tab=data",
     "/settings?tab=profile",
     "/accounts",
     "/accounts/demo-acc-008",
@@ -142,7 +143,7 @@ test.describe("Phase 4: accessibility (axe, WCAG 2 AA)", () => {
       await page.locator("main h1").first().waitFor();
       await page.waitForTimeout(1500);
       const r = await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
         .exclude(".echarts-for-react")
         .analyze();
       const bad = r.violations.filter((v) => v.impact === "serious" || v.impact === "critical");

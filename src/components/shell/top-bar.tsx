@@ -38,7 +38,7 @@ export function TopBar() {
         type="button"
         onClick={() => setCommandOpen(true)}
         className="bg-card text-muted-foreground hover:bg-muted/60 flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md border px-2.5 text-[13px] shadow-xs transition-colors sm:max-w-md"
-        aria-label="Search or run a command"
+        title="Search or run a command (⌘K)"
       >
         <Search className="size-4" aria-hidden />
         <span className="truncate">

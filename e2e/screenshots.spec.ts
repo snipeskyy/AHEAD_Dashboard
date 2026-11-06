@@ -16,6 +16,7 @@ const PAGES = [
   { name: "share-plays", path: "/share?tab=plays" },
   { name: "audit-log", path: "/share?tab=audit" },
   { name: "settings-profile", path: "/settings?tab=profile" },
+  { name: "settings-data", path: "/settings?tab=data" },
   { name: "accounts", path: "/accounts" },
   { name: "account-360", path: "/accounts/demo-acc-008" },
   { name: "account-360-profile-demo", path: "/accounts/demo-acc-008?tab=profile" },

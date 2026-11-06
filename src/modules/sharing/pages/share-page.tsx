@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/page-header";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuditLog } from "../components/audit-log";
 import { ImportPack } from "../components/import-pack";
 import { PlayLibrary } from "../components/play-library";
@@ -23,8 +23,12 @@ export default function SharePage() {
       <PageHeader title="Team & sharing" description="Hand accounts and plays to a teammate as a file; they import it into their own ACC. Nothing is uploaded anywhere." />
       <Tabs value={tab.id} onValueChange={(v) => router.replace(`/share?tab=${v}`, { scroll: false })}>
         <TabsList>{TABS.map((t) => <TabsTrigger key={t.id} value={t.id}>{t.label}</TabsTrigger>)}</TabsList>
+        {TABS.map((t) => (
+          <TabsContent key={t.id} value={t.id} className="mt-4">
+            {t.id === tab.id && <t.C />}
+          </TabsContent>
+        ))}
       </Tabs>
-      <tab.C />
     </PageContainer>
   );
 }

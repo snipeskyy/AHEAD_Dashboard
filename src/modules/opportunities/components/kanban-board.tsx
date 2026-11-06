@@ -23,6 +23,7 @@ import { MeddpiccMeter, RiskBadge } from "./badges";
 
 const COLUMNS: Stage[] = [...OPEN_STAGES, "ClosedWon", "ClosedLost"];
 const CLOSED_WINDOW_DAYS = 90;
+const COLUMN_PAGE = 50;
 
 export function KanbanBoard({ rows, onOpen }: { rows: OppRow[]; onOpen: (id: string) => void }) {
   const update = useUpdateOpportunity();
@@ -44,7 +45,9 @@ export function KanbanBoard({ rows, onOpen }: { rows: OppRow[]; onOpen: (id: str
         continue;
       m.get(r.stage)?.push(r);
     }
-    for (const list of m.values()) list.sort((a, b) => b.amount - a.amount);
+    // Deals moved in the last hour float to the top (so a dropped card stays in view), then by amount.
+    const recent = (r: OppRow) => (now - new Date(r.stageChangedAt).getTime() < 3_600_000 ? 1 : 0);
+    for (const list of m.values()) list.sort((a, b) => recent(b) - recent(a) || b.amount - a.amount);
     return m;
   }, [rows, now]);
 
@@ -77,6 +80,9 @@ export function KanbanBoard({ rows, onOpen }: { rows: OppRow[]; onOpen: (id: str
         },
       }}
     >
+      <p id="kanban-card-help" className="sr-only">
+        Press space to pick up and move between stages, Enter to open.
+      </p>
       <div
         className="flex gap-3 overflow-x-auto pb-2"
         style={{ height: "calc(100svh - 270px)", minHeight: 420 }}
@@ -102,6 +108,8 @@ function Column({
   onOpen: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
+  // Large pipelines: render the first cards and reveal more on demand (keeps 2,000-deal boards fast).
+  const [shown, setShown] = useState(COLUMN_PAGE);
   const total = rows.reduce((s, r) => s + r.amount, 0);
   const closed = stage === "ClosedWon" || stage === "ClosedLost";
   return (
@@ -129,9 +137,18 @@ function Column({
         </p>
       )}
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
-        {rows.map((r) => (
+        {rows.slice(0, shown).map((r) => (
           <DraggableCard key={r.id} row={r} onOpen={onOpen} />
         ))}
+        {rows.length > shown && (
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground rounded-md border border-dashed py-1.5 text-xs"
+            onClick={() => setShown(shown + COLUMN_PAGE)}
+          >
+            Show {Math.min(COLUMN_PAGE, rows.length - shown)} more of {rows.length - shown}
+          </button>
+        )}
         {rows.length === 0 && (
           <p className="text-muted-foreground px-1 py-6 text-center text-xs">Drop deals here</p>
         )}
@@ -155,7 +172,8 @@ const DraggableCard = memo(function DraggableCard({
       {...listeners}
       data-testid={`opp-card-${row.id}`}
       aria-roledescription="Draggable opportunity"
-      aria-label={`${row.name}, ${row.accountName}. Press space to move between stages, Enter to open.`}
+      // Name = the card's visible text (WCAG 2.5.3); the keyboard hint is a shared description.
+      aria-describedby="kanban-card-help"
       onClick={() => onOpen(row.id)}
       onKeyDown={(e) => {
         if (e.key === "Enter") onOpen(row.id);

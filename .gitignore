@@ -57,3 +57,4 @@ prisma/*.db-journal
 /brand/*
 !/brand/README.md
 !/brand/brand.example.json
+/perf-report.json

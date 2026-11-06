@@ -20,10 +20,14 @@ export function generateAccounts(rng: Rng, count: number): SeedAccount[] {
   const used = new Set<string>();
   const out: SeedAccount[] = [];
   const industryWeights = INDUSTRIES.map((i) => [i, i.weight] as const);
+  let misses = 0;
   while (out.length < count) {
     const ind = rng.weighted(industryWeights);
-    const name = `${rng.pick(NAME_ROOTS)} ${rng.pick(ind.suffixes)}`;
+    let name = `${rng.pick(NAME_ROOTS)} ${rng.pick(ind.suffixes)}`;
+    // Large (perf) runs exhaust the root × suffix pool: number the rare repeats instead of looping.
+    if (used.has(name) && ++misses > 200) name = `${name} ${out.length + 1}`;
     if (used.has(name)) continue;
+    misses = 0;
     used.add(name);
     const n = out.length + 1;
     const tier = rng.weighted<Tier>([

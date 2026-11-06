@@ -29,7 +29,11 @@ import { generateSignalContent } from "./generators/signals";
 import { createRng, daysFrom, DAY } from "./rng";
 
 export const SEED = "acc-demo-v1";
-export const COUNTS = { accounts: 150, opportunities: 600, signals: 15_000, touches: 2_000 };
+/** Default fixture size; `ACC_SEED_PROFILE=perf` (npm run test:db:seed:perf) is the Phase 9 performance dataset. */
+export const PERF = process.env.ACC_SEED_PROFILE === "perf";
+export const COUNTS = PERF
+  ? { accounts: 500, opportunities: 2_000, signals: 50_000, touches: 6_700 }
+  : { accounts: 150, opportunities: 600, signals: 15_000, touches: 2_000 };
 
 async function chunked<T>(rows: T[], size: number, fn: (chunk: T[]) => Promise<unknown>) {
   for (let i = 0; i < rows.length; i += size) await fn(rows.slice(i, i + size));
@@ -315,6 +319,24 @@ export async function runSeed(prisma: PrismaClient): Promise<string> {
     create: { key: "modules.settings", value: modValue },
     update: { value: modValue },
   });
+
+  // ── Perf profile: "real-shaped" accounts also carry enrichment-style profile fields with provenance ──
+  if (PERF) {
+    const fields = ["firmographics.description", "firmographics.hq", "firmographics.employeeCount", "firmographics.revenueUsd", "identity.legalName", "identity.website", "firmographics.founded", "firmographics.ceo"];
+    await prisma.accountField.createMany({
+      data: accounts.flatMap((a) =>
+        fields.map((f, i) => ({
+          accountId: a.id,
+          field: f,
+          value: f.endsWith("Count") || f.endsWith("Usd") || f.endsWith("founded") ? rng.int(100, 90_000) * (i + 1) : `${a.name} ${f.split(".")[1]}`,
+          source: "website",
+          sourceUrl: `https://${a.domain}/about`,
+          confidence: rng.pick(["high", "medium", "verified"]),
+          fetchedAt: now,
+        })),
+      ),
+    });
+  }
 
   // ── Scores (health + whitespace) ──────────────────────────────────────
   await computeScoresForAccounts(prisma, { now, accountIds: accounts.map((a) => a.id) });

@@ -13,6 +13,19 @@ discovers it into `src/lib/enrich/enrichers/_generated.ts`.
   return no proposal and the field shows up under "Add what only you know".
 - Keep parsing in a pure `normalize()` and test it with a recorded, **fictional** fixture. No live calls in tests.
 
+## Step 0: vet the source (before writing code)
+
+Answer these in the pull request description. If any answer is "no", don't build it and say why.
+
+| Question                                                                 | Where to look                                             |
+| ------------------------------------------------------------------------ | --------------------------------------------------------- |
+| Is it an **official** API, public feed, or the company's own website?    | The provider's developer docs                             |
+| Do the terms of use allow automated access for this purpose?             | Terms / API license                                       |
+| Does `robots.txt` allow the paths you fetch (for web pages)?             | `https://host/robots.txt` (`ctx.http.page()` enforces it) |
+| What are the rate limits, and is a key or contact User-Agent required?   | API docs. Keys go in `.env.local`, never in code          |
+| Does it return personal contact details? Then drop those fields entirely | Response schema                                           |
+| Is it login-walled or scraped from a ToS-restricted site? Then stop      | —                                                         |
+
 ## Worked example: an "Example Registry" enricher
 
 `src/lib/enrich/enrichers/example-registry/normalize.ts` (pure):
@@ -73,6 +86,20 @@ const exampleRegistry: Enricher = {
 export default exampleRegistry;
 ```
 
+A test for the pure parser (`src/lib/enrich/enrichers/__tests__/enrichers.test.ts`):
+
+```ts
+import raw from "../__fixtures__/example-registry.json"; // fictional company, .example domain
+import { normalizeRegistry } from "../example-registry/normalize";
+
+it("example-registry: legal name and headcount, each with its source", () => {
+  const p = normalizeRegistry(raw);
+  expect(p.map((x) => x.field)).toEqual(["identity.legalName", "firmographics.employeeCount"]);
+  expect(p.every((x) => x.sourceUrl.startsWith("https://"))).toBe(true);
+  expect(normalizeRegistry({ ...raw, company: { legal_name: "Example Co" } })).toHaveLength(1); // nothing invented
+});
+```
+
 Then:
 
 1. Add a fixture under `src/lib/enrich/enrichers/__fixtures__/` (fictional company, `.example` domains) and a test
@@ -82,6 +109,23 @@ Then:
 3. If the host needs a different politeness interval, add it to `HOST_GAP` in `src/lib/enrich/http.ts`.
 4. To control run order (e.g. it needs a CIK another enricher finds), add its id to `ORDER` in
    `src/lib/enrich/registry.ts`.
+
+## Check it live (once, by hand)
+
+1. `npm run dev`, then Settings → Data sources → enable **Example Registry**.
+2. On one real account, click **Fetch public data** in the Account 360 header.
+3. Watch the worker log (`[enrich] example-registry …`), then review the values in **Proposed updates**: each one
+   should show its source chip and link. Record "verified live (date)" in the CLAUDE.md decisions log.
+
+## Troubleshooting
+
+| Symptom                       | Likely cause                                                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| The enricher never runs       | Not enabled in Settings → Data sources, or a `requires` identity key is missing (resolve identity first)                      |
+| `429` / backoff in the log    | Add or raise `HOST_GAP` for the host; the run retries later on its own                                                        |
+| Values apply without review   | They were `high` confidence into empty fields with `enrichment.autoApply` on: use `medium` unless the source is authoritative |
+| A field never shows in the UI | It isn't in `FIELD_DEFS`                                                                                                      |
+| Tests make network calls      | Only `normalize()` should be tested; `run()` stays thin                                                                       |
 
 ## What you get for free
 

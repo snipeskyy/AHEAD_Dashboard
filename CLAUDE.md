@@ -349,6 +349,26 @@ migrations, because Prisma would otherwise report drift.
   replaces changed plays when asked (`origin: "imported"`).
 - **Hosting** is a proposal only: `docs/TEAM_DEPLOYMENT.md`. Don't deploy or add hosting.
 
+## Phase 9 conventions (polish and hardening)
+
+- **Backups.** Every backed-up table is listed once in `src/lib/backup/tables.ts` (parents first); snapshot, restore
+  and the coverage test read it, and the test fails if a Prisma model is neither listed nor deliberately excluded
+  (HttpCache, JobRequest, SourceRun). **Add new models there.** Backup format `acc-backup` v3.
+  - The worker writes `backups/auto-<ts>.json` once per calendar day (`backup.autoDaily`) and keeps the newest
+    `backup.keep` (default 14) automatic ones (`runAutoBackup`, pure `toPrune` / `autoBackupDue`).
+  - Restore (`restoreBackup`) replaces all backed-up tables in one transaction (`PRAGMA defer_foreign_keys`), writing
+    `pre-restore-<ts>.json` first, rebuilding the search index after, and auditing it. Settings → Data → Backups &
+    restore requires typing RESTORE. Backup names are validated (`backupPath`): only known prefixes inside `backups/`.
+- **Performance.** `npm run test:db:seed:perf` (500 accounts, 2,000 opps, 50,000 signals; test DB only) and
+  `npm run perf` (API + page timings → `perf-report.json`). Results and limits: `docs/PERFORMANCE.md`.
+  - `handler()` gzips JSON responses ≥ 16 KB (route handlers aren't compressed by `next start`).
+  - Kanban renders 50 cards per column with "Show more"; the health heatmap API returns the lowest 60 by default.
+- **Accessibility.** axe runs WCAG 2.0/2.1 A + AA (`wcag21a` included, so label-in-name is checked) on populated pages
+  (`e2e/phase4.spec.ts`) and on every page with zero records (`e2e/empty/00-empty-pages.spec.ts`). A control's
+  accessible name must contain its visible text (e.g. "Present (Presentation Mode)").
+- **Screenshots** cover every page in light and dark, populated (`screenshots/<theme>/*.png`) and empty
+  (`screenshots/<theme>/empty-*.png`).
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -383,4 +403,4 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 6: identity resolution + public-data enrichment engine (10 enrichers, review UI, queue)
 - [x] Phase 7: My Day, meeting prep, triage, tasks, cadence, partners, fiscal timing, data quality, smart lists
 - [x] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
-- [ ] Phase 9: polish and hardening
+- [x] Phase 9: polish and hardening

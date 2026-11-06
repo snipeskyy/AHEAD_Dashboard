@@ -1,65 +1,19 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { PrismaClient } from "@prisma/client";
+import { BACKUP_TABLES, delegateName } from "./tables";
 
 /**
  * Full JSON snapshot of every user-data table (local only; nothing leaves the machine).
  * Caches and job bookkeeping (HttpCache, JobRequest, SourceRun) are intentionally excluded.
  */
 export async function snapshotAll(db: PrismaClient) {
-  const tables = {
-    accounts: db.account.findMany(),
-    contacts: db.contact.findMany(),
-    practiceStatus: db.accountPracticeStatus.findMany(),
-    initiatives: db.initiative.findMany(),
-    techStack: db.techStackHypothesis.findMany(),
-    signals: db.signal.findMany(),
-    opportunities: db.opportunity.findMany(),
-    stageChanges: db.stageChange.findMany(),
-    plays: db.play.findMany(),
-    campaigns: db.campaign.findMany(),
-    touches: db.touch.findMany(),
-    events: db.event.findMany(),
-    eventInvites: db.eventInvite.findMany(),
-    planItems: db.accountPlanItem.findMany(),
-    notes: db.note.findMany(),
-    activity: db.activityLog.findMany(),
-    notifications: db.notification.findMany(),
-    savedViews: db.savedView.findMany(),
-    layouts: db.dashboardLayout.findMany(),
-    settings: db.setting.findMany(),
-    exportTemplates: db.exportTemplate.findMany(),
-    exportJobs: db.exportJob.findMany(),
-    sandboxScenarios: db.sandboxScenario.findMany(),
-    importBatches: db.importBatch.findMany(),
-    importRecords: db.importRecord.findMany(),
-    importMappings: db.importMapping.findMany(),
-    partnerReps: db.partnerRep.findMany(),
-    partnerRepAccounts: db.partnerRepAccount.findMany(),
-    // Phase 6: enrichment
-    accountFields: db.accountField.findMany(),
-    accountFieldHistory: db.accountFieldHistory.findMany(),
-    fieldProposals: db.fieldProposal.findMany(),
-    enrichmentRuns: db.enrichmentRun.findMany(),
-    enrichmentJobs: db.enrichmentJob.findMany(),
-    financialFacts: db.financialFact.findMany(),
-    corporateRelations: db.corporateRelation.findMany(),
-    // Phase 7: daily use
-    tasks: db.task.findMany(),
-    meetings: db.meeting.findMany(),
-    smartLists: db.smartList.findMany(),
-    opportunityPartnerReps: db.opportunityPartnerRep.findMany(),
-    partnerRegistrations: db.partnerRegistration.findMany(),
-    // Phase 8: team foundations
-    users: db.user.findMany(),
-    teams: db.team.findMany(),
-    comments: db.comment.findMany(),
-    auditLog: db.auditLog.findMany(),
-  };
-  const keys = Object.keys(tables) as Array<keyof typeof tables>;
-  const values = await Promise.all(keys.map((k) => tables[k]));
-  const data = Object.fromEntries(keys.map((k, i) => [k, values[i]]));
-  return { format: "acc-backup", version: 2, exportedAt: new Date().toISOString(), data };
+  const values = await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic delegate lookup by model name
+    BACKUP_TABLES.map(([, model]) => (db as any)[delegateName(model)].findMany() as Promise<unknown[]>),
+  );
+  const data = Object.fromEntries(BACKUP_TABLES.map(([key], i) => [key, values[i]]));
+  return { format: "acc-backup", version: 3, exportedAt: new Date().toISOString(), data };
 }
 
 export const BACKUP_DIR = path.join(process.cwd(), "backups");

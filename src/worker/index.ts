@@ -8,7 +8,9 @@ import { z } from "zod";
 import { SIGNAL_ADAPTERS } from "../lib/adapters";
 import { SYSTEM_ACTOR, setDefaultActor } from "../lib/auth/actor";
 import { withTeamFoundations } from "../lib/db-extensions";
+import { runAutoBackup } from "../lib/backup/auto";
 import { drainEnrichmentQueue, queueStaleRefresh } from "../lib/enrich/runner";
+import { readSetting } from "../lib/settings/store";
 import { computeScoresForAccounts } from "../lib/scoring/account-scores";
 import { createSqliteSearchProvider } from "../lib/search/sqlite-provider";
 import { rescoreSignals, retagSignals } from "./rescore";
@@ -141,6 +143,16 @@ async function main() {
   };
   setTimeout(refresh, 60_000);
   setInterval(refresh, 24 * 60 * 60_000);
+
+  // Daily automatic backup (checked hourly; one per calendar day), keeping the newest N.
+  const backup = () =>
+    guarded(async () => {
+      if (!(await readSetting(db, "backup.autoDaily"))) return;
+      const r = await runAutoBackup(db, { keep: await readSetting(db, "backup.keep") });
+      if (r.written) log(`[backup] wrote ${r.written}${r.pruned.length ? `; removed ${r.pruned.length} old` : ""}`);
+    });
+  setTimeout(backup, 20_000);
+  setInterval(backup, 60 * 60_000);
 }
 
 process.on("SIGINT", () => db.$disconnect().finally(() => process.exit(0)));

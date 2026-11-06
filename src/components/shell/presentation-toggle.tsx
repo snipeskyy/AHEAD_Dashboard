@@ -15,7 +15,7 @@ export function PresentationToggle() {
           size="sm"
           pressed={on}
           onPressedChange={set}
-          aria-label="Presentation Mode"
+          aria-label={`${on ? "Presenting" : "Present"} (Presentation Mode)`}
           className="data-[state=on]:bg-brand-soft data-[state=on]:text-primary h-7 gap-1.5 px-2 text-xs"
         >
           <Presentation className="size-3.5" />

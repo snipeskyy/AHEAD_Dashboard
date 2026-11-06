@@ -6,12 +6,16 @@ import { handler, json } from "@/lib/server/http";
 
 /** Accounts × health dimensions (sub-scores 0..1) for the heatmap widget. */
 export const GET = handler(async (req: Request) => {
-  const tier = new URL(req.url).searchParams.get("tier") ?? undefined;
+  const sp = new URL(req.url).searchParams;
+  const tier = sp.get("tier") ?? undefined;
+  // The widget shows the lowest-health accounts first; 60 rows is more than any widget height fits.
+  const limit = Math.min(Math.max(Number(sp.get("limit")) || 60, 1), 500);
   const now = new Date();
   const accounts = await db.account.findMany({
     where: { tier },
     select: { id: true, name: true, tier: true, healthScore: true },
     orderBy: { healthScore: "asc" },
+    take: limit,
   });
   const [inputs, weights] = await Promise.all([
     loadScoreInputs(

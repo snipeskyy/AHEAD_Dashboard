@@ -30,6 +30,8 @@
     "db:backup": "dotenv -e .env.local -- tsx scripts/db-backup.ts",
     "test:db:prepare": "node scripts/with-test-db.mjs npx prisma migrate deploy",
     "test:db:seed": "npm run test:db:prepare && node scripts/with-test-db.mjs tsx tests/fixtures/seed/run.ts",
+    "test:db:seed:perf": "npm run test:db:prepare && ACC_SEED_PROFILE=perf node scripts/with-test-db.mjs tsx tests/fixtures/seed/run.ts",
+    "perf": "node scripts/perf.mjs",
     "dev:test": "node scripts/with-test-db.mjs next dev --port 3100"
   },
   "dependencies": {

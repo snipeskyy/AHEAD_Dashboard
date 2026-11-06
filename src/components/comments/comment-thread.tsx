@@ -86,8 +86,6 @@ export function CommentThread({ entityType, entityId }: { entityType: "account" 
           value={text}
           aria-label="New comment"
           placeholder="Add a comment… (@ to mention, ⌘↵ to post)"
-          aria-autocomplete="list"
-          aria-expanded={matches.length > 0}
           aria-controls={matches.length ? "mention-list" : undefined}
           onChange={(e) => update(e.target.value, e.target.selectionStart)}
           onKeyDown={onKey}
