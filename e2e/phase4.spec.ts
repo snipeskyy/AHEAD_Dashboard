@@ -84,10 +84,10 @@ test.describe("Phase 4: exports", () => {
 });
 
 test.describe("Phase 4: sandbox & presentation", () => {
-  test("sandbox landing shows the illustrative rack preview", async ({ page }) => {
+  test("sandbox landing offers starter rooms and the illustrative disclaimer", async ({ page }) => {
     await page.goto("/sandbox");
-    await expect(page.getByRole("img", { name: /R01 · AI training/ })).toBeVisible();
-    await expect(page.getByText("Illustrative, not vendor-certified").first()).toBeVisible();
+    await expect(page.getByLabel("Start from")).toContainText("AI pod (4 liquid-cooled GPU racks)");
+    await expect(page.getByText(/Illustrative, not vendor-certified/).first()).toBeVisible();
   });
 
   test("presentation mode hides internal-only UI and can be exited", async ({ page }) => {

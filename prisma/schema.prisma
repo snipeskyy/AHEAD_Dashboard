@@ -475,12 +475,23 @@ model ExportJob {
   createdAt  DateTime @default(now())
 }
 
+/// DC Sandbox scenario (Phase 12). `spec` = src/modules/sandbox/lib/spec.ts (SandboxSpecSchema, version 2).
 model SandboxScenario {
-  id        String   @id @default(cuid())
-  name      String
-  accountId String?
-  spec      Json
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  ownerId     String   @default("local")
+  teamId      String   @default("local-team")
+  createdBy   String   @default("local")
+  updatedBy   String   @default("local")
+  name        String
+  description String?
+  accountId   String?
+  /// Set on what-if copies: the scenario this one was copied from (for before/after compare).
+  baseId      String?
+  spec        Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@index([accountId])
 }
 
 // ── Phase 5: import batches (undoable), saved column mappings, partner reps ──

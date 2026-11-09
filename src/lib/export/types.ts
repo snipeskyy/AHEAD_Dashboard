@@ -41,7 +41,9 @@ export type Block =
       items: Array<{ text: string; sub?: string; href?: string } & Redactable>;
     } & Redactable)
   | ({ kind: "chart"; title: string; spec: ChartSpec; svg?: string } & Redactable)
-  | ({ kind: "callout"; text: string; tone?: "info" | "warning" } & Redactable);
+  | ({ kind: "callout"; text: string; tone?: "info" | "warning" } & Redactable)
+  /** A server-generated, sanitized SVG figure (e.g. a sandbox floor plan). `alt` describes it. */
+  | ({ kind: "image"; svg: string; alt: string; caption?: string } & Redactable);
 
 export interface DocSection {
   id: string;

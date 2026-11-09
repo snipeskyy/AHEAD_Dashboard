@@ -111,6 +111,8 @@ export function planSlides(doc: ExportDocument, opts: DeckOptions, view: { keepH
         }
       } else if (b.kind === "callout") {
         push("quote", [b], { notes: b.text });
+      } else if (b.kind === "image") {
+        push("image", [b], { subtitle: b.caption, notes: b.alt });
       }
     }
     flushText();

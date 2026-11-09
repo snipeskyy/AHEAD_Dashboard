@@ -86,6 +86,8 @@ export interface DeviceProfile {
   typicalKw: number;
   maxKw: number;
   cooling: CoolingType;
+  /** Typical installed weight (kg), for floor-load checks. */
+  weightKg: number;
   ports?: Array<{ speedGbps: number; count: number }>;
   /** Always true for the built-in library. */
   illustrative: true;

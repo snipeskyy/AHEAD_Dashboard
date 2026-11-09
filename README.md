@@ -184,6 +184,12 @@ co-sell brief, Portfolio readout, …) → **Slide deck** style. You get live sl
 speaker notes), a full-screen **Present** mode (←/→, N for notes, Esc), and PowerPoint with editable charts and
 notes, or a 16:9 PDF. With a brand pack in `brand/`, decks use your logo and colors; otherwise a neutral theme.
 
+**DC Sandbox:** sidebar → DC Sandbox. Start from a room (empty, enterprise row, AI pod), drag racks on a 0.6 m grid,
+fill them with generic devices, and see power, feeds, heat to air vs liquid, cooling after N+1/2N, PUE estimate, floor
+load and a growth runway, with every warning explained. Try failure what-ifs (lose a cooling unit or feed A), make a
+what-if copy to compare before/after, walk it in 3D, run a guided **Customer tour**, watch a simulated ops console,
+start a business case from it, and export the floor plan and capacity into decks. Illustrative, not vendor-certified.
+
 **TCO & business cases:** sidebar → TCO & business cases (or "Business case" on an account / "Build a TCO" on a
 deal). Start from a structure (refresh vs cloud, own DC vs colocation, on-prem vs cloud GPU, blank), enter your
 assumptions (amounts, kW, PUE, $/kWh, FTEs, escalation, growth), and see TCO, savings, NPV, payback, IRR and a

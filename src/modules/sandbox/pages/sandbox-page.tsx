@@ -1,199 +1,149 @@
-import { Boxes, Cable, Cpu, FileOutput, Info, Thermometer, Zap } from "lucide-react";
+"use client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Server } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { AccountPicker } from "@/components/account-picker";
 import { PageContainer, PageHeader } from "@/components/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CATEGORY_STYLE, RackElevation } from "../components/rack-elevation";
-import { createLibrary, LIBRARY_DISCLAIMER, PREVIEW_RACKS } from "../lib/library";
+import { EmptyState } from "@/components/states";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { api } from "@/lib/api-client";
+import { roomCalc } from "../lib/calc";
+import { createLibrary, LIBRARY_DISCLAIMER } from "../lib/library";
+import type { SandboxSpec } from "../lib/spec";
 
 const lib = createLibrary();
-
-const PLANNED = [
-  {
-    icon: Boxes,
-    title: "Scenario builder",
-    text: "Sites → rooms → rows → racks. Drag generic devices from the component library into a rack elevation.",
-  },
-  {
-    icon: Zap,
-    title: "Power",
-    text: "Per-rack typical and peak draw against feed capacity (voltage × amps × phase × derate).",
-  },
-  {
-    icon: Thermometer,
-    title: "Cooling",
-    text: "Heat load in BTU/hr, air vs. rear-door vs. direct-liquid, room capacity headroom.",
-  },
-  { icon: Cable, title: "Network", text: "Leaf/spine links and port budgets per rack." },
-  {
-    icon: Cpu,
-    title: "Simulation engine",
-    text: "A pluggable, explainable SimulationEngine — every figure shows its formula.",
-  },
-  {
-    icon: FileOutput,
-    title: "Exports",
-    text: "Rack views and capacity tables as sections in the Export Builder.",
-  },
-];
-
-function rackTotals(r: (typeof PREVIEW_RACKS)[number]) {
-  let used = 0,
-    typ = 0,
-    max = 0;
-  for (const d of r.devices) {
-    const p = lib.get(d.profileId);
-    if (!p) continue;
-    used += p.heightU;
-    typ += p.typicalKw;
-    max += p.maxKw;
-  }
-  return { used, typ, max, heat: Math.round(typ * 3412) };
+interface Row {
+  id: string;
+  name: string;
+  spec: SandboxSpec;
+  baseId: string | null;
+  updatedAt: string;
+  account: { id: string; name: string } | null;
 }
 
+/** DC Sandbox home: create a scenario from a starter room and open existing ones. */
 export default function SandboxPage() {
-  const categories = [
-    ...new Set(PREVIEW_RACKS.flatMap((r) => r.devices.map((d) => lib.get(d.profileId)?.category))),
-  ].filter(Boolean) as Array<keyof typeof CATEGORY_STYLE>;
-  categories.sort((a, b) => CATEGORY_STYLE[a].series - CATEGORY_STYLE[b].series);
+  const qc = useQueryClient();
+  const router = useRouter();
+  const sp = useSearchParams();
+  const [name, setName] = useState("");
+  const [account, setAccount] = useState<{ id: string; name: string } | null>(null);
+  const [template, setTemplate] = useState("enterprise-row");
+  const list = useQuery({
+    queryKey: ["sandbox-list"],
+    queryFn: () => api<{ items: Row[] }>("/api/sandbox").then((r) => r.items),
+  });
+  const templates = useQuery({
+    queryKey: ["sandbox-templates"],
+    queryFn: () =>
+      api<{ items: Array<{ id: string; name: string; description: string }> }>(
+        "/api/sandbox/templates",
+      ).then((r) => r.items),
+  });
+  const create = useMutation({
+    mutationFn: () =>
+      api<{ id: string }>("/api/sandbox", {
+        method: "POST",
+        json: { name, accountId: account?.id ?? sp.get("account"), templateId: template },
+      }),
+    onSuccess: (s) => {
+      qc.invalidateQueries({ queryKey: ["sandbox-list"] });
+      router.push(`/sandbox/${s.id}`);
+    },
+    onError: (e) => toast.error(e.message),
+  });
   return (
     <PageContainer>
       <PageHeader
-        eyebrow={
-          <Badge variant="outline" className="font-normal">
-            Add-on · Coming next
-          </Badge>
-        }
         title="DC Sandbox"
-        description="Sketch data center scenarios with customers — rack elevations, power, cooling and network — using generic, illustrative components."
+        description={`Lay out a data hall, size power and cooling, test growth and failures, walk it in 3D and tour it with a customer. ${LIBRARY_DISCLAIMER}`}
       />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <CardTitle className="text-sm">Preview · rack elevation</CardTitle>
-            <span className="text-muted-foreground text-xs">Static mock-up</span>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              {PREVIEW_RACKS.map((r) => (
-                <RackElevation key={r.label} {...r} />
-              ))}
-            </div>
-            <ul
-              className="text-muted-foreground flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs"
-              aria-label="Legend"
-            >
-              {categories.map((c) => (
-                <li key={c} className="flex items-center gap-1.5">
-                  <span
-                    className="size-2.5 rounded-sm"
-                    style={{ background: `var(--series-${CATEGORY_STYLE[c].series})` }}
-                    aria-hidden
-                  />
-                  {CATEGORY_STYLE[c].label}
-                </li>
-              ))}
-            </ul>
-            <table className="w-full text-[13px]">
-              <caption className="sr-only">Illustrative capacity per preview rack</caption>
-              <thead className="text-muted-foreground text-xs">
-                <tr className="border-b">
-                  {["Rack", "Used U", "Typical kW", "Peak kW", "Feed kW", "Heat BTU/hr"].map(
-                    (h, i) => (
-                      <th
-                        key={h}
-                        scope="col"
-                        className={`py-1.5 font-medium ${i ? "text-right" : "text-left"}`}
-                      >
-                        {h}
-                      </th>
-                    ),
-                  )}
-                </tr>
-              </thead>
-              <tbody className="tabular">
-                {PREVIEW_RACKS.map((r) => {
-                  const t = rackTotals(r);
-                  return (
-                    <tr key={r.label} className="border-b last:border-0">
-                      <td className="py-1.5">{r.label}</td>
-                      <td className="py-1.5 text-right">
-                        {t.used}/{r.heightU}
-                      </td>
-                      <td className="py-1.5 text-right">{t.typ.toFixed(1)}</td>
-                      <td className="py-1.5 text-right">{t.max.toFixed(1)}</td>
-                      <td className="py-1.5 text-right">{r.feedKw.toFixed(1)}</td>
-                      <td className="py-1.5 text-right">{t.heat.toLocaleString()}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <p className="text-muted-foreground flex items-start gap-1.5 text-xs">
-              <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              {LIBRARY_DISCLAIMER} Heat = typical kW × 3,412.
-            </p>
-          </CardContent>
-        </Card>
-        <div className="grid content-start gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">What&apos;s planned</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {PLANNED.map((f) => (
-                  <li key={f.title} className="flex gap-2.5">
-                    <span className="bg-muted grid size-7 shrink-0 place-items-center rounded-md">
-                      <f.icon className="size-3.5" aria-hidden />
-                    </span>
-                    <div>
-                      <p className="text-[13px] font-medium">{f.title}</p>
-                      <p className="text-muted-foreground text-xs">{f.text}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-2">
-              <CardTitle className="text-sm">Component library</CardTitle>
-              <Badge variant="outline" className="font-normal">
-                Illustrative, not vendor-certified
-              </Badge>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full text-[13px]">
-                <caption className="sr-only">Illustrative device profiles</caption>
-                <thead className="text-muted-foreground text-xs">
-                  <tr className="border-b">
-                    <th scope="col" className="py-1.5 text-left font-medium">
-                      Profile
-                    </th>
-                    <th scope="col" className="py-1.5 text-right font-medium">
-                      U
-                    </th>
-                    <th scope="col" className="py-1.5 text-right font-medium">
-                      Typical kW
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="tabular">
-                  {lib.profiles.map((p) => (
-                    <tr key={p.id} className="border-b last:border-0" title={p.note}>
-                      <td className="py-1.5">{p.label}</td>
-                      <td className="py-1.5 text-right">{p.heightU || "0U"}</td>
-                      <td className="py-1.5 text-right">
-                        {p.typicalKw ? p.typicalKw.toFixed(2) : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
+      <section
+        className="bg-card grid gap-3 rounded-lg border p-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end"
+        aria-label="New scenario"
+      >
+        <div className="grid gap-1.5">
+          <Label htmlFor="sb-name">Name</Label>
+          <Input
+            id="sb-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. AI pod phase 1"
+          />
         </div>
-      </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="sb-acc">Account (optional)</Label>
+          <AccountPicker id="sb-acc" value={account} onChange={setAccount} />
+        </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="sb-tpl">Start from</Label>
+          <select
+            id="sb-tpl"
+            className="border-input dark:bg-input/30 h-9 rounded-md border bg-transparent px-2 text-sm"
+            value={template}
+            onChange={(e) => setTemplate(e.target.value)}
+          >
+            {templates.data?.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <Button
+          disabled={name.trim().length < 2 || create.isPending}
+          onClick={() => create.mutate()}
+        >
+          <Plus /> Create
+        </Button>
+        <p className="text-muted-foreground text-xs md:col-span-4">
+          {templates.data?.find((t) => t.id === template)?.description}
+        </p>
+      </section>
+      {list.data && !list.data.length ? (
+        <EmptyState
+          icon={Server}
+          title="No scenarios yet"
+          description="Create one above from a starter room."
+        />
+      ) : (
+        <ul className="bg-card divide-y rounded-lg border" aria-label="Scenarios">
+          {list.data?.map((r) => {
+            const c = roomCalc(r.spec, lib);
+            const crit = c.issues.filter((i) => i.severity === "critical").length;
+            return (
+              <li
+                key={r.id}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-[13px]"
+              >
+                <Link href={`/sandbox/${r.id}`} className="font-medium hover:underline">
+                  {r.name}
+                </Link>
+                {r.baseId && (
+                  <span className="text-muted-foreground rounded border px-1.5 text-[11px]">
+                    what-if
+                  </span>
+                )}
+                {r.account && (
+                  <span className="text-muted-foreground text-xs">{r.account.name}</span>
+                )}
+                <span className="tabular text-muted-foreground ml-auto text-xs">
+                  {r.spec.racks.length} racks · {c.drawKw.toFixed(0)} kW · PUE ≈{" "}
+                  {c.pue ? c.pue.toFixed(2) : "—"}
+                </span>
+                <span className={`text-xs ${crit ? "text-critical-text" : "text-good-text"}`}>
+                  {crit ? `${crit} critical` : "✓ no critical issues"}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </PageContainer>
   );
 }

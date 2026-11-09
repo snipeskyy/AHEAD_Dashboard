@@ -122,6 +122,13 @@ const cellCls = (right?: boolean, redacted?: boolean) =>
 
 function BlockView({ b }: { b: Block }) {
   switch (b.kind) {
+    case "image":
+      return (
+        <figure className="grid gap-1 break-inside-avoid">
+          <div role="img" aria-label={b.alt} className="[&_svg]:h-auto [&_svg]:max-w-full" dangerouslySetInnerHTML={{ __html: b.svg }} />
+          {b.caption && <figcaption className="text-[11px] text-[#5c5b57]">{b.caption}</figcaption>}
+        </figure>
+      );
     case "heading":
       return <h3 className="mt-1 text-[14px] font-semibold">{b.text}</h3>;
     case "paragraph":

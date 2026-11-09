@@ -14,6 +14,8 @@ function blockToMd(b: Block): string {
       return b.text;
     case "callout":
       return `> ${b.text}`;
+    case "image":
+      return `_Figure: ${b.alt}${b.caption ? ` (${b.caption})` : ""}_`;
     case "kv":
       return b.items.map((i) => `- **${i.label}:** ${i.value}`).join("\n");
     case "list":

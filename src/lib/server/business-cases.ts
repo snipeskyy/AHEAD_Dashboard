@@ -12,6 +12,8 @@ export const CreateCaseBody = z.object({
   accountId: z.string().nullish(),
   opportunityId: z.string().nullish(),
   templateId: z.string().default("refresh-vs-cloud"),
+  /** Seed the on-prem power line from a DC Sandbox scenario (IT kW + estimated PUE). */
+  sandboxId: z.string().nullish(),
 });
 
 export const PatchCaseBody = z.object({
@@ -51,11 +53,37 @@ export async function createCase(input: z.infer<typeof CreateCaseBody>) {
     if (!o) throw new HttpError(404, "Opportunity not found");
     accountId ??= o.accountId;
   }
+  let model = validModel(tpl.model);
+  if (input.sandboxId) model = await seedFromSandbox(model, input.sandboxId);
   const c = await db.businessCase.create({
-    data: { name: input.name, accountId, opportunityId: input.opportunityId ?? null, model: json(validModel(tpl.model)) },
+    data: { name: input.name, accountId, opportunityId: input.opportunityId ?? null, model: json(model) },
   });
   await audit(db, { action: "tco.create", entityType: "businessCase", entityId: c.id, summary: `Created business case “${c.name}” from “${tpl.name}”` });
   return c;
+}
+
+/**
+ * Physical drivers only: the scenario's IT load (kW) and estimated PUE go into every power line of the
+ * on-prem scenarios. No prices are added; $/kWh and all amounts stay for the user to enter.
+ */
+async function seedFromSandbox(m: TcoModel, sandboxId: string): Promise<TcoModel> {
+  const { roomCalc } = await import("@/modules/sandbox/lib/calc");
+  const { createLibrary } = await import("@/modules/sandbox/lib/library");
+  const { readSpec } = await import("./sandbox");
+  const sc = await db.sandboxScenario.findUnique({ where: { id: sandboxId } });
+  if (!sc) throw new HttpError(404, "Sandbox scenario not found");
+  const r = roomCalc(readSpec(sc.spec), createLibrary());
+  const kw = Math.round(r.drawKw * 10) / 10;
+  const pue = r.pue ? Math.round(r.pue * 100) / 100 : undefined;
+  return {
+    ...m,
+    notes: `IT load ${kw} kW and PUE ${pue ?? "—"} come from DC Sandbox scenario “${sc.name}” (illustrative planning model).`,
+    scenarios: m.scenarios.map((s) =>
+      s.kind === "on-prem" || s.kind === "colocation"
+        ? { ...s, lines: s.lines.map((l) => (l.basis === "power" ? { ...l, itKw: kw, utilizationPct: 100, pue: pue ?? l.pue, note: `From sandbox “${sc.name}” (utilization already included in the IT load).` } : l)) }
+        : s,
+    ),
+  };
 }
 
 export async function getCase(id: string) {

@@ -218,8 +218,8 @@ migrations, because Prisma would otherwise report drift.
   - `Chart` enlarges fonts (`ChartTheme.fs`) everywhere. Outside widgets it also enlarges height; widgets keep their
     grid height via `ChartFixedHeightContext`.
   - Build chart options with `t.fs`, never a literal font size.
-- **DC Sandbox** is an add-on stub. Types are in `src/modules/sandbox/lib/types.ts`. The generic library
-  (`library.ts`) must stay vendor-neutral and labeled "Illustrative, not vendor-certified".
+- **DC Sandbox** (full since Phase 12; see below). The generic library (`library.ts`) must stay vendor-neutral and
+  labeled "Illustrative, not vendor-certified".
 - **Accessibility.** `e2e/phase4.spec.ts` runs axe (WCAG 2.1 AA) on the main pages and fails on serious or critical
   violations.
 
@@ -410,6 +410,34 @@ migrations, because Prisma would otherwise report drift.
 - **Export**: section `business-cases.tco` (latest final case, else latest) with headline, cumulative chart +
   takeaway, annual table, tornado, every assumption and an "estimate" callout; template "TCO business case deck".
 
+## Phase 12 conventions (DC Sandbox)
+
+- **Model** (`src/modules/sandbox/lib/spec.ts`, Zod, `version: 2`): one room on a 0.6 m tile grid; racks are 1 × 2
+  tiles (x, y, rotation 0/180 = front down/up, height, cooling type, A/B or single feed, kW per feed, devices with U
+  positions); cooling units (CRAH, in-row, CDU) are 2 × 1 tiles; room UPS kW, cooling redundancy (N, N+1, 2N), floor
+  rating; assumptions (utilization, growth, horizon, air kW per rack). Older v1 specs open as an empty room
+  (`readSpec`). Stored in `SandboxScenario.spec`; `baseId` links a what-if copy to its original.
+- **Calculators are pure and explain themselves** (`lib/calc.ts`): device draw = max × (0.3 + 0.7 × utilization);
+  heat split to air / liquid by device and rack cooling (DLC 80% to liquid, immersion 100%, rear-door HX up to 35 kW);
+  per-rack limits by cooling type (`rackLimitKw`); feed load at nameplate; floor load; room capacity after redundancy
+  (`effectiveCapacity`); PUE estimate (COP air 3 / liquid 8 + 6% losses + 2% other); `growth()` runway against the
+  binding limit; `failures()` (lose each cooling unit, lose feed A); deterministic `telemetry()` for the **simulated**
+  ops console. Every `Issue` has a severity and every room result carries `formulas`. Never present simulated
+  telemetry as real.
+- **Editors**: `useScenario()` keeps undo/redo history (100 steps; `commit` records, `preview` doesn't) and autosaves
+  valid specs after 700 ms. Floor plan = SVG with drag + tile snapping, arrow keys / R / Delete, `canPlace()` collision
+  checks. Heat bands (`heatBand`) always pair color with a text label.
+- **3D** (`three-view.tsx`, react-three-fiber, loaded with `next/dynamic` `ssr: false`): labels are drei `<Html>`, not
+  `<Text>` (which would fetch a font from a CDN). The camera rig animates ~70 frames after a preset change, then hands
+  control back to OrbitControls.
+- **Tour** captions and export text are computed from the scenario; nothing is invented.
+- **Exports**: `sandbox.views` (floor plan + rack elevations as escaped SVG `image` blocks from `lib/svg.ts`) and
+  `sandbox.capacity` (KPIs, growth chart + sentence, per-rack table, resilience). The `image` block renders in the
+  document view, Markdown (alt text), the `image` slide layout and PPTX (SVG image).
+- **Business case from a scenario**: `createCase({ sandboxId })` copies only physical drivers (IT kW, PUE) into the
+  on-prem power lines; prices stay for the user.
+- Templates (`lib/templates.ts`) must not overlap (unit-tested).
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -450,6 +478,6 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 9: polish and hardening
 - [x] Phase 10: deliverables engine (layouts, branded theme, templates, native charts, deck preview)
 - [x] Phase 11: TCO / business-case builder
-- [ ] Phase 12: Data Center Sandbox (full)
+- [x] Phase 12: Data Center Sandbox (full)
 - [ ] Phase 13: data contract for the internal-tool port
 - [ ] Phase 14: team value and polish

@@ -233,6 +233,17 @@ const LAYOUT: Record<Slide["layout"], L> = {
       </>
     );
   },
+  image: (s, { t }) => {
+    const b = s.blocks[0];
+    return (
+      <>
+        <Header s={s} t={t} />
+        <Body style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {b?.kind === "image" && <div role="img" aria-label={b.alt} className="[&_svg]:h-full [&_svg]:max-h-full [&_svg]:w-auto [&_svg]:max-w-full" style={{ height: "100%", width: "100%", display: "flex", justifyContent: "center" }} dangerouslySetInnerHTML={{ __html: b.svg }} />}
+        </Body>
+      </>
+    );
+  },
   closing: (s, { t }) => {
     const l = items(s.blocks);
     return (

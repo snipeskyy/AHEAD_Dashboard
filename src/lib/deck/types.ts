@@ -16,6 +16,7 @@ export const LAYOUTS = [
   "bullets", // title + up to 6 bullets / paragraphs
   "two-column", // 7–12 bullets in two columns
   "quote", // a callout, large
+  "image", // a figure (SVG), centered
   "closing", // next steps / thank-you
 ] as const;
 export type LayoutId = (typeof LAYOUTS)[number];

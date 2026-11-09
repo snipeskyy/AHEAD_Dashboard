@@ -9,6 +9,7 @@ const p = (x: Omit<DeviceProfile, "illustrative">): DeviceProfile => ({ ...x, il
 export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   p({
     id: "gpu-8x-air",
+    weightKg: 130,
     category: "gpu-server",
     label: "GPU server (8-accelerator, air-cooled)",
     heightU: 8,
@@ -20,6 +21,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "gpu-8x-liquid",
+    weightKg: 80,
     category: "gpu-server",
     label: "GPU server (8-accelerator, direct liquid)",
     heightU: 4,
@@ -31,6 +33,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "cpu-1u",
+    weightKg: 18,
     category: "cpu-server",
     label: "CPU server (1U, dual-socket)",
     heightU: 1,
@@ -42,6 +45,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "cpu-2u",
+    weightKg: 28,
     category: "cpu-server",
     label: "CPU server (2U, dual-socket)",
     heightU: 2,
@@ -53,6 +57,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "storage-2u",
+    weightKg: 35,
     category: "storage",
     label: "Storage array (2U, all-flash)",
     heightU: 2,
@@ -64,6 +69,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "tor-1u",
+    weightKg: 9,
     category: "tor-switch",
     label: "Top-of-rack switch (1U)",
     heightU: 1,
@@ -75,6 +81,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "spine-2u",
+    weightKg: 20,
     category: "spine-switch",
     label: "Spine switch (2U)",
     heightU: 2,
@@ -86,6 +93,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "pdu-0u",
+    weightKg: 12,
     category: "pdu",
     label: "Rack PDU (0U, 3-phase)",
     heightU: 0,
@@ -96,6 +104,7 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
   }),
   p({
     id: "cdu-4u",
+    weightKg: 60,
     category: "cdu",
     label: "Coolant distribution unit (in-rack, 4U)",
     heightU: 4,
@@ -105,6 +114,32 @@ export const ILLUSTRATIVE_PROFILES: DeviceProfile[] = [
     note: "In-rack CDU for direct-liquid nodes.",
   }),
 ];
+
+ILLUSTRATIVE_PROFILES.push(
+  p({
+    id: "gpu-4x-air",
+    weightKg: 50,
+    category: "gpu-server",
+    label: "GPU server (4-accelerator, air-cooled)",
+    heightU: 4,
+    typicalKw: 3.2,
+    maxKw: 4.0,
+    cooling: "air",
+    ports: [{ speedGbps: 200, count: 4 }],
+    note: "Inference / fine-tuning node.",
+  }),
+  p({
+    id: "storage-shelf-2u",
+    weightKg: 30,
+    category: "storage",
+    label: "Storage expansion shelf (2U)",
+    heightU: 2,
+    typicalKw: 0.5,
+    maxKw: 0.7,
+    cooling: "air",
+    note: "Adds capacity to a storage array.",
+  }),
+);
 
 export function createLibrary(profiles: DeviceProfile[] = ILLUSTRATIVE_PROFILES): ComponentLibrary {
   const byId = new Map(profiles.map((x) => [x.id, x]));

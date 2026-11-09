@@ -50,6 +50,7 @@ const PAGES: Array<[string, string, RegExp | string]> = [
   ["settings-profile", "/settings?tab=profile", "Your profile"],
   ["settings-data", "/settings?tab=data", "Backups & restore"],
   ["business-cases", "/cases", "No business cases yet"],
+  ["sandbox", "/sandbox", "No scenarios yet"],
 ];
 
 for (const [name, url, text] of PAGES) {

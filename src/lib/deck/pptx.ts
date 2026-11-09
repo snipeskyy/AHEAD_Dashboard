@@ -203,6 +203,16 @@ const RENDER: Record<Slide["layout"], Renderer> = {
     slide.addShape("rect", { x: M, y: 2.4, w: 0.1, h: 2.6, fill: { color: b?.kind === "callout" && b.tone === "warning" ? "EDA100" : t.primary } });
     slide.addText(b?.kind === "callout" ? b.text : "", { x: M + 0.4, y: 2.3, w: 11.2, h: 2.8, fontSize: 28, color: t.ink, fontFace: t.fontHead, valign: "middle", fit: "shrink" });
   },
+  image(_p, slide, s, t) {
+    header(slide, s, t);
+    const b = s.blocks[0];
+    if (b?.kind !== "image") return;
+    const vb = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(b.svg);
+    const ratio = vb ? Number(vb[1]) / Number(vb[2]) : 16 / 9;
+    const maxW = W - 2 * M, maxH = BODY_H - 0.3;
+    const w = Math.min(maxW, maxH * ratio), h = w / ratio;
+    slide.addImage({ data: `data:image/svg+xml;base64,${Buffer.from(b.svg).toString("base64")}`, x: (W - w) / 2, y: BODY_Y + 0.1, w, h, altText: b.alt });
+  },
   closing(_p, slide, s, t, doc) {
     slide.background = { color: t.soft };
     header(slide, { ...s, kicker: undefined }, t);
