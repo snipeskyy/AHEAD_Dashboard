@@ -6,6 +6,7 @@ const Query = z.object({
   status: z.enum(["open", "done", "cancelled"]).optional(),
   accountId: z.string().optional(),
   opportunityId: z.string().optional(),
+  assigneeId: z.string().optional(),
   due: z.enum(["overdue", "today", "week"]).optional(),
 });
 

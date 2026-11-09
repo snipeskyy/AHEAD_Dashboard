@@ -24,6 +24,7 @@ export interface OppRow {
   stageChangedAt: string;
   createdAt: string;
   closedAt: string | null;
+  closeReason: string | null;
   meddpiccScore: number;
   riskFlags: DealRiskFlag[];
   daysInStage: number;
@@ -40,6 +41,9 @@ export interface PipelineOpp {
   closedAt: Date | null;
   stageChangedAt: Date;
   practiceArea: string;
+  /** Present for win/loss analytics (Phase 14). */
+  id?: string;
+  closeReason?: string | null;
 }
 
 export interface StageEvent {

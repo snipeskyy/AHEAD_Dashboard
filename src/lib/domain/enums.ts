@@ -66,6 +66,33 @@ export const OPEN_STAGES = ["Qualify", "Discover", "Solution", "Proposal", "Nego
 export const CLOSED_STAGES = ["ClosedWon", "ClosedLost"] as const;
 export const STAGES = [...OPEN_STAGES, ...CLOSED_STAGES] as const;
 export const StageSchema = z.enum(STAGES);
+
+/** Why a deal closed (Phase 14 win/loss analytics). User-chosen; no reason is ever inferred. */
+export const CLOSE_REASONS = [
+  "value",
+  "relationship",
+  "technical-fit",
+  "partner",
+  "timing",
+  "budget",
+  "competitor",
+  "no-decision",
+  "scope-change",
+  "other",
+] as const;
+export type CloseReason = (typeof CLOSE_REASONS)[number];
+export const CLOSE_REASON_LABELS: Record<CloseReason, string> = {
+  value: "Business value / ROI",
+  relationship: "Relationship",
+  "technical-fit": "Technical fit",
+  partner: "Partner alignment",
+  timing: "Timing",
+  budget: "Budget",
+  competitor: "Went with a competitor",
+  "no-decision": "No decision",
+  "scope-change": "Scope changed",
+  other: "Other",
+};
 export type Stage = z.infer<typeof StageSchema>;
 export const STAGE_LABELS: Record<Stage, string> = {
   Qualify: "Qualify",

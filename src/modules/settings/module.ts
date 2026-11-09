@@ -23,6 +23,13 @@ const settings: AccModule = {
       shortcut: "G ,",
     },
     {
+      id: "nav.contract",
+      label: "Data contract & local API",
+      group: "Navigate",
+      href: "/settings?tab=contract",
+      keywords: ["import", "export", "json", "schema", "api", "token"],
+    },
+    {
       id: "action.theme",
       label: "Toggle light / dark theme",
       group: "Actions",

@@ -64,6 +64,10 @@ test.describe("Phase 8: team foundations", () => {
       .getByRole("listbox", { name: "Mention a teammate" })
       .getByRole("option", { name: "Riley Teammate" })
       .click();
+    // The caret moves after the mention on the next animation frame; type once it has.
+    await expect(box).toHaveValue("Can @Riley Teammate ");
+    await expect(box).toBeFocused();
+    await page.waitForTimeout(50);
     await box.pressSequentially("take the architecture review?");
     await thread.getByRole("button", { name: "Comment" }).click();
     await expect(

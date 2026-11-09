@@ -49,6 +49,7 @@ const businessCases: AccModule = {
       label: "TCO & business cases",
       group: "Navigate",
       href: "/cases",
+      shortcut: "G C",
       keywords: ["tco", "roi", "npv", "business case", "cost"],
     },
     {

@@ -19,6 +19,8 @@ export const TaskBody = z.object({
   opportunityId: z.string().nullish(),
   signalId: z.string().nullish(),
   contactId: z.string().nullish(),
+  /** Teammate (User.id) the task is assigned to; null = you. */
+  assigneeId: z.string().nullish(),
   source: z.enum(["manual", "signal", "quick-capture", "next-step", "my-day"]).default("manual"),
 });
 
@@ -38,7 +40,7 @@ export async function createTask(input: z.infer<typeof TaskBody>) {
   return t;
 }
 
-export async function listTasks(q: { status?: string; accountId?: string; opportunityId?: string; due?: "overdue" | "today" | "week" }) {
+export async function listTasks(q: { status?: string; accountId?: string; opportunityId?: string; assigneeId?: string; due?: "overdue" | "today" | "week" }) {
   const now = new Date();
   const end = new Date(now);
   end.setHours(23, 59, 59, 999);
@@ -48,7 +50,7 @@ export async function listTasks(q: { status?: string; accountId?: string; opport
       : q.due === "week" ? { dueDate: { lte: new Date(end.getTime() + 6 * 86_400_000) } }
       : {};
   return db.task.findMany({
-    where: { status: q.status ?? "open", accountId: q.accountId, opportunityId: q.opportunityId, ...due },
+    where: { status: q.status ?? "open", accountId: q.accountId, opportunityId: q.opportunityId, ...(q.assigneeId ? { assigneeId: q.assigneeId === "me" ? null : q.assigneeId } : {}), ...due },
     orderBy: [{ dueDate: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }],
     include,
     take: 500,
@@ -72,6 +74,7 @@ export async function updateTask(id: string, patch: Partial<z.infer<typeof TaskB
       data: {
         title: prev.title, notes: prev.notes, priority: prev.priority, recurrence: prev.recurrence,
         accountId: prev.accountId, opportunityId: prev.opportunityId, contactId: prev.contactId, source: prev.source,
+        assigneeId: prev.assigneeId,
         dueDate: nextDue(base, prev.recurrence as (typeof RECURRENCES)[number], new Date()),
       },
     });

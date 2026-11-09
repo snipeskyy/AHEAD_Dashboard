@@ -24,6 +24,7 @@ export type OppPatch = Partial<{
   partners: string[];
   competitors: string[];
   meddpicc: Meddpicc;
+  closeReason: string | null;
 }>;
 
 export const oppKeys = {

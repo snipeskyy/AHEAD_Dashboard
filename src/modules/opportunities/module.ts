@@ -17,6 +17,11 @@ const opportunities: AccModule = {
       nav: true,
       load: () => import("./pages/opportunities-page"),
     },
+    {
+      path: "opportunities/[id]/plan",
+      title: "Mutual action plan",
+      load: () => import("./pages/plan-page"),
+    },
   ],
   widgets: [
     {
@@ -99,6 +104,18 @@ const opportunities: AccModule = {
       ],
     },
     {
+      id: "opportunities.action-plan",
+      title: "Mutual action plan",
+      description: "The dated path to a decision for each opportunity with a plan (customer-visible steps).",
+      scopes: ["account"],
+      fields: [
+        { id: "steps", label: "Plan steps", visibility: "customer-safe" },
+        { id: "progress", label: "Progress summary", visibility: "customer-safe" },
+        { id: "notes", label: "Internal step notes", visibility: "internal" },
+        { id: "hiddenSteps", label: "Steps not shown to the customer", visibility: "internal" },
+      ],
+    },
+    {
       id: "opportunities.forecast",
       title: "Forecast",
       description: "Commit / best case / pipeline by month and quarter.",
@@ -114,6 +131,13 @@ const opportunities: AccModule = {
       group: "Navigate",
       href: "/opportunities",
       shortcut: "G O",
+    },
+    {
+      id: "nav.win-loss",
+      label: "Win / loss analytics",
+      group: "Navigate",
+      href: "/opportunities?view=win-loss",
+      keywords: ["win rate", "cycle time", "conversion", "trend", "loss reasons"],
     },
     {
       id: "create.opp",

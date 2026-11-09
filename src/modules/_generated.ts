@@ -15,6 +15,7 @@ import m_sharing from "./sharing/module";
 import m_signals from "./signals/module";
 import m_smart_lists from "./smart-lists/module";
 import m_tasks from "./tasks/module";
+import m_team from "./team/module";
 import m_territory from "./territory/module";
 
-export const discoveredModules: AccModule[] = [m_account_intel, m_business_cases, m_command_home, m_demand_gen, m_exports, m_imports, m_my_day, m_opportunities, m_partners, m_sandbox, m_settings, m_sharing, m_signals, m_smart_lists, m_tasks, m_territory];
+export const discoveredModules: AccModule[] = [m_account_intel, m_business_cases, m_command_home, m_demand_gen, m_exports, m_imports, m_my_day, m_opportunities, m_partners, m_sandbox, m_settings, m_sharing, m_signals, m_smart_lists, m_tasks, m_team, m_territory];

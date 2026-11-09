@@ -2,7 +2,7 @@
 import { differenceInCalendarDays, format } from "date-fns";
 import { Repeat, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api } from "@/lib/api-client";
@@ -24,6 +24,12 @@ export function dueLabel(due: string | null, now = new Date()) {
 export function TaskList({ items, compact = false }: { items: TaskRow[]; compact?: boolean }) {
   const update = useTaskUpdate();
   const qc = useQueryClient();
+  const users =
+    useQuery({
+      queryKey: ["users", "list"],
+      queryFn: () => api<{ users: Array<{ id: string; displayName: string }> }>("/api/users").then((r) => r.users),
+    }).data ?? [];
+  const nameOf = (id: string | null | undefined) => (id ? users.find((u) => u.id === id)?.displayName : undefined);
   const del = useMutation({
     mutationFn: (id: string) => api(`/api/tasks/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
@@ -41,6 +47,7 @@ export function TaskList({ items, compact = false }: { items: TaskRow[]; compact
               <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs">
                 {!done && <span className={due.tone}>{due.text}</span>}
                 {t.priority !== "normal" && <span className={PRIORITY[t.priority]}>{t.priority}</span>}
+                {nameOf(t.assigneeId) && <span className="text-foreground">→ {nameOf(t.assigneeId)}</span>}
                 {t.recurrence && <span className="inline-flex items-center gap-0.5"><Repeat className="size-3" aria-hidden /> {t.recurrence}</span>}
                 {t.account && <Link href={`/accounts/${t.account.id}`} className="hover:text-foreground truncate hover:underline">{t.account.name}</Link>}
                 {t.opportunity && <Link href={`/opportunities?focus=${t.opportunity.id}`} className="hover:text-foreground truncate hover:underline">{t.opportunity.name}</Link>}

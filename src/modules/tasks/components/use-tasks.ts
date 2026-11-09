@@ -14,6 +14,7 @@ export interface TaskRow {
   source: string;
   completedAt: string | null;
   account: { id: string; name: string } | null;
+  assigneeId?: string | null;
   opportunity: { id: string; name: string } | null;
 }
 

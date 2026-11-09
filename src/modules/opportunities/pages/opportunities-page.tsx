@@ -7,6 +7,7 @@ import {
   LineChart,
   Plus,
   Table2,
+  Trophy,
   Upload,
 } from "lucide-react";
 import Link from "next/link";
@@ -41,14 +42,16 @@ import {
 } from "../components/opp-filters";
 import { OppTable, useOppColumns } from "../components/opp-table";
 import { useOpportunities } from "../hooks/use-opportunities";
-import { usePipelineAnalytics, useStageEvents } from "../hooks/use-pipeline-data";
+import { toPipelineOpp, usePipelineAnalytics, useStageEvents } from "../hooks/use-pipeline-data";
+import { WinLossView } from "../components/win-loss-view";
 
-type View = "board" | "table" | "forecast" | "analytics";
+type View = "board" | "table" | "forecast" | "analytics" | "win-loss";
 const VIEWS: Array<{ id: View; label: string; icon: typeof Table2 }> = [
   { id: "board", label: "Board", icon: KanbanSquare },
   { id: "table", label: "Table", icon: Table2 },
   { id: "forecast", label: "Forecast", icon: LineChart },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "win-loss", label: "Win / loss", icon: Trophy },
 ];
 
 const DEFAULT_TABLE_STATE: TableState = {
@@ -120,6 +123,10 @@ export default function OpportunitiesPage() {
   const { data: events } = useStageEvents();
   const filtered = useMemo(() => applyOppFilters(data ?? [], filters), [data, filters]);
   const analytics = usePipelineAnalytics(filtered, events);
+  const winLoss = useMemo(() => {
+    const ids = new Set(filtered.map((r) => r.id));
+    return { opps: filtered.map(toPipelineOpp), events: (events ?? []).filter((e) => ids.has(e.opportunityId)) };
+  }, [filtered, events]);
   const columns = useOppColumns();
   const tableRows = useTableRows(filtered, columns, tableState);
 
@@ -240,6 +247,9 @@ export default function OpportunitiesPage() {
           )}
           {view === "forecast" && <div data-field="opp.amount"><ForecastView a={analytics} /></div>}
           {view === "analytics" && <div data-field="opp.amount"><AnalyticsView a={analytics} /></div>}
+          {view === "win-loss" && (
+            <WinLossView opps={winLoss.opps} events={winLoss.events} />
+          )}
           {filtered.length === 0 && view !== "table" && (
             <StatTile
               label="No matches"

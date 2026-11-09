@@ -170,6 +170,22 @@ screen-sharing. A banner stays visible with a one-click **Exit**.
 it in 3D and tours it with a customer. The component library is generic ("Illustrative, not vendor-certified") and the
 operations console is simulated.
 
+## Team workspace, win/loss and mutual action plans
+
+- **Win / loss** (Opportunities → Win / loss) shows:
+  - win rate and won/lost per quarter;
+  - sales-cycle trend;
+  - win rate by practice;
+  - creation-cohort conversion;
+  - the close reasons you record when a deal closes.
+- **Mutual action plan.** Open a deal → "Mutual action plan" to build the dated path to a decision with the customer.
+  It starts from a standard path counted back from the close date. Mark steps customer-visible or internal, then
+  download a customer PDF. The plan can also go into exports and decks.
+- **Team workspace** (`/team`, `G W`) has three tabs:
+  - workload per teammate (assign tasks from the task dialog or inline);
+  - the territory plan with plan health;
+  - a weekly team digest you can copy or download as Markdown.
+
 ## Data contract & local API
 
 The **ACC Data Contract** (`acc-data` v1) is a neutral, versioned JSON format for your own account knowledge:
@@ -242,5 +258,6 @@ stored (never addresses or names); meetings are matched to accounts by domain an
 | 11. TCO / business-case builder (your assumptions only)         | ✅     |
 | 12. Data Center Sandbox (floor plan, 3D, capacity, what-ifs)    | ✅     |
 | 13. Data contract, file import/export, local read-only API      | ✅     |
+| 14. Win/loss trends, mutual action plans, team workspace        | ✅     |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

@@ -472,6 +472,43 @@ migrations, because Prisma would otherwise report drift.
 - **Boundary**: `docs/INTERNAL_PORT.md`. `private-future` keeps throwing; no connector to any company system; writes stay
   file-based with preview + undo.
 
+## Phase 14 conventions (team value and polish)
+
+- **Win / loss** (`src/lib/pipeline/trends.ts`, pure, tested). It is the Opportunities `view=win-loss` tab, computed
+  client-side from the filtered rows like the other views:
+  - won/lost and win rate per closing quarter;
+  - won-deal cycle time;
+  - win rate by practice;
+  - creation-cohort conversion (from stage history or current stage);
+  - recorded close reasons;
+  - `winRateTakeaway()`, a computed sentence that stays silent below 3 closed deals per half.
+
+  Counts only, no amounts.
+
+- **Close reasons.** `Opportunity.closeReason` takes a value from `CLOSE_REASONS` (`enums.ts`). It is set only by the
+  user (deal sheet, when the deal is closed) and cleared by `updateOpportunity()` when a deal reopens. Fixture reasons
+  are derived from the close date (no RNG draw).
+- **Mutual action plans** (`MutualActionPlan`, one per opportunity).
+  - Steps are a JSON list validated by `MapStepsSchema` (`src/lib/map/model.ts`, pure, tested): side, owner as a role
+    or name the user types, due date, status, customer-visible flag, internal note.
+  - `starterSteps()` is a generic decision path (methodology, not account data) counted back from the target date.
+  - `mapProgress()` gives health and a computed summary. `customerSteps()` is the customer view: visible steps only,
+    no notes.
+  - Server: `src/lib/server/action-plans.ts`; API `/api/opportunities/:id/plan` (GET/POST/PATCH/DELETE) and
+    `/plan/pdf?audience=customer|internal`, which Playwright prints from `/print/plan/:id` and audits as
+    `plan.export`.
+  - Page: `/opportunities/:id/plan` (autosaves after 600 ms).
+  - Export section `opportunities.action-plan`: internal notes and hidden steps are `internal` fields.
+- **Team workspace** (module `team`, `/team`, `G W`).
+  - **Workload:** open tasks per teammate (`Task.assigneeId` → `User.id`; null = you), reassignable inline.
+  - **Territory plan:** every action plan by health, plus open account-plan items, overdue first.
+  - **Weekly digest:** `buildDigest()` (`src/lib/team/digest.ts`, pure) over the last 7 days, plus closes and plan
+    steps for the next 14. Amounts are omitted when the role hides `opp.amount`. Download with
+    `/api/team-workspace/digest?format=md` (audited).
+  - The task dialog has "Assign to" when teammates exist.
+- **Shortcuts.** `G W` team, `G C` business cases, `G X` sandbox. ⌘K adds "Win / loss analytics", "Weekly team
+  digest" and "Data contract & local API". All of them appear in the `?` overlay.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -514,4 +551,4 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 11: TCO / business-case builder
 - [x] Phase 12: Data Center Sandbox (full)
 - [x] Phase 13: data contract for the internal-tool port
-- [ ] Phase 14: team value and polish
+- [x] Phase 14: team value and polish

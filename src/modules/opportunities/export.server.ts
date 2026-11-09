@@ -5,6 +5,8 @@ import type { SectionBuilders } from "@/lib/export/builder-types";
 import { OPEN_STAGES, STAGE_LABELS, type Stage } from "@/lib/domain/enums";
 import { computeForecast, nextPeriods } from "@/lib/pipeline/analytics";
 import { listOpportunities } from "@/lib/server/opportunities";
+import { plansForAccount } from "@/lib/server/action-plans";
+import { SIDE_LABELS, STATUS_LABELS, isOverdue, mapProgress, sortSteps, type MapStep } from "@/lib/map/model";
 import { DEAL_RISK_LABELS } from "@/lib/scoring/deal-risk";
 import { getModuleSettings } from "@/lib/settings/server";
 
@@ -125,5 +127,45 @@ export const builders: SectionBuilders = {
         })),
       },
     ];
+  },
+  "opportunities.action-plan": async (ctx) => {
+    const plans = (await Promise.all(ctx.accounts.map((a) => plansForAccount(a.id)))).flat();
+    if (!plans.length)
+      return [{ kind: "paragraph", text: "No mutual action plans yet. Start one from an opportunity.", field: "steps" }];
+    const now = new Date();
+    const table = (steps: MapStep[], field: string, caption?: string) => ({
+      kind: "table" as const,
+      field,
+      caption,
+      columns: [
+        { key: "due", label: "Due", field },
+        { key: "step", label: "Step", field },
+        { key: "owner", label: "Owner", field },
+        { key: "status", label: "Status", field },
+        { key: "note", label: "Internal note", field: "notes" },
+      ],
+      rows: sortSteps(steps).map((s) => ({
+        due: { text: s.dueDate ? day(`${s.dueDate}T12:00:00Z`) : "TBD" },
+        step: { text: s.title },
+        owner: { text: `${SIDE_LABELS[s.side]}${s.owner ? ` · ${s.owner}` : ""}` },
+        status: { text: isOverdue(s, now) && s.status !== "at-risk" ? "Overdue" : STATUS_LABELS[s.status] },
+        note: { text: s.note },
+      })),
+    });
+    return plans.flatMap((p) => {
+      const visible = p.steps.filter((s) => s.customerVisible);
+      const hidden = p.steps.filter((s) => !s.customerVisible);
+      return [
+        { kind: "heading" as const, level: 3 as const, text: p.title, field: "steps" },
+        ...(p.objective ? [{ kind: "paragraph" as const, text: p.objective, field: "steps" }] : []),
+        {
+          kind: "paragraph" as const,
+          field: "progress",
+          text: `Target decision date: ${p.targetDate ? day(`${p.targetDate}T12:00:00Z`) : "TBD"}. ${mapProgress(visible, p.targetDate, now).summary}`,
+        },
+        table(visible, "steps"),
+        ...(hidden.length ? [table(hidden, "hiddenSteps", "Internal steps (not shown to the customer)")] : []),
+      ];
+    });
   },
 };

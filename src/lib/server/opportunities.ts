@@ -51,6 +51,7 @@ export function toOppRow(o: OppWithAccount, now: Date, stalled: number): OppRow 
     stageChangedAt: o.stageChangedAt.toISOString(),
     createdAt: o.createdAt.toISOString(),
     closedAt: o.closedAt?.toISOString() ?? null,
+    closeReason: o.closeReason,
     meddpiccScore: meddpiccCompleteness(meddpicc),
     riskFlags: dealRiskFlags(
       {
@@ -121,6 +122,7 @@ export interface OppPatch {
   partners?: string[];
   competitors?: string[];
   meddpicc?: unknown;
+  closeReason?: string | null;
 }
 
 /** Applies a patch with business rules: stage history, default probability, push counting, practice sync, activity log. */
@@ -145,6 +147,10 @@ export async function updateOpportunity(id: string, patch: OppPatch) {
   if (patch.competitors !== undefined) data.competitors = patch.competitors;
   if (patch.meddpicc !== undefined) data.meddpicc = MeddpiccSchema.parse(patch.meddpicc);
   if (patch.probability !== undefined) data.probability = patch.probability;
+  if (patch.closeReason !== undefined) {
+    data.closeReason = patch.closeReason;
+    if (patch.closeReason) changes.push(`close reason: ${patch.closeReason}`);
+  }
   if (patch.forecastCategory !== undefined) data.forecastCategory = patch.forecastCategory;
   if (patch.closeDate !== undefined && patch.closeDate.getTime() !== prev.closeDate.getTime()) {
     data.closeDate = patch.closeDate;
@@ -161,6 +167,8 @@ export async function updateOpportunity(id: string, patch: OppPatch) {
     if (patch.probability === undefined) data.probability = STAGE_DEFAULT_PROBABILITY[stage];
     if (patch.forecastCategory === undefined) data.forecastCategory = defaultForecast(stage);
     data.closedAt = (CLOSED_STAGES as readonly string[]).includes(stage) ? now : null;
+    // A reopened deal has no close reason.
+    if (!(CLOSED_STAGES as readonly string[]).includes(stage)) data.closeReason = null;
     if (stage === "ClosedWon" && patch.closeDate === undefined) data.closeDate = now;
     changes.unshift(`${prev.stage} → ${stage}`);
   }

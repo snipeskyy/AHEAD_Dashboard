@@ -20,6 +20,7 @@ import {
 } from "./generators/accounts";
 import { generateTouch, PLAN_TEMPLATES, SEED_EVENTS } from "./generators/engagement";
 import { generateOpportunity } from "./generators/opportunities";
+import { starterSteps } from "../../../src/lib/map/model";
 import {
   ensureStarterPlays,
   starterPlayId,
@@ -156,6 +157,30 @@ export async function runSeed(prisma: PrismaClient): Promise<string> {
     1000,
     (c) => prisma.stageChange.createMany({ data: c }),
   );
+  // Mutual action plans for the largest open deals of demo-acc-008 (no RNG draw; ids are deterministic).
+  const planOpps = opps
+    .filter((o) => o.accountId === "demo-acc-008" && !o.closedAt)
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 2);
+  for (const o of planOpps) {
+    let k = 0;
+    const steps = starterSteps(o.closeDate.toISOString().slice(0, 10), anchor, () => `${o.id}-s${++k}`).map((s, i) => ({
+      ...s,
+      status: i < 2 ? ("done" as const) : i === 2 ? ("in-progress" as const) : ("planned" as const),
+      note: i === 3 ? "Fictional note: confirm finance attends." : "",
+      customerVisible: i !== 5,
+    }));
+    await prisma.mutualActionPlan.create({
+      data: {
+        opportunityId: o.id,
+        title: `${o.name} — path to decision`,
+        objective: "Fictional objective: modernize the platform with a clear, agreed timeline.",
+        targetDate: o.closeDate,
+        steps,
+      },
+    });
+  }
+
   // Practice status consistency: open opp ⇒ at least ActiveOpp; won ⇒ Delivered.
   for (const o of opps) {
     if (o.stage === "ClosedLost") continue;

@@ -1,5 +1,5 @@
 "use client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AccountPicker } from "@/components/account-picker";
@@ -30,6 +30,13 @@ function Body({ d, close }: { d: TaskDefaults; close: () => void }) {
   const [due, setDue] = useState(d.dueDate?.slice(0, 10) ?? "");
   const [priority, setPriority] = useState("normal");
   const [recurrence, setRecurrence] = useState("");
+  const [assignee, setAssignee] = useState("");
+  const users =
+    useQuery({
+      queryKey: ["users", "list"],
+      queryFn: () => api<{ users: Array<{ id: string; displayName: string; isSelf: boolean }> }>("/api/users").then((r) => r.users),
+    }).data ?? [];
+  const teammates = users.filter((u) => !u.isSelf);
   const save = useMutation({
     mutationFn: () =>
       api("/api/tasks", {
@@ -37,6 +44,7 @@ function Body({ d, close }: { d: TaskDefaults; close: () => void }) {
         json: {
           title, priority, accountId: account?.id ?? null, opportunityId: d.opportunityId ?? null, signalId: d.signalId ?? null,
           dueDate: due ? new Date(`${due}T17:00:00`).toISOString() : null, recurrence: recurrence || null, source: d.source ?? "manual",
+          assigneeId: assignee || null,
         },
       }),
     onSuccess: () => {
@@ -62,6 +70,15 @@ function Body({ d, close }: { d: TaskDefaults; close: () => void }) {
           <Label htmlFor="task-account">Account</Label>
           <AccountPicker id="task-account" value={account} onChange={setAccount} />
         </div>
+        {teammates.length > 0 && (
+          <div className="grid gap-1.5">
+            <Label htmlFor="task-assignee">Assign to</Label>
+            <select id="task-assignee" className={sel} value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+              <option value="">Me</option>
+              {teammates.map((u) => <option key={u.id} value={u.id}>{u.displayName}</option>)}
+            </select>
+          </div>
+        )}
         <div className="grid grid-cols-3 gap-3">
           <div className="grid gap-1.5">
             <Label htmlFor="task-due">Due</Label>

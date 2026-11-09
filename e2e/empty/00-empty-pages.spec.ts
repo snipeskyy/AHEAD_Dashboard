@@ -50,6 +50,9 @@ const PAGES: Array<[string, string, RegExp | string]> = [
   ["settings-profile", "/settings?tab=profile", "Your profile"],
   ["settings-data", "/settings?tab=data", "Backups & restore"],
   ["settings-contract", "/settings?tab=contract", "Local read-only API"],
+  ["team", "/team", "No open tasks"],
+  ["team-plan", "/team?tab=plan", "No plans yet"],
+  ["team-digest", "/team?tab=digest", "No deals closed this week."],
   ["business-cases", "/cases", "No business cases yet"],
   ["sandbox", "/sandbox", "No scenarios yet"],
 ];

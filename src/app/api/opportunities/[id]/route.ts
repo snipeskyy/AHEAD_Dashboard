@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { FORECAST_CATEGORIES, MeddpiccSchema, StageSchema } from "@/lib/domain/enums";
+import { CLOSE_REASONS, FORECAST_CATEGORIES, MeddpiccSchema, StageSchema } from "@/lib/domain/enums";
 import { logActivity } from "@/lib/server/activity";
 import { HttpError, handler, json, readJson } from "@/lib/server/http";
 import { oppInclude, stalledDays, toOppRow, updateOpportunity } from "@/lib/server/opportunities";
@@ -41,6 +41,7 @@ const Patch = z
     forecastCategory: z.enum(FORECAST_CATEGORIES),
     nextStep: z.string().max(500).nullable(),
     nextStepDate: z.coerce.date().nullable(),
+    closeReason: z.enum(CLOSE_REASONS).nullable(),
     practiceArea: z.string().min(1),
     partners: z.array(z.string().max(80)).max(20),
     competitors: z.array(z.string().max(80)).max(20),

@@ -42,7 +42,7 @@ const sandbox: AccModule = {
       ],
     },
   ],
-  commands: [{ id: "nav.sandbox", label: "Go to DC Sandbox", group: "Navigate", href: "/sandbox" }],
+  commands: [{ id: "nav.sandbox", label: "Go to DC Sandbox", group: "Navigate", href: "/sandbox", shortcut: "G X", keywords: ["data center", "rack", "3d"] }],
 };
 
 export default sandbox;

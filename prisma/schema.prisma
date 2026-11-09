@@ -208,7 +208,10 @@ model Opportunity {
   closeDatePushes  Int                     @default(0)
   stageChangedAt   DateTime
   closedAt         DateTime?
+  /// Why the deal was won or lost (Phase 14, CLOSE_REASONS); cleared when the deal reopens.
+  closeReason      String?
   sourceSignalId   String?
+  actionPlan       MutualActionPlan?
   isDemo           Boolean                 @default(false)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
@@ -710,6 +713,8 @@ model Task {
   opportunityId String?
   signalId      String?
   contactId     String?
+  /// Teammate the task is assigned to (User.id; Phase 14). Null = the owner.
+  assigneeId    String?
   source        String       @default("manual") // manual | signal | quick-capture | next-step | my-day
   completedAt   DateTime?
   createdAt     DateTime     @default(now())
@@ -900,4 +905,23 @@ model ExternalRef {
 
   @@unique([system, entityType, externalId])
   @@index([entityType, entityId])
+}
+
+/// Mutual action plan (Phase 14): a dated, shareable path to a decision for one opportunity.
+/// `steps` is validated by MapStepsSchema (src/lib/map/model.ts).
+model MutualActionPlan {
+  id            String      @id @default(cuid())
+  ownerId       String      @default("local")
+  teamId        String      @default("local-team")
+  createdBy     String      @default("local")
+  updatedBy     String      @default("local")
+  opportunityId String      @unique
+  title         String
+  /// The customer's goal in their words (customer-safe).
+  objective     String?
+  targetDate    DateTime?
+  steps         Json
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
 }

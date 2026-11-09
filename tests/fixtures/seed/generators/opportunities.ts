@@ -77,6 +77,7 @@ export interface SeedOpp {
   closeDatePushes: number;
   stageChangedAt: Date;
   closedAt: Date | null;
+  closeReason: string | null;
   createdAt: Date;
   history: Array<{ fromStage: Stage | null; toStage: Stage; changedAt: Date }>;
 }
@@ -213,7 +214,19 @@ export function generateOpportunity(
         : rng.int(0, 2),
     stageChangedAt,
     closedAt,
+    closeReason: closeReasonFor(outcome, closedAt),
     createdAt,
     history,
   };
+}
+
+// Derived from the close date (no RNG draw, so the rest of the fixture stream is unchanged); ~1 in 5 unrecorded.
+const WON_REASONS = ["value", "relationship", "technical-fit", "partner"];
+const LOST_REASONS = ["competitor", "no-decision", "budget", "timing", "scope-change"];
+function closeReasonFor(outcome: string, closedAt: Date | null) {
+  if (!closedAt || outcome === "open") return null;
+  const n = Math.floor(closedAt.getTime() / 86_400_000);
+  if (n % 5 === 0) return null;
+  const list = outcome === "won" ? WON_REASONS : LOST_REASONS;
+  return list[n % list.length];
 }

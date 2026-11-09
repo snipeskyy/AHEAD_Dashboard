@@ -1,10 +1,11 @@
 "use client";
 import { format } from "date-fns";
-import { AlertTriangle, Calculator, ExternalLink } from "lucide-react";
+import { AlertTriangle, Calculator, ExternalLink, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { NotesList } from "@/components/notes-list";
 import { CardSkeleton, ErrorState } from "@/components/states";
 import { TagPicker } from "@/components/tag-picker";
+import { Button } from "@/components/ui/button";
 import { InlineDate, InlineNumber, InlineSelect, InlineText } from "@/components/data-table";
 import {
   Sheet,
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { DEFAULT_PRACTICE_AREAS } from "@/config/practice-areas";
 import { useSetting } from "@/hooks/use-setting";
-import { FORECAST_CATEGORIES, STAGES, STAGE_LABELS, type Stage } from "@/lib/domain/enums";
+import { CLOSE_REASONS, CLOSE_REASON_LABELS, FORECAST_CATEGORIES, STAGES, STAGE_LABELS, type Stage } from "@/lib/domain/enums";
 import { formatCurrency } from "@/lib/format";
 import { DEAL_RISK_LABELS } from "@/lib/scoring/deal-risk";
 import { useOpportunity, useUpdateOpportunity, type OppPatch } from "../hooks/use-opportunities";
@@ -112,6 +113,19 @@ function OppDetail({ id }: { id: string }) {
               onCommit={(v) => patch({ stage: v as Stage })}
             />
           </Field>
+          {(o.stage === "ClosedWon" || o.stage === "ClosedLost") && (
+            <Field label="Close reason" internal>
+              <InlineSelect
+                label="Close reason"
+                value={o.closeReason ?? ""}
+                options={[
+                  { value: "", label: "Not recorded" },
+                  ...CLOSE_REASONS.map((r) => ({ value: r, label: CLOSE_REASON_LABELS[r] })),
+                ]}
+                onCommit={(v) => patch({ closeReason: v || null })}
+              />
+            </Field>
+          )}
           <Field label="Practice area">
             <InlineSelect
               label="Practice area"
@@ -200,6 +214,15 @@ function OppDetail({ id }: { id: string }) {
               onChange={(v) => patch({ competitors: v })}
             />
           </Field>
+        </section>
+
+        <section className="flex flex-wrap items-center gap-2" aria-label="Mutual action plan">
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/opportunities/${o.id}/plan`}>
+              <ListChecks /> Mutual action plan
+            </Link>
+          </Button>
+          <span className="text-muted-foreground text-xs">A dated path to a decision you can share with the customer.</span>
         </section>
 
         <section data-internal-only="true">

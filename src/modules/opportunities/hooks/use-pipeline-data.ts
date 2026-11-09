@@ -28,6 +28,8 @@ export const toPipelineOpp = (r: OppRow): PipelineOpp => ({
   closedAt: r.closedAt ? new Date(r.closedAt) : null,
   stageChangedAt: new Date(r.stageChangedAt),
   practiceArea: r.practiceArea,
+  id: r.id,
+  closeReason: r.closeReason,
 });
 
 export function useStageEvents() {

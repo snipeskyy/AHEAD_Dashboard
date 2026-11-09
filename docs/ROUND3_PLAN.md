@@ -63,7 +63,7 @@ The spec's queued add-on, built for customer conversations.
    feed power/space numbers into TCO (Phase 11).
 8. Everything stays generic: "Illustrative, not vendor-certified".
 
-## Phase 13: Internal-tool readiness (data contract, no internal data)
+## Phase 13: Internal-tool readiness (data contract, no internal data) (done)
 
 Makes the eventual port to the company's internal AI tool straightforward, without putting internal data or a
 connector in this repository.
@@ -79,7 +79,7 @@ connector in this repository.
    which internal systems, the private adapter slot, the AI add-on boundary). The `private-future` adapter keeps
    throwing until the company approves an integration.
 
-## Phase 14: Team value and polish
+## Phase 14: Team value and polish (done)
 
 - **Account team workspace**: shared territory plan view, owner/assignee on tasks, weekly team digest (export).
 - **Win/loss and pipeline-trend analytics**: conversion by stage and practice over time, cycle-time trends.
