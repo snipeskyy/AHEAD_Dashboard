@@ -28,11 +28,12 @@ test("import the example contract file with preview, export it, and undo the who
   await page
     .getByLabel("Contract file")
     .setInputFiles({ name: "example.acc-data.json", mimeType: "application/json", buffer: file });
-  const preview = page.getByRole("region", { name: "Import preview" });
+  // Phase 15: files go to the review queue first.
+  const preview = page.getByRole("region", { name: "Review changes" });
   await expect(preview).toContainText("Accounts");
   await expect(preview).toContainText("Partner reps");
-  await page.getByRole("button", { name: /^Import \d+ changes?$/ }).click();
-  await expect(page.getByText("Data contract imported")).toBeVisible();
+  await preview.getByRole("button", { name: /^Apply \d+ changes?$/ }).click();
+  await expect(page.getByText("Data applied")).toBeVisible();
 
   const exp = await (await request.get("/api/contract/export?visibility=customer-safe")).json();
   const acc = exp.entities.accounts.find(

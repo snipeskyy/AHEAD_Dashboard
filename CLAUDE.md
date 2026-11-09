@@ -5,8 +5,13 @@ Build specs: `PROMPT.md` (Phases 0–4) and `PROMPT_ROUND2.md` (Phases 5–9). T
 
 ## Non-negotiable rules (spec §2)
 
-1. **No internal or confidential data.** Never add, request, or expect employer-internal data, CRM exports, pricing,
-   margins, contracts, or non-public customer info.
+1. **No internal or confidential data in the repository.** Code, fixtures, tests and docs never contain employer-internal
+   data, CRM exports, pricing, margins, contracts or non-public customer info.
+   - **At runtime (approved Nov 2026, Phase 15)**, a user may bring their own internal account data into their _local_
+     ACC (e.g. from Glean). It only enters through the data contract's review queue, lives in their local database
+     (FileVault) and encrypted backups, and never leaves their machine except through exports they choose.
+   - The contract keeps **no email, phone or address fields**. Never add fields for pricing, discounts, margins or
+     contract terms.
 2. **The app never writes demo data (Phase 5).** Synthetic fixtures live in `tests/fixtures/seed/` and are written
    only to the TEST database (`DATABASE_URL_TEST`) via `scripts/with-test-db.mjs`; the seed CLI refuses otherwise.
    Fixtures stay fictional (invented names, `.example` domains, no tickers, `isDemo = true`). The `isDemo` column is
@@ -27,6 +32,11 @@ Build specs: `PROMPT.md` (Phases 0–4) and `PROMPT_ROUND2.md` (Phases 5–9). T
    - Never hardcode `SEC_USER_AGENT`.
 6. **Integration-ready, not integrated.** The `private-future` adapter slot throws `AdapterNotConfiguredError`. Don't
    build CRM or marketing-automation connectors.
+   - The only inbound path for internal data is the data contract: paste/upload, or a tool holding the token calling
+     `POST /api/v1/staged-imports`, which is off by default.
+   - Everything lands in the review queue; nothing is applied without a person.
+   - Glean is the approved AI tool (`docs/GLEAN.md`). A live Glean → ACC connection also needs an approved hosted
+     deployment.
 
 ## Commands
 
@@ -509,6 +519,40 @@ migrations, because Prisma would otherwise report drift.
 - **Shortcuts.** `G W` team, `G C` business cases, `G X` sandbox. ⌘K adds "Win / loss analytics", "Weekly team
   digest" and "Data contract & local API". All of them appear in the `?` overlay.
 
+## Phase 15 conventions (Glean-ready, security hardening)
+
+- **Review queue** (`StagedImport`, `src/lib/server/contract/staging.ts`). `stageContract()` handles paste
+  (`extractJson()` strips code fences and prose), upload, and the staging API. `reviewStaged()` returns
+  `previewContract()` with field-level `changes`. `applyStaged()` calls `commitContract()`. `discardStaged()` does not
+  apply. Applied and discarded payloads are cleared (`{}`), so the queue never keeps a second copy of the data.
+- **Provenance.** The contract has an optional `sourceUrl` per record, stored on `ExternalRef.sourceUrl`. Records with
+  a link but no id get `auto:<entityId>`; `externalIdsFor()` hides those. `provenanceFor()` returns the history.
+  `ImportBatch.source` holds the sending system.
+- **Remove a source.** `removeSource(system, "REMOVE <system>")`:
+  - writes `backups/pre-remove-*` first;
+  - undoes every applied batch of that source (whole groups);
+  - drops its ExternalRefs and pending files;
+  - is audited.
+- **Staging API** `POST /api/v1/staged-imports`. It needs `api.local.enabled`, `api.local.allowStaging` (default
+  false) and the token. Limits: max 5 MB, 60 an hour. It returns 202 `pending-review`.
+- **Same-origin writes.** `handler()` calls `assertSameOriginWrite()`: non-GET browser requests from another origin
+  (Origin mismatch, `Origin: null`, `Sec-Fetch-Site: cross-site`) get 403. Requests with no Origin (curl, tool
+  callers) pass; the API routes check the token. Every route handler must stay wrapped in `handler()`.
+- **Local only.** `dev`, `start`, `dev:web` and `start:web` bind `-H 127.0.0.1`. A hosted deployment changes this
+  deliberately (see `docs/TEAM_DEPLOYMENT.md`).
+- **Encrypted backups** (`src/lib/backup/crypto.ts`). `sealBackup()` / `openBackup()` use an AES-256-GCM envelope
+  (`acc-backup-encrypted`) keyed by `ACC_BACKUP_KEY`, which `scripts/ensure-env.mjs` generates into `.env.local`.
+  Plain backups still restore. Backups and exports are written `0600` in `0700` folders.
+- **Setup hardening** (`scripts/secure-local.mjs`, run by `npm run setup`): file permissions, a FileVault check, and
+  `git config core.hooksPath .githooks`. The pre-commit guard (`scripts/guard-commit.mjs`) blocks databases,
+  backups, exports, imports, `*.acc-data.json` (except the docs example), keys, `.env*` (except the example), brand
+  files, API tokens and backup keys.
+- **Security checklist** (`/api/security`, Settings → Data contract & API) covers disk encryption, encrypted backups,
+  localhost-only, API state and the commit guard. It never returns secrets.
+- **Dependencies.** `overrides` pin patched `image-size` (declared by pptxgenjs but unused), `uuid` (exceljs uses
+  `v4` only) and `deepmerge-ts` (Prisma CLI config). `prisma` and `shadcn` are devDependencies. `npm audit --omit=dev`
+  is clean; the remaining advisories are dev tooling (eslint, the shadcn CLI).
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -533,6 +577,9 @@ migrations, because Prisma would otherwise report drift.
 - **Round 3 approved (Nov 2026)** — `docs/ROUND3_PLAN.md`: deliverables engine → TCO → full Sandbox → data contract →
   team polish. TCO inputs are user-entered assumptions only (no company pricing or margins in the repo). The internal
   AI-tool port gets a neutral, file-based data contract; any live connection waits for company approval.
+- **Glean as the approved AI tool (Nov 2026).** Users run ACC locally and import Glean output through the review
+  queue. Internal data is allowed locally (encrypted at rest), never in the repo. Contacts stay without email or phone.
+  The live staging API is built but off; turning it on for Glean needs an approved hosted deployment.
 - **Prisma 6.19** (stable) is pinned. npm's `latest` tag for Prisma pointed at a 8.0 release candidate at build time.
 
 ## Phase status
@@ -552,3 +599,4 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 12: Data Center Sandbox (full)
 - [x] Phase 13: data contract for the internal-tool port
 - [x] Phase 14: team value and polish
+- [x] Phase 15: Glean-ready import (review queue, provenance, remove-by-source, staging API) + security hardening

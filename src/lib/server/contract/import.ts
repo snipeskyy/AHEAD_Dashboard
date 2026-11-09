@@ -43,6 +43,12 @@ export interface EntityPreview {
   merge: number;
   unchanged: number;
   errors: Array<{ label: string; message: string }>;
+  /** Phase 15: what each row would do, for review (first 50 per entity). */
+  changes: Array<{
+    label: string;
+    action: "create" | "merge";
+    diff: Array<{ label: string; current: string; incoming: string }>;
+  }>;
 }
 
 const lc = (s: string) => s.trim().toLowerCase();
@@ -98,6 +104,7 @@ export async function previewContract(c: Contract) {
       merge: 0,
       unchanged: 0,
       errors: [],
+      changes: [],
     };
     for (const [i, item] of plan.entries()) {
       const r = item.row;
@@ -107,9 +114,14 @@ export async function previewContract(c: Contract) {
         pending.has(lc(rows[i].account ?? ""));
       if (r.status === "error" && !accountOnly)
         p.errors.push({ label: r.label, message: r.errors.map((e) => e.message).join("; ") });
-      else if (r.status === "new" || accountOnly) p.create++;
-      else if (r.defaultDecision === "merge") p.merge++;
-      else p.unchanged++;
+      else if (r.status === "new" || accountOnly) {
+        p.create++;
+        if (p.changes.length < 50) p.changes.push({ label: r.label, action: "create", diff: [] });
+      } else if (r.defaultDecision === "merge") {
+        p.merge++;
+        if (p.changes.length < 50)
+          p.changes.push({ label: r.label, action: "merge", diff: r.diff });
+      } else p.unchanged++;
     }
     out.push(p);
   }
@@ -126,6 +138,14 @@ export async function previewContract(c: Contract) {
       errors: list
         .filter((x) => x.status === "error")
         .map((x) => ({ label: x.label, message: x.error ?? "" })),
+      changes: list
+        .filter((x) => x.status === "new" || x.status === "merge")
+        .slice(0, 50)
+        .map((x) => ({
+          label: x.label,
+          action: x.status === "new" ? ("create" as const) : ("merge" as const),
+          diff: [],
+        })),
     });
   }
   return { source: c.source, visibility: c.visibility, version: c.version, entities: out };
@@ -155,13 +175,24 @@ export async function commitContract(c: Contract, fileName?: string | null) {
       decisions: {},
       fileName,
       inputType: "contract",
+      source: system,
       groupId,
       quiet: true,
     });
     counts[step.key] = res.counts;
-    const list = c.entities[step.key] as Array<{ externalId?: string; nextStepDate?: string }>;
+    const list = c.entities[step.key] as Array<{
+      externalId?: string;
+      nextStepDate?: string;
+      sourceUrl?: string;
+    }>;
     for (const [i, entityId] of Object.entries(res.rowEntities)) {
-      await upsertRef(system, step.entity, list[Number(i)]?.externalId, entityId);
+      await upsertRef(
+        system,
+        step.entity,
+        list[Number(i)]?.externalId,
+        entityId,
+        list[Number(i)]?.sourceUrl,
+      );
       if (step.kind === "accounts") touched.add(entityId);
       const nsd = list[Number(i)]?.nextStepDate;
       if (step.kind === "opportunities" && nsd)
@@ -180,6 +211,7 @@ export async function commitContract(c: Contract, fileName?: string | null) {
         kind: "contract",
         fileName: fileName ?? null,
         inputType: "contract",
+        source: system,
         groupId,
         counts: {
           created: records.filter((r) => r.action === "created").length,
@@ -188,7 +220,7 @@ export async function commitContract(c: Contract, fileName?: string | null) {
           errors: plans.filter((p) => p.status === "error").length,
         },
         records: {
-          create: records.map(({ externalId: _e, ...r }) => ({
+          create: records.map(({ externalId: _e, sourceUrl: _u, ...r }) => ({
             ...r,
             before: (r.before ?? undefined) as Prisma.InputJsonValue,
           })),
@@ -196,7 +228,7 @@ export async function commitContract(c: Contract, fileName?: string | null) {
       },
     });
     for (const r of records)
-      await upsertRef(system, r.entityType as RefEntity, r.externalId, r.entityId);
+      await upsertRef(system, r.entityType as RefEntity, r.externalId, r.entityId, r.sourceUrl);
   }
   for (const kind of ["touch", "task"] as const) {
     const list = plans.filter((p) => p.kind === kind);

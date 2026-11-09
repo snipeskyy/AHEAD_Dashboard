@@ -23,6 +23,8 @@ export interface CommitInput {
   inputType: InputType;
   /** Data-contract imports (Phase 13) share one group so the whole file undoes together. */
   groupId?: string | null;
+  /** Phase 15: sending system for data-contract imports (e.g. "glean"). */
+  source?: string | null;
   /** Skip the per-batch activity/audit entries (the contract import writes one for the file). */
   quiet?: boolean;
 }
@@ -75,6 +77,7 @@ export async function commitImport(input: CommitInput) {
       fileName: input.fileName ?? null,
       inputType: input.inputType,
       groupId: input.groupId ?? null,
+      source: input.source ?? null,
       counts,
       records: {
         create: records.map((r) => ({

@@ -76,10 +76,10 @@ export function openApiDocument() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "ACC local read-only API",
+      title: "ACC local API",
       version: CONTRACT_VERSION,
       description:
-        "Read-only access to an ACC workspace on the same computer, in the ACC Data Contract format. Off by default; every request needs `Authorization: Bearer <token>` (Settings → Data contract & API). Writing is file-based (contract import with preview and undo).",
+        "Access to an ACC workspace in the ACC Data Contract format. Off by default; every request needs `Authorization: Bearer <token>` (Settings → Data contract & API). Reads are GET; the only write is staging a file for a person to review (POST /api/v1/staged-imports), which is a separate switch.",
     },
     servers: [{ url: "http://localhost:3000" }],
     security: [{ bearer: [] }],
@@ -115,6 +115,33 @@ export function openApiDocument() {
       "/api/v1/opportunities": list("Opportunities", "Opportunity", "Opportunities"),
       "/api/v1/activities": list("Activities", "Activity", "Activities (touches)"),
       "/api/v1/tasks": list("Tasks", "Task", "Tasks"),
+      "/api/v1/staged-imports": {
+        post: {
+          summary: "Send a contract file for review (staged, never applied automatically)",
+          description:
+            "For tools such as a Glean action. Requires the API and 'send data for review' to be on. The file waits in Settings → Data contract & API until a person applies or discards it. Max 5 MB, 60 files an hour.",
+          operationId: "stageImport",
+          parameters: [
+            {
+              name: "x-acc-file-name",
+              in: "header",
+              required: false,
+              schema: { type: "string", maxLength: 120 },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { $ref: "#/components/schemas/Contract" } } },
+          },
+          responses: {
+            "202": { description: "Staged for review" },
+            "400": { description: "Not a valid acc-data file" },
+            "413": { description: "Larger than 5 MB" },
+            "429": { description: "Too many files this hour" },
+            ...errors,
+          },
+        },
+      },
       "/api/v1/export": {
         get: {
           summary: "The whole workspace as one contract file",

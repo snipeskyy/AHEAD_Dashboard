@@ -40,6 +40,7 @@ export const CONTRACT_EXAMPLE: Contract = {
     opportunities: [
       {
         externalId: "O-77",
+        sourceUrl: "https://crm.example/opportunity/O-77",
         account: { externalId: "A-1001" },
         name: "Data center refresh",
         practiceArea: "modern-dc",

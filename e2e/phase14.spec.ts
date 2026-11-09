@@ -142,6 +142,9 @@ test("team workspace: assign a task to a teammate, see the territory plan and do
 
 test("new screens have keyboard shortcuts listed in the ? overlay", async ({ page }) => {
   await page.goto("/");
+  // Shortcuts listen after hydration; wait until the shell has settled.
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();
   await page.keyboard.press("g");
   await page.keyboard.press("w");
   await expect(page).toHaveURL(/\/team/);

@@ -3,7 +3,7 @@ import path from "node:path";
 import type { PrismaClient } from "@prisma/client";
 import { BACKUP_DIR, writeBackupFile } from "./snapshot";
 
-export const BACKUP_NAME = /^(auto|manual|pre-purge|pre-reset|pre-restore|pre-import)-[\w-]+\.json$/;
+export const BACKUP_NAME = /^(auto|manual|pre-purge|pre-reset|pre-restore|pre-import|pre-remove)-[\w-]+\.json$/;
 
 export interface BackupInfo {
   file: string;

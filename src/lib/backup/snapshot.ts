@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { sealBackup } from "./crypto";
 import path from "node:path";
 import type { PrismaClient } from "@prisma/client";
 import { BACKUP_TABLES, delegateName } from "./tables";
@@ -21,9 +22,10 @@ export const BACKUP_DIR = path.join(process.cwd(), "backups");
 /** Writes `backups/<label>-<timestamp>.json` and returns its path. */
 export async function writeBackupFile(db: PrismaClient, label: string) {
   const snap = await snapshotAll(db);
-  await mkdir(BACKUP_DIR, { recursive: true });
+  await mkdir(BACKUP_DIR, { recursive: true, mode: 0o700 });
   const stamp = snap.exportedAt.replace(/[:.]/g, "-");
   const file = path.join(BACKUP_DIR, `${label}-${stamp}.json`);
-  await writeFile(file, JSON.stringify(snap));
+  // Encrypted when ACC_BACKUP_KEY is set; readable only by you (0600).
+  await writeFile(file, sealBackup(JSON.stringify(snap)), { mode: 0o600 });
   return file;
 }

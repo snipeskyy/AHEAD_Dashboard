@@ -15,6 +15,7 @@ export interface ChildPlan {
   index: number;
   label: string;
   externalId?: string;
+  sourceUrl?: string;
   status: "new" | "merge" | "same" | "error";
   error?: string;
   matchId?: string;
@@ -100,6 +101,7 @@ export async function planChildren(
       index: i,
       label,
       externalId: a.externalId,
+      sourceUrl: a.sourceUrl,
       status,
       matchId: prev?.id,
       data,
@@ -131,6 +133,7 @@ export async function planChildren(
       index: i,
       label: t.title,
       externalId: t.externalId,
+      sourceUrl: t.sourceUrl,
       status,
       matchId: prev?.id,
       data,
@@ -152,6 +155,7 @@ export async function applyChildren(
     action: "created" | "merged";
     before?: unknown;
     externalId?: string;
+    sourceUrl?: string;
   }> = [];
   for (const p of plans) {
     if (p.status === "error" || p.status === "same" || !p.data) continue;
@@ -174,6 +178,7 @@ export async function applyChildren(
           action: "merged",
           before: pick(before, TOUCH_KEYS),
           externalId: p.externalId,
+          sourceUrl: p.sourceUrl,
         });
       } else {
         const t = await db.touch.create({ data });
@@ -182,6 +187,7 @@ export async function applyChildren(
           entityId: t.id,
           action: "created",
           externalId: p.externalId,
+          sourceUrl: p.sourceUrl,
         });
       }
     } else {
@@ -196,6 +202,7 @@ export async function applyChildren(
           action: "merged",
           before: pick(before, [...TASK_KEYS, "accountId", "completedAt"]),
           externalId: p.externalId,
+          sourceUrl: p.sourceUrl,
         });
       } else {
         const t = await db.task.create({ data });
@@ -204,6 +211,7 @@ export async function applyChildren(
           entityId: t.id,
           action: "created",
           externalId: p.externalId,
+          sourceUrl: p.sourceUrl,
         });
       }
     }

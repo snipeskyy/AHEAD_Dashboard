@@ -2,6 +2,7 @@ import "server-only";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { backupPath, listBackups } from "@/lib/backup/auto";
+import { openBackup, sealBackup } from "@/lib/backup/crypto";
 import { backupCounts, parseBackup, readBackup, restoreBackup } from "@/lib/backup/restore";
 import { BACKUP_DIR, writeBackupFile } from "@/lib/backup/snapshot";
 import { db } from "@/lib/db";
@@ -34,13 +35,13 @@ export async function previewBackup(name: string) {
 export async function saveUploadedBackup(text: string) {
   let parsed;
   try {
-    parsed = parseBackup(JSON.parse(text));
+    parsed = parseBackup(openBackup(text));
   } catch (e) {
     throw new HttpError(400, e instanceof Error && !e.message.startsWith("Unexpected") ? e.message : "That file isn't valid JSON");
   }
-  await mkdir(BACKUP_DIR, { recursive: true });
+  await mkdir(BACKUP_DIR, { recursive: true, mode: 0o700 });
   const name = `manual-upload-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
-  await writeFile(path.join(BACKUP_DIR, name), JSON.stringify(parsed));
+  await writeFile(path.join(BACKUP_DIR, name), sealBackup(JSON.stringify(parsed)), { mode: 0o600 });
   return name;
 }
 

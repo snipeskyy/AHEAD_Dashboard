@@ -15,6 +15,7 @@ let exp: typeof import("../export");
 let refs: typeof import("../refs");
 let undo: typeof import("../../import/undo");
 let api: typeof import("../../local-api");
+let staging: typeof import("../staging");
 
 beforeAll(async () => {
   dir = mkdtempSync(path.join(tmpdir(), "acc-contract-"));
@@ -30,6 +31,7 @@ beforeAll(async () => {
   refs = await import("../refs");
   undo = await import("../../import/undo");
   api = await import("../../local-api");
+  staging = await import("../staging");
 }, 120_000);
 
 afterAll(async () => {
@@ -143,5 +145,75 @@ describe("data contract import / export (integration)", () => {
         }),
       ),
     ).toThrow();
+  });
+});
+
+describe("review queue and remove-by-source (Phase 15)", () => {
+  const glean = () => {
+    const c = example();
+    return { ...c, source: { system: "glean" } };
+  };
+
+  it("staging writes nothing; review shows field-level changes; discard clears the payload", async () => {
+    const before = await db.account.count();
+    const s = await staging.stageContract(glean(), "paste", "Pasted from Glean");
+    expect(await db.account.count()).toBe(before);
+    const r = await staging.reviewStaged(s.id);
+    const accounts = r.preview.entities.find((e) => e.key === "accounts")!;
+    expect(accounts.changes[0]).toMatchObject({ label: "Example Holdings Inc.", action: "create" });
+    await staging.discardStaged(s.id);
+    const row = await db.stagedImport.findUniqueOrThrow({ where: { id: s.id } });
+    expect(row.status).toBe("discarded");
+    expect(row.payload).toEqual({});
+    await expect(staging.applyStaged(s.id)).rejects.toMatchObject({ status: 409 });
+  });
+
+  it("apply imports with provenance links; remove-by-source undoes it all (backup first)", async () => {
+    const s = await staging.stageContract(glean(), "api", "glean-action.json");
+    await staging.applyStaged(s.id);
+    expect(await db.account.count({ where: { name: "Example Holdings Inc." } })).toBe(1);
+    const opp = await db.opportunity.findFirstOrThrow({ where: { name: "Data center refresh" } });
+    const prov = await refs.provenanceFor("opportunity", opp.id);
+    expect(prov[0]).toMatchObject({
+      system: "glean",
+      sourceUrl: "https://crm.example/opportunity/O-77",
+    });
+    expect(
+      (await staging.sourcesOverview()).find((x) => x.system === "glean")?.imports,
+    ).toBeGreaterThan(0);
+
+    await expect(staging.removeSource("glean", "remove glean")).rejects.toMatchObject({
+      status: 400,
+    });
+    const r = await staging.removeSource("glean", "REMOVE glean");
+    expect(r.undone).toBe(1);
+    expect(r.backup).toMatch(/^pre-remove-/);
+    rmSync(path.join("backups", r.backup!), { force: true }); // test-only backup; backups/ is git-ignored
+    expect(await db.account.count({ where: { name: "Example Holdings Inc." } })).toBe(0);
+    expect(await db.externalRef.count({ where: { system: "glean" } })).toBe(0);
+  });
+
+  it("staging API needs the API on, staging allowed and a token; rejects oversized bodies", async () => {
+    const send = (token: string, body: string) =>
+      api.readStagingRequest(
+        new Request("http://localhost/api/v1/staged-imports", {
+          method: "POST",
+          headers: { authorization: `Bearer ${token}` },
+          body,
+        }),
+      );
+    await api.setLocalApiEnabled(true);
+    const { token } = await api.generateToken();
+    await expect(send(token, "{}")).rejects.toMatchObject({ status: 403 });
+    await api.setStagingAllowed(true);
+    await expect(send(token, JSON.stringify(glean()))).resolves.toMatchObject({
+      format: "acc-data",
+    });
+    await expect(send("acc_wrong", "{}")).rejects.toMatchObject({ status: 401 });
+    await expect(send(token, "x".repeat(api.STAGING_MAX_BYTES + 1))).rejects.toMatchObject({
+      status: 413,
+    });
+    await api.setStagingAllowed(false);
+    await api.setLocalApiEnabled(false);
   });
 });

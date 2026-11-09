@@ -59,24 +59,46 @@ export async function refMap(system: string, entityType: RefEntity) {
   return system === "acc" ? { get: (id: string) => m.get(id) ?? id } : m;
 }
 
+/**
+ * Records the sender's id (and, Phase 15, the link where it found the record). A record with a source link but no
+ * id still gets a row (`auto:<entityId>`) so its provenance is kept.
+ */
 export async function upsertRef(
   system: string,
   entityType: RefEntity,
   externalId: string | undefined,
   entityId: string,
+  sourceUrl?: string,
 ) {
-  if (!externalId || (system === "acc" && externalId === entityId)) return;
+  if (system === "acc" && externalId === entityId) return;
+  const id = externalId ?? (sourceUrl ? `auto:${entityId}` : undefined);
+  if (!id) return;
   await db.externalRef.upsert({
-    where: { system_entityType_externalId: { system, entityType, externalId } },
-    create: { system, entityType, externalId, entityId },
-    update: { entityId },
+    where: { system_entityType_externalId: { system, entityType, externalId: id } },
+    create: { system, entityType, externalId: id, entityId, sourceUrl: sourceUrl ?? null },
+    update: { entityId, ...(sourceUrl ? { sourceUrl } : {}) },
   });
+}
+
+/** Where each entity came from (latest import per system), for the "Imported from …" line. */
+export async function provenanceFor(entityType: RefEntity, entityId: string) {
+  const refs = await db.externalRef.findMany({
+    where: { entityType, entityId },
+    orderBy: { updatedAt: "desc" },
+  });
+  return refs.map((r) => ({
+    system: r.system,
+    sourceUrl: r.sourceUrl,
+    updatedAt: r.updatedAt.toISOString(),
+  }));
 }
 
 /** Ids of these entities in other systems, keyed by system (ACC exports hand them back to the sender). */
 export async function externalIdsFor(entityType: RefEntity, ids: string[]) {
   const refs = await db.externalRef.findMany({ where: { entityType, entityId: { in: ids } } });
   const m = new Map<string, Record<string, string>>();
-  for (const r of refs) m.set(r.entityId, { ...m.get(r.entityId), [r.system]: r.externalId });
+  for (const r of refs)
+    if (!r.externalId.startsWith("auto:"))
+      m.set(r.entityId, { ...m.get(r.entityId), [r.system]: r.externalId });
   return m;
 }

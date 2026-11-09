@@ -9,6 +9,7 @@ export const GET = handler(async (req: Request) => {
     api: "acc-local",
     contract: { format: "acc-data", version: CONTRACT_VERSION },
     readOnly: true,
+    staging: "POST /api/v1/staged-imports (review queue only; separate switch)",
     endpoints: [
       "/api/v1/accounts",
       "/api/v1/accounts/{id}",

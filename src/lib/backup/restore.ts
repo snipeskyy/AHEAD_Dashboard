@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { Prisma, type PrismaClient } from "@prisma/client";
+import { openBackup } from "./crypto";
 import { BACKUP_TABLES, delegateName } from "./tables";
 
 /** The parts of a backup file restore needs; older versions simply lack newer tables. */
@@ -17,7 +18,7 @@ export function parseBackup(raw: unknown): BackupFile {
   return b as BackupFile;
 }
 
-export const readBackup = async (file: string) => parseBackup(JSON.parse(await readFile(file, "utf8")));
+export const readBackup = async (file: string) => parseBackup(openBackup(await readFile(file, "utf8")));
 
 /** Json columns per model (null must be written as DbNull, not null). From Prisma's generated model metadata. */
 function jsonFields(model: string): Set<string> {

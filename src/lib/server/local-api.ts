@@ -37,6 +37,19 @@ export async function setLocalApiEnabled(enabled: boolean) {
   return localApiStatus();
 }
 
+/** Phase 15: allow (or stop) a tool holding the token from staging files for review. Off by default. */
+export async function setStagingAllowed(allow: boolean) {
+  const s = await getSetting("api.local");
+  await setSetting("api.local", { ...s, allowStaging: allow });
+  await audit(db, {
+    action: allow ? "api.staging-on" : "api.staging-off",
+    entityType: "setting",
+    entityId: "api.local",
+    summary: `Staging imports through the API turned ${allow ? "on" : "off"}`,
+  });
+  return localApiStatus();
+}
+
 /** Creates a new token (replacing any old one). The plain token is returned once and never stored. */
 export async function generateToken() {
   const token = `acc_${randomBytes(32).toString("base64url")}`;
@@ -127,4 +140,36 @@ export async function v1Account(req: Request, id: string) {
   if (!account) throw new HttpError(404, "Account not found");
   const { accounts: _a, ...related } = c.entities;
   return { format: c.format, version: c.version, visibility: c.visibility, account, ...related };
+}
+
+/** Largest body the staging endpoint accepts (a contract file for a few hundred accounts is well under this). */
+export const STAGING_MAX_BYTES = 5 * 1024 * 1024;
+const recent: number[] = [];
+
+/**
+ * Guards for POST /api/v1/staged-imports: API on, staging allowed, valid token, at most 60 files an hour,
+ * and a body no larger than STAGING_MAX_BYTES. Returns the parsed JSON body.
+ */
+export async function readStagingRequest(req: Request) {
+  await requireApiToken(req);
+  const s = await getSetting("api.local");
+  if (!s.allowStaging)
+    throw new HttpError(
+      403,
+      "Staging through the API is off. Turn it on in Settings → Data contract & API.",
+    );
+  const now = Date.now();
+  while (recent.length && now - recent[0] > 3_600_000) recent.shift();
+  if (recent.length >= 60) throw new HttpError(429, "Too many files this hour; try again later");
+  const declared = Number(req.headers.get("content-length") ?? 0);
+  if (declared > STAGING_MAX_BYTES) throw new HttpError(413, "File too large (max 5 MB)");
+  const text = await req.text();
+  if (Buffer.byteLength(text) > STAGING_MAX_BYTES)
+    throw new HttpError(413, "File too large (max 5 MB)");
+  recent.push(now);
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new HttpError(400, "Body must be an acc-data JSON file");
+  }
 }

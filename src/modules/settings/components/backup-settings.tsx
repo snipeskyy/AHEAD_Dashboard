@@ -16,7 +16,7 @@ import { SettingsSection } from "./section";
 interface B { file: string; kind: string; size: number; createdAt: string }
 interface Preview { file: string; version: number; exportedAt: string; counts: Record<string, number> }
 
-const KIND: Record<string, string> = { auto: "Automatic", manual: "Manual", "pre-restore": "Before restore", "pre-purge": "Before demo purge", "pre-reset": "Before reset", "pre-import": "Before import" };
+const KIND: Record<string, string> = { auto: "Automatic", manual: "Manual", "pre-restore": "Before restore", "pre-purge": "Before demo purge", "pre-reset": "Before reset", "pre-import": "Before import", "pre-remove": "Before removing a source" };
 const mb = (n: number) => (n > 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1e3))} KB`);
 const MAIN = ["accounts", "opportunities", "contacts", "signals", "tasks", "notes"];
 

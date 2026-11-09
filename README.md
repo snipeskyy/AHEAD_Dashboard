@@ -186,6 +186,22 @@ operations console is simulated.
   - the territory plan with plan health;
   - a weekly team digest you can copy or download as Markdown.
 
+## Bringing in Glean data (safely)
+
+Your Glean agent produces an **acc-data** file. Paste it into **Settings → Data contract & API**, review every new
+record and changed field, then apply it. Nothing changes until you do, and every import can be undone.
+
+- **Remove a source:** "Remove all data from glean" takes everything that came from Glean back out (a backup is
+  written first).
+- **Agent prompt and setup:** `docs/GLEAN.md`.
+- **Before importing customer data:**
+  - turn on FileVault;
+  - keep a copy of `ACC_BACKUP_KEY` from `.env.local` (backups are encrypted with it);
+  - check the Security checklist on that page.
+
+ACC listens only on `127.0.0.1`, refuses cross-site writes, and has a commit guard that keeps data and secrets out
+of git.
+
 ## Data contract & local API
 
 The **ACC Data Contract** (`acc-data` v1) is a neutral, versioned JSON format for your own account knowledge:
@@ -259,5 +275,6 @@ stored (never addresses or names); meetings are matched to accounts by domain an
 | 12. Data Center Sandbox (floor plan, 3D, capacity, what-ifs)    | ✅     |
 | 13. Data contract, file import/export, local read-only API      | ✅     |
 | 14. Win/loss trends, mutual action plans, team workspace        | ✅     |
+| 15. Glean-ready import, review queue, security hardening        | ✅     |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

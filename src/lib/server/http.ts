@@ -45,10 +45,37 @@ async function maybeCompress(req: unknown, res: Response): Promise<Response> {
   return new Response(gzipSync(buf, { level: 5 }), { status: res.status, headers });
 }
 
-/** Wraps a route handler with consistent error handling (and gzip for large JSON). */
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+/**
+ * Phase 15: every write must come from ACC's own pages (or a non-browser client such as the token-protected staging
+ * API, which sends no Origin). A browser request from another site is refused, so a malicious page can't change
+ * your data through your browser (CSRF).
+ */
+export function assertSameOriginWrite(req: unknown) {
+  if (!(req instanceof Request) || SAFE_METHODS.has(req.method)) return;
+  if (req.headers.get("sec-fetch-site") === "cross-site")
+    throw new HttpError(403, "Cross-origin request refused");
+  const origin = req.headers.get("origin");
+  if (!origin || origin === "null") {
+    if (origin === "null") throw new HttpError(403, "Cross-origin request refused");
+    return;
+  }
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  let originHost = "";
+  try {
+    originHost = new URL(origin).host;
+  } catch {
+    throw new HttpError(403, "Cross-origin request refused");
+  }
+  if (!host || originHost !== host) throw new HttpError(403, "Cross-origin request refused");
+}
+
+/** Wraps a route handler with consistent error handling, the same-origin write check, and gzip for large JSON. */
 export function handler<A extends unknown[]>(fn: (...args: A) => Promise<Response>) {
   return async (...args: A) => {
     try {
+      assertSameOriginWrite(args[0]);
       return await maybeCompress(args[0], await fn(...args));
     } catch (e) {
       return errorResponse(e);

@@ -47,3 +47,12 @@ then, inside the company's environment, not in this public repository.
 - The local API stays read-only, off by default and token-protected. Note that `next dev` / `next start` listen on
   all network interfaces by default, like the rest of the app, so keep the token private and revoke it when you
   are done. The hosted proposal in `docs/TEAM_DEPLOYMENT.md` is not deployed.
+
+## Update (Phase 15, approved Nov 2026): Glean
+
+- **Glean is the approved AI tool.** Each user runs ACC locally and brings in Glean output through the review queue
+  (`docs/GLEAN.md`).
+- **Internal data** may live in a user's local ACC: FileVault for the database, AES-256-GCM backups, and files only
+  the user can read. It never goes in the repository; the commit guard enforces this.
+- **The live path** (a Glean action calling `POST /api/v1/staged-imports`) is built but off. It also needs an
+  approved hosted deployment, because a laptop bound to 127.0.0.1 isn't reachable from Glean.

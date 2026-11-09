@@ -44,6 +44,7 @@
     "opportunities": [
       {
         "externalId": "O-77",
+        "sourceUrl": "https://crm.example/opportunity/O-77",
         "account": {
           "externalId": "A-1001"
         },

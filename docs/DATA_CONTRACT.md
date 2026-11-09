@@ -40,6 +40,8 @@ copies drift from the code.
 - **Account references** (`account`, `partnerReps[].accounts[]`) are `{ externalId? , domain?, name? }`, with at least
   one of them. ACC resolves them in this order: an account in the same file, then an `externalId` it has seen before
   from this system, then domain, then exact legal name. Unknown accounts are row errors, never auto-created.
+- **`sourceUrl`** (optional, any record) is the link where the sending system found the record, such as a CRM record or
+  a document. ACC keeps it as provenance (`ExternalRef.sourceUrl`).
 - **Dates** are ISO 8601 (`2026-11-30` or a full timestamp).
 - **Enums** (tier, stage, seniority, buying role, engagement, channel) match ACC's own values; see the schema.
 - **`visibility`**:
@@ -65,6 +67,14 @@ Settings → **Data contract & API** → _Import a contract file…_
 
 API equivalents: `POST /api/contract/preview` and `POST /api/contract/import` with `{ "file": <contract> }`. These are
 same-origin only.
+
+## Review queue and staging (Phase 15)
+
+- Pasted text, uploaded files and `POST /api/v1/staged-imports` (token; off by default; separate switch) all go to
+  **Waiting for review**.
+- The review shows each new record and each changed field (current → incoming). **Apply** imports it; **Discard**
+  clears it.
+- **Data by source → Remove all data from <system>** undoes every import from that system. A backup is written first.
 
 ## Export
 

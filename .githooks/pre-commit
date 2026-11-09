@@ -1,0 +1,3 @@
+#!/bin/sh
+# ACC pre-commit guard (see scripts/guard-commit.mjs).
+exec node scripts/guard-commit.mjs

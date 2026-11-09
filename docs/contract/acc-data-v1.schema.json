@@ -61,6 +61,12 @@
                 "minLength": 1,
                 "maxLength": 200
               },
+              "sourceUrl": {
+                "description": "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
+              },
               "externalRefs": {
                 "description": "This record's ids in other systems, keyed by system (ACC exports include ids it was imported with)",
                 "type": "object",
@@ -144,6 +150,12 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 200
+              },
+              "sourceUrl": {
+                "description": "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
               },
               "externalRefs": {
                 "description": "This record's ids in other systems, keyed by system (ACC exports include ids it was imported with)",
@@ -245,6 +257,12 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 200
+              },
+              "sourceUrl": {
+                "description": "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
               },
               "externalRefs": {
                 "description": "This record's ids in other systems, keyed by system (ACC exports include ids it was imported with)",
@@ -356,6 +374,12 @@
                 "minLength": 1,
                 "maxLength": 200
               },
+              "sourceUrl": {
+                "description": "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
+              },
               "externalRefs": {
                 "description": "This record's ids in other systems, keyed by system (ACC exports include ids it was imported with)",
                 "type": "object",
@@ -455,6 +479,12 @@
                 "minLength": 1,
                 "maxLength": 200
               },
+              "sourceUrl": {
+                "description": "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
+              },
               "externalRefs": {
                 "description": "This record's ids in other systems, keyed by system (ACC exports include ids it was imported with)",
                 "type": "object",
@@ -523,6 +553,12 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 200
+              },
+              "sourceUrl": {
+                "description": "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
               },
               "externalRefs": {
                 "description": "This record's ids in other systems, keyed by system (ACC exports include ids it was imported with)",
@@ -606,6 +642,12 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 200
+              },
+              "sourceUrl": {
+                "description": "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+                "type": "string",
+                "maxLength": 2000,
+                "format": "uri"
               },
               "externalRefs": {
                 "description": "This record's ids in other systems, keyed by system (ACC exports include ids it was imported with)",

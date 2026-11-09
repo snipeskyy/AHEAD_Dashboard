@@ -58,3 +58,8 @@ prisma/*.db-journal
 !/brand/README.md
 !/brand/brand.example.json
 /perf-report.json
+
+# Phase 15: local data never goes to git
+imports/
+*.acc-data.json
+!docs/contract/example.acc-data.json

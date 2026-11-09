@@ -20,6 +20,9 @@ import type { DeckTheme, Slide } from "@/lib/deck/types";
 import { logActivity } from "./activity";
 import { HttpError } from "./http";
 
+/** Exports can contain internal data: readable only by you (Phase 15). */
+const PRIVATE = { mode: 0o600 } as const;
+
 /** Generated files + document snapshots live here (git-ignored, local only). */
 export const EXPORT_DIR = path.join(process.cwd(), "exports");
 const safeId = (id: string) => {
@@ -64,16 +67,16 @@ export async function createExport(rawConfig: unknown, format: ExportFormat, ori
   const job = await db.exportJob.create({
     data: { title: config.title, config, format, status: "running", version: config.version },
   });
-  await mkdir(EXPORT_DIR, { recursive: true });
+  await mkdir(EXPORT_DIR, { recursive: true, mode: 0o700 });
   // Slides: PPTX always; PDF when the deck style is chosen. Planned once, from the redacted document.
   const asDeck = format === "pptx" || (format === "pdf" && config.style === "deck");
   const snap: ExportSnapshot = asDeck ? { ...doc, deck: { slides: withSlideCharts(planSlides(doc, config.deck)), theme: await resolveDeckTheme(config.theme) } } : doc;
-  await writeFile(snapshotPath(job.id), JSON.stringify(snap));
+  await writeFile(snapshotPath(job.id), JSON.stringify(snap), PRIVATE);
   try {
     const out = outputPath(job.id, format);
-    if (format === "markdown") await writeFile(out, documentToMarkdown(doc));
-    else if (format === "pptx") await writeFile(out, await slidesToPptx(doc, snap.deck!.slides, snap.deck!.theme));
-    else if (snap.deck) await writeFile(out, await renderPdf(`${origin}/print/deck/${job.id}`, null));
+    if (format === "markdown") await writeFile(out, documentToMarkdown(doc), PRIVATE);
+    else if (format === "pptx") await writeFile(out, await slidesToPptx(doc, snap.deck!.slides, snap.deck!.theme), PRIVATE);
+    else if (snap.deck) await writeFile(out, await renderPdf(`${origin}/print/deck/${job.id}`, null), PRIVATE);
     else {
       const left = [doc.title, doc.watermark].filter(Boolean).join(" · ");
       const right = [
@@ -82,7 +85,7 @@ export async function createExport(rawConfig: unknown, format: ExportFormat, ori
       ]
         .filter(Boolean)
         .join(" · ");
-      await writeFile(out, await renderPdf(`${origin}/print/export/${job.id}`, { left, right }));
+      await writeFile(out, await renderPdf(`${origin}/print/export/${job.id}`, { left, right }), PRIVATE);
     }
     const done = await db.exportJob.update({
       where: { id: job.id },

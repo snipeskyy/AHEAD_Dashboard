@@ -6,6 +6,7 @@ import {
   localApiStatus,
   revokeToken,
   setLocalApiEnabled,
+  setStagingAllowed,
 } from "@/lib/server/local-api";
 
 const Body = z.discriminatedUnion("action", [
@@ -13,6 +14,8 @@ const Body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("disable") }),
   z.object({ action: z.literal("generate-token") }),
   z.object({ action: z.literal("revoke-token") }),
+  z.object({ action: z.literal("allow-staging") }),
+  z.object({ action: z.literal("block-staging") }),
 ]);
 
 /** Status of the local read-only API (never the token or its hash). */
@@ -25,5 +28,7 @@ export const POST = handler(async (req: Request) => {
   if (b.action === "enable") return json({ status: await setLocalApiEnabled(true) });
   if (b.action === "disable") return json({ status: await setLocalApiEnabled(false) });
   if (b.action === "revoke-token") return json({ status: await revokeToken() });
+  if (b.action === "allow-staging") return json({ status: await setStagingAllowed(true) });
+  if (b.action === "block-staging") return json({ status: await setStagingAllowed(false) });
   return json(await generateToken());
 });

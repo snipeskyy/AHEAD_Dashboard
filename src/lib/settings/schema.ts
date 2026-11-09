@@ -64,12 +64,15 @@ export const SETTINGS = {
       tokenHash: z.string().nullable(),
       tokenHint: z.string().nullable(),
       createdAt: z.string().nullable(),
+      /** Phase 15: let a tool holding the token stage contract files for review (POST /api/v1/staged-imports). */
+      allowStaging: z.boolean().default(false),
     }),
     defaults: {
       enabled: false,
       tokenHash: null as string | null,
       tokenHint: null as string | null,
       createdAt: null as string | null,
+      allowStaging: false,
     },
   },
   /** Phase 6 enrichment: per-enricher on/off (missing = the enricher's default). */

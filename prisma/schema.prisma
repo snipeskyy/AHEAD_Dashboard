@@ -515,6 +515,8 @@ model ImportBatch {
   undoneAt  DateTime?
   /// Phase 13: batches from one data-contract import share a groupId and undo together.
   groupId   String?
+  /// Phase 15: sending system of a data-contract import (e.g. "glean"); "Remove data from a source" undoes these.
+  source    String?
   records   ImportRecord[]
 
   @@index([createdAt])
@@ -901,7 +903,10 @@ model ExternalRef {
   entityType String // account | contact | opportunity | activity | note | task | partnerRep
   externalId String
   entityId   String
+  /// Where the sending system found the record (e.g. a Glean result or CRM link). Phase 15.
+  sourceUrl  String?
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
 
   @@unique([system, entityType, externalId])
   @@index([entityType, entityId])
@@ -924,4 +929,28 @@ model MutualActionPlan {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+}
+
+/// Phase 15: a data-contract file waiting for a person to review it (from paste, upload or the staging API).
+/// Nothing in `payload` touches the workspace until it is applied; discarded payloads are cleared.
+model StagedImport {
+  id        String    @id @default(cuid())
+  ownerId   String    @default("local")
+  teamId    String    @default("local-team")
+  createdBy String    @default("local")
+  updatedBy String    @default("local")
+  /// paste | file | api
+  origin    String
+  source    String
+  fileName  String?
+  payload   Json
+  /// { accounts, contacts, ... } row counts for the list view
+  summary   Json
+  /// pending | applied | discarded
+  status    String    @default("pending")
+  groupId   String?
+  createdAt DateTime  @default(now())
+  decidedAt DateTime?
+
+  @@index([status, createdAt])
 }

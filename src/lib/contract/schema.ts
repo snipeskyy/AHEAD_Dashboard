@@ -38,6 +38,13 @@ const keys = {
     .optional()
     .describe("The record's id in the sending system; keeps identity across re-imports"),
   accId: id.optional().describe("ACC's own id (present on ACC exports; ignored on import)"),
+  sourceUrl: z
+    .url({ protocol: /^https?$/ })
+    .max(2000)
+    .optional()
+    .describe(
+      "Where the sending system found this record (a Glean result, a CRM record link). Kept as provenance.",
+    ),
   externalRefs: z
     .record(z.string().max(80), id)
     .optional()
