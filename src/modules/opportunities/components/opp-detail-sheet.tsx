@@ -1,6 +1,6 @@
 "use client";
 import { format } from "date-fns";
-import { AlertTriangle, ExternalLink } from "lucide-react";
+import { AlertTriangle, Calculator, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { NotesList } from "@/components/notes-list";
 import { CardSkeleton, ErrorState } from "@/components/states";
@@ -238,6 +238,9 @@ function OppDetail({ id }: { id: string }) {
         </section>
 
         <section>
+          <Link href={`/cases?account=${o.accountId}&opportunity=${o.id}`} className="text-primary mb-3 inline-flex items-center gap-1 text-[13px] hover:underline">
+            <Calculator className="size-3.5" aria-hidden /> Build a TCO / business case for this deal
+          </Link>
           <h3 className="mb-2 text-sm font-semibold">Notes</h3>
           <NotesList entityType="opportunity" entityId={o.id} compact />
         </section>

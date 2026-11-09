@@ -47,6 +47,8 @@ export const BACKUP_TABLES = [
   ["enrichmentJobs", "EnrichmentJob"],
   ["financialFacts", "FinancialFact"],
   ["corporateRelations", "CorporateRelation"],
+  ["businessCases", "BusinessCase"],
+  ["businessCaseVersions", "BusinessCaseVersion"],
   ["auditLog", "AuditLog"],
 ] as const;
 

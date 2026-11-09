@@ -392,6 +392,24 @@ migrations, because Prisma would otherwise report drift.
   `exports.next-steps` (plan actions customer-safe; deal steps and tasks internal), `partners.co-sell` (internal).
   Built-in templates install by name, so new ones reach existing workspaces without touching saved ones.
 
+## Phase 11 conventions (TCO / business cases)
+
+- **Assumptions only.** Every cost is user-entered; templates (`src/lib/tco/templates.ts`) are structures with $0
+  amounts (a unit test enforces it). The only pre-filled physical value is a typical PUE, labeled "replace with
+  measured". Never add vendor or company pricing, rate cards or margins.
+- **Model** (`src/lib/tco/model.ts`, Zod): years, discount rate, demand growth, baseline, ≤ 4 scenarios of cost lines.
+  A line is `one-time` (amount in a year, 0 = upfront), `annual`, `power` (kW × utilization × 8,760 h × PUE × $/kWh) or
+  `staff` (FTE × loaded cost), with % escalation and optional demand growth. `lineFormula()` explains each line in
+  words; show it wherever a number appears.
+- **Math is pure and tested** (`compute.ts`): cash flows per year, NPV, savings vs baseline, payback (fractional, 0 =
+  immediate, null = not within period), IRR (bisection, only when the savings stream has an investment), and
+  `sensitivity()` (±20% per line, energy price, PUE, ±5 pts growth, ±2 pts discount) returning swings vs `base`.
+- **Charts** use `CHART_GROUPS` (8 fixed groups → fixed series colors); the tornado is diverging around the base case.
+- **Storage**: `BusinessCase` (draft | final, linked to account and optionally an opportunity) and immutable
+  `BusinessCaseVersion` snapshots. The editor autosaves valid edits (600 ms) and flushes before saving a version.
+- **Export**: section `business-cases.tco` (latest final case, else latest) with headline, cumulative chart +
+  takeaway, annual table, tornado, every assumption and an "estimate" callout; template "TCO business case deck".
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -431,7 +449,7 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 8: team-ready foundations (ownership, auth abstraction, packs, audit log)
 - [x] Phase 9: polish and hardening
 - [x] Phase 10: deliverables engine (layouts, branded theme, templates, native charts, deck preview)
-- [ ] Phase 11: TCO / business-case builder
+- [x] Phase 11: TCO / business-case builder
 - [ ] Phase 12: Data Center Sandbox (full)
 - [ ] Phase 13: data contract for the internal-tool port
 - [ ] Phase 14: team value and polish

@@ -2,6 +2,7 @@
 import "server-only";
 import type { SectionBuilders } from "@/lib/export/builder-types";
 import { builders as m_account_intel } from "./account-intel/export.server";
+import { builders as m_business_cases } from "./business-cases/export.server";
 import { builders as m_command_home } from "./command-home/export.server";
 import { builders as m_demand_gen } from "./demand-gen/export.server";
 import { builders as m_exports } from "./exports/export.server";
@@ -10,4 +11,4 @@ import { builders as m_partners } from "./partners/export.server";
 import { builders as m_sandbox } from "./sandbox/export.server";
 import { builders as m_signals } from "./signals/export.server";
 
-export const discoveredBuilders: SectionBuilders = { ...m_account_intel, ...m_command_home, ...m_demand_gen, ...m_exports, ...m_opportunities, ...m_partners, ...m_sandbox, ...m_signals };
+export const discoveredBuilders: SectionBuilders = { ...m_account_intel, ...m_business_cases, ...m_command_home, ...m_demand_gen, ...m_exports, ...m_opportunities, ...m_partners, ...m_sandbox, ...m_signals };

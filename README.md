@@ -184,6 +184,12 @@ co-sell brief, Portfolio readout, …) → **Slide deck** style. You get live sl
 speaker notes), a full-screen **Present** mode (←/→, N for notes, Esc), and PowerPoint with editable charts and
 notes, or a 16:9 PDF. With a brand pack in `brand/`, decks use your logo and colors; otherwise a neutral theme.
 
+**TCO & business cases:** sidebar → TCO & business cases (or "Business case" on an account / "Build a TCO" on a
+deal). Start from a structure (refresh vs cloud, own DC vs colocation, on-prem vs cloud GPU, blank), enter your
+assumptions (amounts, kW, PUE, $/kWh, FTEs, escalation, growth), and see TCO, savings, NPV, payback, IRR and a
+sensitivity tornado update live. Save versions to compare, mark one Final, and export it with the
+"TCO business case deck" template. Nothing is pre-priced: every figure is yours and labeled as an estimate.
+
 **Backups:** the background worker saves a full JSON backup to `backups/` once a day and keeps the last 14
 (Settings → Data → Backups & restore). From there you can back up now, download a backup, or restore one (type
 RESTORE to confirm; your current data is saved first). Copy `backups/` somewhere safe from time to time.

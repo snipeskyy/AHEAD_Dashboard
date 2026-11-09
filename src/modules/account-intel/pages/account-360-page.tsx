@@ -1,15 +1,5 @@
 "use client";
-import {
-  ClipboardList,
-  FileOutput,
-  ArrowLeft,
-  ExternalLink,
-  FlaskConical,
-  Globe,
-  KanbanSquare,
-  NotebookPen,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft, Calculator, ClipboardList, ExternalLink, FileOutput, FlaskConical, Globe, KanbanSquare, NotebookPen, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -145,6 +135,11 @@ export default function Account360Page({ params }: { params: Record<string, stri
             <Button variant="outline" size="sm" asChild>
               <Link href={`/accounts/${a.id}/brief`}>
                 <ClipboardList /> Prep brief
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/cases?account=${a.id}`}>
+                <Calculator /> Business case
               </Link>
             </Button>
             <EnrichActions accountId={a.id} accountName={a.name} isDemo={a.isDemo} />

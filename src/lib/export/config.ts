@@ -130,6 +130,12 @@ export const DEFAULT_TEMPLATES: Array<{ name: string; config: TemplateConfig }> 
     "account-intel.whitespace",
     "exports.next-steps",
   ]),
+  tpl(
+    "TCO business case deck (customer-facing)",
+    "account",
+    ["exports.cover", "exports.exec-summary", "business-cases.tco", "exports.next-steps"],
+    { audience: "customer", watermark: "", style: "deck" },
+  ),
   tpl("Meeting prep brief", "account", ["account-intel.brief"], { watermark: "" }),
   tpl(
     "Partner co-sell brief (internal)",

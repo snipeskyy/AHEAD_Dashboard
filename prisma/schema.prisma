@@ -67,6 +67,7 @@ model Account {
   enrichJobs     EnrichmentJob[]
   financials     FinancialFact[]
   relations      CorporateRelation[]
+  businessCases  BusinessCase[]
 
   @@index([tier])
   @@index([name])
@@ -832,4 +833,42 @@ model AuditLog {
 
   @@index([createdAt])
   @@index([action])
+}
+
+// ── Phase 11: TCO / business cases (user-entered assumptions only) ──
+
+model BusinessCase {
+  id            String                @id @default(cuid())
+  ownerId       String                @default("local")
+  teamId        String                @default("local-team")
+  createdBy     String                @default("local")
+  updatedBy     String                @default("local")
+  name          String
+  accountId     String?
+  opportunityId String?
+  /// The working model (src/lib/tco/model.ts, validated with TcoModelSchema).
+  model         Json
+  /// draft | final ("final" is what exports pick by default)
+  status        String                @default("draft")
+  version       Int                   @default(1)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  account       Account?              @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  versions      BusinessCaseVersion[]
+
+  @@index([accountId])
+  @@index([opportunityId])
+}
+
+/// A saved snapshot of a business case, for side-by-side comparison.
+model BusinessCaseVersion {
+  id        String       @id @default(cuid())
+  caseId    String
+  version   Int
+  label     String?
+  model     Json
+  createdAt DateTime     @default(now())
+  case      BusinessCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, version])
 }

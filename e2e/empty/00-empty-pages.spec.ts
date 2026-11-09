@@ -49,6 +49,7 @@ const PAGES: Array<[string, string, RegExp | string]> = [
   ["audit-log", "/share?tab=audit", /Nothing recorded yet|Audit entries/],
   ["settings-profile", "/settings?tab=profile", "Your profile"],
   ["settings-data", "/settings?tab=data", "Backups & restore"],
+  ["business-cases", "/cases", "No business cases yet"],
 ];
 
 for (const [name, url, text] of PAGES) {

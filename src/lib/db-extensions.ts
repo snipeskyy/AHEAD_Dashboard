@@ -5,7 +5,7 @@ import { currentActor, LOCAL_USER_ID } from "./auth/actor";
 export const OWNED_MODELS = new Set([
   "Account", "Contact", "Initiative", "TechStackHypothesis", "Signal", "Opportunity", "Play", "Campaign", "Touch",
   "Event", "AccountPlanItem", "Note", "SavedView", "DashboardLayout", "ExportJob", "ImportBatch", "PartnerRep",
-  "Task", "Meeting", "SmartList", "PartnerRegistration", "Comment",
+  "Task", "Meeting", "SmartList", "PartnerRegistration", "Comment", "BusinessCase",
 ]);
 /** Deletes of these are written to the audit log. */
 export const AUDITED_DELETES = new Set([...OWNED_MODELS].filter((m) => !["Signal", "SavedView", "DashboardLayout"].includes(m)));

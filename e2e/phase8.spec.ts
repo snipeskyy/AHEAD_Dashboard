@@ -95,13 +95,11 @@ test.describe("Phase 8: team foundations", () => {
     });
 
     await page.goto("/share?tab=import");
-    await page
-      .getByLabel("Pack file (.json)")
-      .setInputFiles({
-        name: "pack.json",
-        mimeType: "application/json",
-        buffer: Buffer.from(JSON.stringify(pack)),
-      });
+    await page.getByLabel("Pack file (.json)").setInputFiles({
+      name: "pack.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(pack)),
+    });
     const preview = page.getByRole("region", { name: "Pack preview" });
     await expect(preview.getByText(/Matches/)).toBeVisible();
     await expect(preview.getByLabel("Action for Packwell Example Corp")).toHaveValue("merge");
@@ -128,13 +126,11 @@ test.describe("Phase 8: team foundations", () => {
     const file = await (await dl).path();
     const pack = readFileSync(file!, "utf8");
     expect(JSON.parse(pack).format).toBe("acc-plays");
-    await page
-      .getByLabel("Play library file (.json)")
-      .setInputFiles({
-        name: "plays.json",
-        mimeType: "application/json",
-        buffer: Buffer.from(pack),
-      });
+    await page.getByLabel("Play library file (.json)").setInputFiles({
+      name: "plays.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(pack),
+    });
     await expect(
       page.getByRole("status").filter({ hasText: /0 new, 0 different from yours/ }),
     ).toBeVisible();
