@@ -164,11 +164,26 @@ ACC elsewhere, install a browser once with `npx playwright install chromium`.
 amounts, probabilities, relevance scores, internal widgets and the forecast. It also enlarges charts and type for
 screen-sharing. A banner stays visible with a one-click **Exit**.
 
-## DC Sandbox (add-on, coming next)
+## DC Sandbox
 
-`/sandbox` previews the data center scenario sandbox: the data model (`SandboxScenario`), a generic
-`ComponentLibrary` ("illustrative, not vendor-certified"), and a pluggable `SimulationEngine` interface in
-`src/modules/sandbox/lib/types.ts`. It also shows a static rack elevation.
+`/sandbox` lays out a data hall on a tile grid, sizes power, cooling and floor load, tests growth and failures, walks
+it in 3D and tours it with a customer. The component library is generic ("Illustrative, not vendor-certified") and the
+operations console is simulated.
+
+## Data contract & local API
+
+The **ACC Data Contract** (`acc-data` v1) is a neutral, versioned JSON format for your own account knowledge:
+accounts, contacts, opportunities, activities, notes, tasks and partner reps. It has no personal contact details and no
+pricing.
+
+- **Import.** Settings → Data contract & API imports a contract file. You get a preview first, it dedupes like CSV
+  imports, and the whole file can be undone from Import → History.
+- **Export.** Download internal or customer-safe files there too.
+- **Local API.** An optional, token-protected, read-only API (`/api/v1/*`) lets another tool on your computer read the
+  workspace. It is off by default.
+
+See `docs/DATA_CONTRACT.md` (schema, OpenAPI, examples) and `docs/INTERNAL_PORT.md` (the boundary for a future internal
+port: no internal data and no live connector without approval).
 
 ## Keyboard
 
@@ -223,5 +238,9 @@ stored (never addresses or names); meetings are matched to accounts by domain an
 | 7. My Day, prep briefs, triage, tasks, cadence, partners, lists | ✅     |
 | 8. Team foundations: ownership, roles, comments, packs, audit   | ✅     |
 | 9. Polish: performance, accessibility, daily backups + restore  | ✅     |
+| 10. Deliverables engine: branded decks, exec summaries          | ✅     |
+| 11. TCO / business-case builder (your assumptions only)         | ✅     |
+| 12. Data Center Sandbox (floor plan, 3D, capacity, what-ifs)    | ✅     |
+| 13. Data contract, file import/export, local read-only API      | ✅     |
 
 See `CLAUDE.md` for conventions and the rules every contribution must follow.

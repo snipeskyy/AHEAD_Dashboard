@@ -7,7 +7,7 @@ export const IMPORT_KINDS = [
 ] as const;
 export type ImportKind = (typeof IMPORT_KINDS)[number];
 
-export const INPUT_TYPES = ["csv", "xlsx", "paste"] as const;
+export const INPUT_TYPES = ["csv", "xlsx", "paste", "contract"] as const;
 export type InputType = (typeof INPUT_TYPES)[number];
 
 export interface ImportField {

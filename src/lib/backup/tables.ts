@@ -49,6 +49,7 @@ export const BACKUP_TABLES = [
   ["corporateRelations", "CorporateRelation"],
   ["businessCases", "BusinessCase"],
   ["businessCaseVersions", "BusinessCaseVersion"],
+  ["externalRefs", "ExternalRef"],
   ["auditLog", "AuditLog"],
 ] as const;
 

@@ -510,6 +510,8 @@ model ImportBatch {
   counts    Json // { created, merged, skipped, errors }
   createdAt DateTime       @default(now())
   undoneAt  DateTime?
+  /// Phase 13: batches from one data-contract import share a groupId and undo together.
+  groupId   String?
   records   ImportRecord[]
 
   @@index([createdAt])
@@ -882,4 +884,20 @@ model BusinessCaseVersion {
   case      BusinessCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
   @@unique([caseId, version])
+}
+
+// ── Phase 13: data contract ──
+
+/// Maps a sending system's record id (contract `externalId`) to the ACC record, so re-imports update in place
+/// and exports can echo the sender's ids. Scoped by `system` (the contract's source.system).
+model ExternalRef {
+  id         String   @id @default(cuid())
+  system     String
+  entityType String // account | contact | opportunity | activity | note | task | partnerRep
+  externalId String
+  entityId   String
+  createdAt  DateTime @default(now())
+
+  @@unique([system, entityType, externalId])
+  @@index([entityType, entityId])
 }

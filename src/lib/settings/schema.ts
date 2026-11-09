@@ -57,6 +57,21 @@ export const SETTINGS = {
   /** Phase 9: automatic daily JSON backup to backups/ (worker), keeping the newest N. */
   "backup.autoDaily": { schema: z.boolean(), defaults: true },
   "backup.keep": { schema: z.number().int().min(3).max(90), defaults: 14 },
+  /** Local read-only API (Phase 13). Off by default; only a SHA-256 hash of the token is stored. Not exposed by /api/settings. */
+  "api.local": {
+    schema: z.object({
+      enabled: z.boolean(),
+      tokenHash: z.string().nullable(),
+      tokenHint: z.string().nullable(),
+      createdAt: z.string().nullable(),
+    }),
+    defaults: {
+      enabled: false,
+      tokenHash: null as string | null,
+      tokenHint: null as string | null,
+      createdAt: null as string | null,
+    },
+  },
   /** Phase 6 enrichment: per-enricher on/off (missing = the enricher's default). */
   "enrichment.enabled": {
     schema: z.record(z.string(), z.boolean()),

@@ -49,6 +49,7 @@ const PAGES: Array<[string, string, RegExp | string]> = [
   ["audit-log", "/share?tab=audit", /Nothing recorded yet|Audit entries/],
   ["settings-profile", "/settings?tab=profile", "Your profile"],
   ["settings-data", "/settings?tab=data", "Backups & restore"],
+  ["settings-contract", "/settings?tab=contract", "Local read-only API"],
   ["business-cases", "/cases", "No business cases yet"],
   ["sandbox", "/sandbox", "No scenarios yet"],
 ];

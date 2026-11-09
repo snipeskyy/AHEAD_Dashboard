@@ -18,6 +18,7 @@ interface Impact {
   created: number;
   merged: number;
   dependent: { opportunities: number; contacts: number; signals: number };
+  batch?: { groupId: string | null };
 }
 
 /** Confirms an undo and spells out what it removes, including data added since the import. */
@@ -55,7 +56,7 @@ export function UndoImportDialog({
           <DialogTitle>Undo this import?</DialogTitle>
           <DialogDescription>
             {impact.data
-              ? `Deletes ${impact.data.created} record${impact.data.created === 1 ? "" : "s"} this import created${impact.data.merged ? ` and restores ${impact.data.merged} merged record${impact.data.merged === 1 ? "" : "s"} to their previous values` : ""}.`
+              ? `Deletes ${impact.data.created} record${impact.data.created === 1 ? "" : "s"} this import created${impact.data.merged ? ` and restores ${impact.data.merged} merged record${impact.data.merged === 1 ? "" : "s"} to their previous values` : ""}.${impact.data.batch?.groupId ? " This undoes every part of the data contract file at once." : ""}`
               : "Checking what this import changed…"}
           </DialogDescription>
         </DialogHeader>

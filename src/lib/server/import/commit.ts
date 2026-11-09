@@ -21,6 +21,10 @@ export interface CommitInput {
   decisions: Record<number, Decision>;
   fileName?: string | null;
   inputType: InputType;
+  /** Data-contract imports (Phase 13) share one group so the whole file undoes together. */
+  groupId?: string | null;
+  /** Skip the per-batch activity/audit entries (the contract import writes one for the file). */
+  quiet?: boolean;
 }
 
 type Rec = { entityType: string; entityId: string; action: "created" | "merged"; before?: unknown };
@@ -34,6 +38,8 @@ export async function commitImport(input: CommitInput) {
   const records: Rec[] = [];
   const touched = new Set<string>();
   const counts = { created: 0, merged: 0, skipped: 0, errors: 0 };
+  /** Row index → the entity it created or merged into (contract imports map external ids). */
+  const rowEntities: Record<number, string> = {};
 
   for (const item of plan) {
     const decision =
@@ -51,12 +57,16 @@ export async function commitImport(input: CommitInput) {
         records.push(rec);
         counts.merged++;
       } else counts.skipped++;
+      rowEntities[item.row.index] = item.row.match.id;
     } else {
-      records.push(await createOne(input.kind, item));
+      const rec = await createOne(input.kind, item);
+      records.push(rec);
+      rowEntities[item.row.index] = rec.entityId;
       counts.created++;
     }
     if (item.row.accountId) touched.add(item.row.accountId);
-    if (input.kind === "accounts") touched.add(records.at(-1)!.entityId);
+    if (input.kind === "accounts" && rowEntities[item.row.index])
+      touched.add(rowEntities[item.row.index]);
   }
 
   const batch = await db.importBatch.create({
@@ -64,6 +74,7 @@ export async function commitImport(input: CommitInput) {
       kind: input.kind,
       fileName: input.fileName ?? null,
       inputType: input.inputType,
+      groupId: input.groupId ?? null,
       counts,
       records: {
         create: records.map((r) => ({
@@ -75,7 +86,7 @@ export async function commitImport(input: CommitInput) {
   });
   if (touched.size)
     await computeScoresForAccounts(db, { now: new Date(), accountIds: [...touched] });
-  if (counts.created || counts.merged)
+  if ((counts.created || counts.merged) && !input.quiet)
     await logActivity({
       entityType: "import",
       entityId: batch.id,
@@ -83,18 +94,19 @@ export async function commitImport(input: CommitInput) {
       summary: `Imported ${input.kind}: ${counts.created} created, ${counts.merged} merged${input.fileName ? ` from ${input.fileName}` : ""}`,
       diff: counts,
     });
-  await audit(db, {
-    action: "import.commit",
-    entityType: "import",
-    entityId: batch.id,
-    summary: `Imported ${input.kind}${input.fileName ? ` from ${input.fileName}` : ""}: ${counts.created} created, ${counts.merged} merged, ${counts.skipped} skipped`,
-    meta: counts,
-  });
+  if (!input.quiet)
+    await audit(db, {
+      action: "import.commit",
+      entityType: "import",
+      entityId: batch.id,
+      summary: `Imported ${input.kind}${input.fileName ? ` from ${input.fileName}` : ""}: ${counts.created} created, ${counts.merged} merged, ${counts.skipped} skipped`,
+      meta: counts,
+    });
   const createdAccounts =
     input.kind === "accounts"
       ? records.filter((r) => r.action === "created").map((r) => r.entityId)
       : [];
-  return { batchId: batch.id, counts, createdAccounts };
+  return { batchId: batch.id, counts, createdAccounts, rowEntities };
 }
 
 async function createOne(kind: ImportKind, item: PlanItem): Promise<Rec> {

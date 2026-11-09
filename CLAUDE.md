@@ -438,6 +438,40 @@ migrations, because Prisma would otherwise report drift.
   on-prem power lines; prices stay for the user.
 - Templates (`lib/templates.ts`) must not overlap (unit-tested).
 
+## Phase 13 conventions (data contract & local API)
+
+- **Contract** (`src/lib/contract/schema.ts`, Zod, `format: "acc-data"`, `version: "1.x"`).
+  - Entities: accounts, contacts, opportunities, activities (Touch), notes, tasks and partnerReps.
+  - Every record has `externalId` / `accId` / `externalRefs`.
+  - Account refs are `{ externalId | domain | name }`.
+  - No email, phone, address, pricing or margin fields (a unit test checks property names).
+  - Fields described "internal" are listed in `INTERNAL_FIELDS`.
+  - `npm run contract:schema` regenerates `docs/contract/{acc-data-v1.schema.json,example.acc-data.json,openapi.json}`.
+    A drift test fails if they're stale. **Change the schema → regenerate.**
+- **Import** reuses the CSV pipeline.
+  - `src/lib/contract/convert.ts` (pure) turns entities into `MappedRow`s.
+  - `commitContract()` (`src/lib/server/contract/import.ts`) runs `commitImport({ groupId, quiet, inputType:
+"contract" })` per kind. It then plans and applies activities and tasks itself (`activities.ts`, batch kind
+    `"contract"`, records `touch` / `task`).
+  - `ExternalRef` (system + entityType + externalId → entityId) keeps identity across re-imports. ACC's own files
+    (`system "acc"`) use ACC ids directly.
+  - Opportunities without `amount` keep the matched deal's amount.
+  - `nextStepDate` is set through `updateOpportunity()`.
+- **Undo.** `undoImport()` undoes every batch that shares a `groupId` (newest first) and deletes the `ExternalRef`s of
+  rows it deleted.
+- **Export** (`exportContract()`):
+  - non-demo accounts only;
+  - validated against the schema before redaction;
+  - `redactContract()` applies `visibility` and the role's hidden keys (`opp.amount`, `opp.forecast`, `notes`).
+  - A file labeled customer-safe that carries internal fields is refused on import.
+- **Local API** (`src/lib/server/local-api.ts`, `/api/v1/*`):
+  - GET only; setting `api.local` (off by default; token SHA-256 hash only). The generic `/api/settings/api.local`
+    route returns 404.
+  - Managed via `/api/local-api` (same-origin check); token on/off and generation are audited.
+  - `requireApiToken()`: 403 when off, 401 on a missing or bad token. Add a v1 route by calling `v1List()` / `v1Account()`.
+- **Boundary**: `docs/INTERNAL_PORT.md`. `private-future` keeps throwing; no connector to any company system; writes stay
+  file-based with preview + undo.
+
 ## Decisions log
 
 - **Worker process (approved divergence).** Scheduling runs in a separate worker process, not inside Next. It talks
@@ -479,5 +513,5 @@ migrations, because Prisma would otherwise report drift.
 - [x] Phase 10: deliverables engine (layouts, branded theme, templates, native charts, deck preview)
 - [x] Phase 11: TCO / business-case builder
 - [x] Phase 12: Data Center Sandbox (full)
-- [ ] Phase 13: data contract for the internal-tool port
+- [x] Phase 13: data contract for the internal-tool port
 - [ ] Phase 14: team value and polish

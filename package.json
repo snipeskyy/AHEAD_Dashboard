@@ -32,7 +32,8 @@
     "test:db:seed": "npm run test:db:prepare && node scripts/with-test-db.mjs tsx tests/fixtures/seed/run.ts",
     "test:db:seed:perf": "npm run test:db:prepare && ACC_SEED_PROFILE=perf node scripts/with-test-db.mjs tsx tests/fixtures/seed/run.ts",
     "perf": "node scripts/perf.mjs",
-    "dev:test": "node scripts/with-test-db.mjs next dev --port 3100"
+    "dev:test": "node scripts/with-test-db.mjs next dev --port 3100",
+    "contract:schema": "tsx scripts/gen-contract.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

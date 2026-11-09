@@ -5,7 +5,14 @@ import { audit } from "@/lib/db-extensions";
 import { logActivity } from "../activity";
 import { HttpError } from "../http";
 
-const DATE_FIELDS = new Set(["closeDate", "stageChangedAt", "closedAt"]);
+const DATE_FIELDS = new Set([
+  "closeDate",
+  "stageChangedAt",
+  "closedAt",
+  "scheduledAt",
+  "completedAt",
+  "dueDate",
+]);
 
 /** JSON snapshot → Prisma update data (ISO strings back to Dates). */
 const revive = (before: Record<string, unknown>) =>
@@ -23,10 +30,19 @@ export async function undoImpact(batchId: string) {
     include: { records: true },
   });
   if (!batch) throw new HttpError(404, "Import not found");
-  const createdAccounts = batch.records
+  // A data-contract file is undone as a group: report every batch in it.
+  const records = batch.groupId
+    ? (
+        await db.importBatch.findMany({
+          where: { groupId: batch.groupId, status: "applied" },
+          include: { records: true },
+        })
+      ).flatMap((b) => b.records)
+    : batch.records;
+  const createdAccounts = records
     .filter((r) => r.entityType === "account" && r.action === "created")
     .map((r) => r.entityId);
-  const ownIds = new Set(batch.records.map((r) => r.entityId));
+  const ownIds = new Set(records.map((r) => r.entityId));
   const [opps, contacts, signals] = createdAccounts.length
     ? await Promise.all([
         db.opportunity.findMany({
@@ -42,8 +58,8 @@ export async function undoImpact(batchId: string) {
     : [[], [], 0];
   return {
     batch,
-    created: batch.records.filter((r) => r.action === "created").length,
-    merged: batch.records.filter((r) => r.action === "merged").length,
+    created: records.filter((r) => r.action === "created").length,
+    merged: records.filter((r) => r.action === "merged").length,
     dependent: {
       opportunities: opps.filter((o) => !ownIds.has(o.id)).length,
       contacts: contacts.filter((c) => !ownIds.has(c.id)).length,
@@ -52,8 +68,25 @@ export async function undoImpact(batchId: string) {
   };
 }
 
-/** Rolls back one import: deletes what it created and restores what it merged (newest first). */
+/**
+ * Rolls back one import. A data-contract file (Phase 13) is several batches sharing a groupId: undoing any of
+ * them undoes the whole group, newest batch first.
+ */
 export async function undoImport(batchId: string) {
+  const b = await db.importBatch.findUnique({ where: { id: batchId } });
+  if (!b) throw new HttpError(404, "Import not found");
+  if (b.status === "undone") throw new HttpError(409, "This import was already undone");
+  if (!b.groupId) return undoOne(batchId);
+  const group = await db.importBatch.findMany({
+    where: { groupId: b.groupId, status: "applied" },
+    orderBy: { createdAt: "desc" },
+  });
+  for (const g of group) await undoOne(g.id);
+  return { ok: true, batches: group.length };
+}
+
+/** Deletes what one batch created and restores what it merged (newest first). */
+async function undoOne(batchId: string) {
   const { batch } = await undoImpact(batchId);
   if (batch.status === "undone") throw new HttpError(409, "This import was already undone");
   const affected = new Set<string>();
@@ -104,6 +137,15 @@ export async function undoImport(batchId: string) {
       case "comment":
         await db.comment.deleteMany({ where: { id: r.entityId } });
         break;
+      // Data contract (Phase 13): activities and tasks.
+      case "touch":
+        if (r.action === "created") await db.touch.deleteMany({ where: { id: r.entityId } });
+        else await db.touch.updateMany({ where: { id: r.entityId }, data: before });
+        break;
+      case "task":
+        if (r.action === "created") await db.task.deleteMany({ where: { id: r.entityId } });
+        else await db.task.updateMany({ where: { id: r.entityId }, data: before });
+        break;
       case "partner-rep": {
         if (r.action === "created") {
           await db.partnerRep.deleteMany({ where: { id: r.entityId } });
@@ -119,6 +161,9 @@ export async function undoImport(batchId: string) {
     }
   }
 
+  // External id mappings that point at rows this batch created are gone with them.
+  const created = batch.records.filter((r) => r.action === "created").map((r) => r.entityId);
+  if (created.length) await db.externalRef.deleteMany({ where: { entityId: { in: created } } });
   await db.importBatch.update({
     where: { id: batchId },
     data: { status: "undone", undoneAt: new Date() },
@@ -135,6 +180,11 @@ export async function undoImport(batchId: string) {
     action: "import.undone",
     summary: `Undid ${batch.kind} import${batch.fileName ? ` (${batch.fileName})` : ""}`,
   });
-  await audit(db, { action: "import.undo", entityType: "import", entityId: batchId, summary: `Undid ${batch.kind} import${batch.fileName ? ` (${batch.fileName})` : ""}` });
+  await audit(db, {
+    action: "import.undo",
+    entityType: "import",
+    entityId: batchId,
+    summary: `Undid ${batch.kind} import${batch.fileName ? ` (${batch.fileName})` : ""}`,
+  });
   return { ok: true };
 }

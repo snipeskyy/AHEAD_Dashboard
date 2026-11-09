@@ -7,7 +7,9 @@ type Ctx = { params: Promise<{ key: string }> };
 
 async function keyFrom(ctx: Ctx) {
   const { key } = await ctx.params;
-  if (!isSettingKey(key)) throw new HttpError(404, `Unknown setting "${key}"`);
+  // The local API token is managed only through /api/local-api (its hash is never returned).
+  if (!isSettingKey(key) || key === "api.local")
+    throw new HttpError(404, `Unknown setting "${key}"`);
   return key;
 }
 

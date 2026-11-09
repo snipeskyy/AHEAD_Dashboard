@@ -19,6 +19,7 @@ interface Batch {
   counts: { created: number; merged: number; skipped: number; errors: number };
   createdAt: string;
   undoneAt: string | null;
+  groupId: string | null;
 }
 
 /** Every import, logged and undoable. */
@@ -64,9 +65,17 @@ export function ImportHistory() {
               <td className="px-4 py-2 whitespace-nowrap">
                 {format(new Date(b.createdAt), "MMM d, yyyy h:mm a")}
               </td>
-              <td className="px-4 py-2">{(b.kind as string) === "pack" ? "Shareable pack" : (KIND_DEFS[b.kind as keyof typeof KIND_DEFS]?.label ?? b.kind)}</td>
+              <td className="px-4 py-2">
+                {(b.kind as string) === "pack"
+                  ? "Shareable pack"
+                  : (b.kind as string) === "contract"
+                    ? "Activities & tasks"
+                    : (KIND_DEFS[b.kind as keyof typeof KIND_DEFS]?.label ?? b.kind)}
+              </td>
               <td className="max-w-56 truncate px-4 py-2">
-                {b.fileName ?? (b.inputType === "paste" ? "Pasted list" : b.inputType)}
+                {b.inputType === "contract"
+                  ? `Data contract${b.fileName ? ` · ${b.fileName}` : ""}`
+                  : (b.fileName ?? (b.inputType === "paste" ? "Pasted list" : b.inputType))}
               </td>
               <td className="px-4 py-2 tabular-nums">{b.counts.created}</td>
               <td className="px-4 py-2 tabular-nums">{b.counts.merged}</td>

@@ -1,9 +1,10 @@
 "use client";
-import { Blocks, Database, Palette, PlugZap, Sigma, Tags, UserRound } from "lucide-react";
+import { Blocks, Cable, Database, Palette, PlugZap, Sigma, Tags, UserRound } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import { AppearanceSettings } from "../components/appearance-settings";
+import { ContractSettings } from "../components/contract-settings";
 import { DataSettings } from "../components/data-settings";
 import { ModuleSettings } from "../components/module-settings";
 import { ProfileSettings } from "../components/profile-settings";
@@ -19,6 +20,7 @@ const SECTIONS = [
   { id: "scoring", label: "Scoring", icon: Sigma, Component: ScoringSettings },
   { id: "taxonomy", label: "Taxonomy & tagging", icon: Tags, Component: TaxonomySettings },
   { id: "data", label: "Data & backup", icon: Database, Component: DataSettings },
+  { id: "contract", label: "Data contract & API", icon: Cable, Component: ContractSettings },
 ] as const;
 
 export default function SettingsPage() {
