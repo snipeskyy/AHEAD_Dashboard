@@ -22,6 +22,14 @@ internal AI tool), so it can keep developing ACC. It is written for you and for 
   - Your own ACC data stays on your computer. Move it separately, if at all, with an encrypted backup
     (Settings → Data & backup) plus your `ACC_BACKUP_KEY`.
 
+**Tool won't accept a .zip?** Run `npm run handoff:text` instead. It writes plain `.txt` files to
+`handoff/text/`:
+
+- `acc-00-START-HERE.txt` holds the instructions, the AI context and an index of the parts.
+- About 11 part files of at most 380 KB each hold the code by area. Set `ACC_HANDOFF_MAX_KB` for a different size.
+- Each source file sits between `BEGIN FILE` / `END FILE` markers. The rebuild script in START-HERE recreates the
+  folder byte for byte.
+
 ## 2. Load it into the tool
 
 | Kind of tool                                                                                   | What to do                                                                                                                                                                                                                                                               |
