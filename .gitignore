@@ -63,3 +63,6 @@ prisma/*.db-journal
 imports/
 *.acc-data.json
 !docs/contract/example.acc-data.json
+
+# Handoff zips (npm run handoff)
+/handoff

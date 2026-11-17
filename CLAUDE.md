@@ -50,6 +50,8 @@ Build specs: `PROMPT.md` (Phases 0–4) and `PROMPT_ROUND2.md` (Phases 5–9). T
 | Checks             | `npm run check` (typecheck + lint + unit tests)                                                                                    |
 | E2E / screenshots  | `npm run e2e`, `npm run screenshots` (own server on :3100 against the test DB; output in `screenshots/`)                           |
 | Format             | `npm run format`                                                                                                                   |
+| AI tool rules      | `npm run agents:sync` (copies this file to AGENTS.md, Copilot and Cursor rule files; a test fails on drift)                        |
+| Handoff package    | `npm run handoff` (code-only zip in `handoff/`, checked for data/keys; see `docs/HANDOFF.md`)                                      |
 
 ## Folder map
 
@@ -577,6 +579,10 @@ migrations, because Prisma would otherwise report drift.
 - **Round 3 approved (Nov 2026)** — `docs/ROUND3_PLAN.md`: deliverables engine → TCO → full Sandbox → data contract →
   team polish. TCO inputs are user-entered assumptions only (no company pricing or margins in the repo). The internal
   AI-tool port gets a neutral, file-based data contract; any live connection waits for company approval.
+- **Portable to other AI tools (Nov 2026).** `CLAUDE.md` stays the single source of truth. `npm run agents:sync`
+  generates `AGENTS.md` (inside its own markers, next to Next.js's block), `.github/copilot-instructions.md` and
+  `.cursor/rules/acc.mdc`. `docs/AI_CONTEXT.md` is the compact prompt for chat tools; `docs/HANDOFF.md` is the
+  handoff guide.
 - **Glean as the approved AI tool (Nov 2026).** Users run ACC locally and import Glean output through the review
   queue. Internal data is allowed locally (encrypted at rest), never in the repo. Contacts stay without email or phone.
   The live staging API is built but off; turning it on for Glean needs an approved hosted deployment.

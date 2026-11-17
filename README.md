@@ -202,6 +202,13 @@ record and changed field, then apply it. Nothing changes until you do, and every
 ACC listens only on `127.0.0.1`, refuses cross-site writes, and has a commit guard that keeps data and secrets out
 of git.
 
+## Moving the build to another AI tool
+
+Run `npm run handoff` for a code-only zip: no database, backups, exports, keys or brand files.
+`docs/HANDOFF.md` explains how to load it into a coding assistant, a chat assistant or an agent platform.
+Repository-aware tools read the rules automatically from `AGENTS.md`, `.github/copilot-instructions.md` or
+`.cursor/rules/acc.mdc`, all generated from `CLAUDE.md`.
+
 ## Data contract & local API
 
 The **ACC Data Contract** (`acc-data` v1) is a neutral, versioned JSON format for your own account knowledge:

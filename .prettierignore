@@ -11,3 +11,6 @@ screenshots
 backups
 PROMPT.md
 PROMPT_ROUND2.md
+AGENTS.md
+.github/copilot-instructions.md
+.cursor/rules/acc.mdc
