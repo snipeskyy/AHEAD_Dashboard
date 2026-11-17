@@ -22,7 +22,7 @@ git("archive", "--format=zip", `--prefix=account-command-center/`, "-o", out, "H
 
 const files = git("ls-tree", "-r", "--name-only", "HEAD").split("\n");
 const BLOCK = [
-  /^brand\/(?!README\.md$|\.gitkeep$)/,
+  /^brand\/(?!README\.md$|\.gitkeep$|brand\.example\.json$)/,
   /(^|\/)\.env(?!\.example$)(\.|$)/,
   /\.(db|db-journal|sqlite|sqlite3|pem|key|p12)$/,
   /^(backups|exports|imports|handoff|screenshots)\//,

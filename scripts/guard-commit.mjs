@@ -9,7 +9,7 @@ const staged = execFileSync("git", ["diff", "--cached", "--name-only", "--diff-f
   .filter(Boolean);
 
 const BLOCK = [
-  [/^brand\/(?!README\.md$|\.gitkeep$)/, "brand pack files (company logos/colors stay local)"],
+  [/^brand\/(?!README\.md$|\.gitkeep$|brand\.example\.json$)/, "brand pack files (company logos/colors stay local)"],
   [/(^|\/)\.env(\.|$)(?!example$)/, "environment files (secrets)"],
   [/\.(db|db-journal|sqlite|sqlite3)$/, "database files"],
   [/^(backups|exports|imports)\//, "backups / exports / imports (workspace data)"],
